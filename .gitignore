@@ -1,0 +1,8 @@
+# Служебные файлы — в репозиторий не попадают
+.godot/
+node_modules/
+Library/
+.vscode/
+*.log
+Thumbs.db
+.DS_Store
