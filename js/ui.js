@@ -79,36 +79,49 @@ const UI = {
 		}
 	},
 
-	// Экран выбора персонажа (ТЗ §1.3): карточка Вовы + заблокированные слоты «???»
+	// Экран выбора персонажа: отдельный экран с тёмным фоном (без игровой сцены).
+	// Масштабируется под весь экран; карточка Вовы запускает его мини-игру
 	showSelect(onStart) {
 		const el = this._overlay();
-		el.style.background = "rgba(16, 18, 26, 0.97)";
+		el.style.background = "#12141c";
 		el.innerHTML = `
-			<div style="max-width: 340px; width: 100%; padding: 0 16px;">
-				<p style="font-size: 22px; font-weight: 800; letter-spacing: 2px;
-					text-transform: uppercase; color: #fff; margin: 0 0 4px;">Выбери персонажа</p>
-				<p style="font-size: 13px; color: #8a8a9a; margin: 0 0 20px;">Кто сегодня выживет на совещании?</p>
-				<div style="display: flex; gap: 12px; justify-content: center;">
-					<div id="vova-card" style="flex: 1; max-width: 130px; cursor: pointer;
+			<div style="width: 100%; height: 100%; box-sizing: border-box;
+				display: flex; flex-direction: column; align-items: center;
+				justify-content: center; padding: 5vh 5vw;">
+				<p style="font-size: 8vh; font-weight: 900; color: #fff; margin: 0;
+					font-family: system-ui, sans-serif; letter-spacing: 1px;">one <3 офис</p>
+				<p style="font-size: 3.2vh; font-weight: 700; letter-spacing: 3px;
+					text-transform: uppercase; color: #4a7ae0; margin: 1.5vh 0 0;
+					font-family: system-ui, sans-serif;">Выбор персонажа</p>
+				<p style="font-size: 2.2vh; color: #8a8a9a; margin: 0.8vh 0 4vh;
+					font-family: system-ui, sans-serif;">Кто ты сегодня в офисе?</p>
+				<div style="display: flex; gap: 2vw; width: 100%; max-width: 92vw;
+					flex: 1; min-height: 0;">
+					<div id="vova-card" style="flex: 1.3; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
-						border: 2px solid #2f5fd0; border-radius: 12px; padding: 10px;
-						text-align: center;">
-						<img src="assets/characters/vova.png" alt="Вова"
-							style="width: 100%; border-radius: 8px; image-rendering: pixelated; display: block;">
-						<p style="color: #fff; font-weight: bold; margin: 8px 0 0; font-family: system-ui, sans-serif;">Вова</p>
-						<p style="color: #8a8a9a; font-size: 11px; margin: 2px 0 0; font-family: system-ui, sans-serif;">Мемы под столом</p>
+						border: 3px solid #2f5fd0; border-radius: 2.4vh; padding: 1.6vh;
+						display: flex; flex-direction: column; box-sizing: border-box;">
+						<img src="assets/characters/vova_character_select.png" alt="Вова"
+							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
+								border-radius: 1.6vh; image-rendering: pixelated; display: block;">
+						<p style="color: #fff; font-weight: bold; font-size: 3vh; margin: 1.4vh 0 0;
+							font-family: system-ui, sans-serif;">Вова</p>
+						<p style="color: #8a8a9a; font-size: 1.9vh; margin: 0.4vh 0 0;
+							font-family: system-ui, sans-serif;">Мемы под столом</p>
 					</div>
-					<div style="flex: 1; max-width: 130px; background: #1a1a26;
-						border: 2px dashed #3a3a4a; border-radius: 12px; padding: 10px;
-						text-align: center; display: flex; flex-direction: column; justify-content: center;">
-						<p style="color: #4a4a5a; font-size: 40px; margin: 0; font-family: system-ui, sans-serif;">???</p>
-						<p style="color: #4a4a5a; font-size: 11px; margin: 8px 0 0; font-family: system-ui, sans-serif;">Скоро</p>
+					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
+						border-radius: 2.4vh; padding: 1.6vh; display: flex; flex-direction: column;
+						align-items: center; justify-content: center; box-sizing: border-box;">
+						<p style="color: #3a3a4a; font-size: 8vh; margin: 0; font-family: system-ui, sans-serif;">?</p>
+						<p style="color: #3a3a4a; font-size: 1.9vh; margin: 1vh 0 0;
+							font-family: system-ui, sans-serif;">Скоро</p>
 					</div>
-					<div style="flex: 1; max-width: 130px; background: #1a1a26;
-						border: 2px dashed #3a3a4a; border-radius: 12px; padding: 10px;
-						text-align: center; display: flex; flex-direction: column; justify-content: center;">
-						<p style="color: #4a4a5a; font-size: 40px; margin: 0; font-family: system-ui, sans-serif;">???</p>
-						<p style="color: #4a4a5a; font-size: 11px; margin: 8px 0 0; font-family: system-ui, sans-serif;">Скоро</p>
+					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
+						border-radius: 2.4vh; padding: 1.6vh; display: flex; flex-direction: column;
+						align-items: center; justify-content: center; box-sizing: border-box;">
+						<p style="color: #3a3a4a; font-size: 8vh; margin: 0; font-family: system-ui, sans-serif;">?</p>
+						<p style="color: #3a3a4a; font-size: 1.9vh; margin: 1vh 0 0;
+							font-family: system-ui, sans-serif;">Скоро</p>
 					</div>
 				</div>
 			</div>

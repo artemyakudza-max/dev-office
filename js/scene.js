@@ -51,6 +51,12 @@ const Scene = {
 		};
 	},
 
+	// Сплошной тёмный фон (для экрана выбора персонажа)
+	clearToBackground() {
+		this.ctx.fillStyle = "#12141c";
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	},
+
 	draw() {
 		const ctx = this.ctx;
 		const dpr = window.devicePixelRatio || 1;

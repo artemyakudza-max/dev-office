@@ -30,7 +30,11 @@
 		lastTime = now;
 
 		update(dt);
-		Scene.draw();
+		if (Game.screen === "select") {
+			Scene.clearToBackground(); // экран выбора: просто тёмный фон
+		} else {
+			Scene.draw();
+		}
 
 		requestAnimationFrame(tick);
 	}
@@ -172,9 +176,10 @@
 		UI.showTutorial();
 	}
 
-	// Автоматическая пауза: ушёл с вкладки / свернул окно (ТЗ §6.5)
+	// Автоматическая пауза: ушёл с вкладки / свернул окно (ТЗ §6.5).
+	// На экране выбора пауза не нужна — там нет экшена
 	function pause() {
-		if (Game.over || Game.paused) return;
+		if (Game.screen !== "playing" || Game.over || Game.paused) return;
 		Game.paused = true;
 		Input.reset(); // касание возврата не должно поднимать телефон
 		UI.showPause();
