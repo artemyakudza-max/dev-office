@@ -8,6 +8,7 @@ const Scene = {
 
 	// Состояния для отрисовки (меняет main.js)
 	vovaPhoneUp: false,
+	vovaStunned: false,
 	bossState: "AT_FLIPCHART",
 
 	init(canvas) {
@@ -69,8 +70,11 @@ const Scene = {
 		ctx.fillRect(30, 436, 10, 60);
 		ctx.fillRect(180, 436, 10, 60);
 
-		// Вова — заглушка (сидит за столом, вид сбоку)
-		ctx.fillStyle = this.vovaPhoneUp ? "#4a8a4a" : "#3a6a3a";
+		// Вова — заглушка (сидит за столом, вид сбоку).
+		// Пойман — серый и замирает; листает — ярче; слушает — тусклее
+		ctx.fillStyle = this.vovaStunned
+			? "#888888"
+			: (this.vovaPhoneUp ? "#4a8a4a" : "#3a6a3a");
 		ctx.fillRect(60, 360, 40, 64); // тело
 		ctx.fillStyle = "#e0b090";
 		ctx.fillRect(66, 330, 28, 30); // голова
