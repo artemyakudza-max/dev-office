@@ -339,10 +339,10 @@ const UI = {
 		this.tutorialEl.innerHTML = `
 			<p style="font-family: var(--pixel-font); font-size: 16px; color: #f0c040;
 				margin: 0 0 12px;">КАК ИГРАТЬ</p>
-			<p style="font-family: var(--body-font); font-size: 17px; line-height: 1.5;
+			<p style="font-family: var(--body-font); font-size: 16px; line-height: 1.55;
 				color: #fff; margin: 0;">
-				<b>Держи</b> — Вова листает мемы.<br>
-				<b>Отпусти</b> — босс смотрит.
+				<b>Нажми на экран</b> — Вова достанет телефон.<br>
+				<b>Отпусти</b>, когда на тебя смотрят.
 			</p>
 		`;
 		this.root.appendChild(this.tutorialEl);
