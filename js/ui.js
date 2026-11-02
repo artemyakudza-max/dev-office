@@ -100,7 +100,7 @@ const UI = {
 			sub = `Замечаний: ${data.warnings}`;
 			shareText = CONFIG.shareText.replace("{P}", data.percent);
 		} else if (kind === "fail") {
-			text = `Спалился на ${data.second} секунде`;
+			text = CONFIG.failText.replace("{N}", data.second);
 			shareText = CONFIG.shareTextFail.replace("{N}", data.second);
 		} else {
 			// пасхалка: победа с 0% «своих дел»
