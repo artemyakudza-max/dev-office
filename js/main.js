@@ -49,6 +49,8 @@
 		// Телефон: удержание = наверху, отпускание = под столом
 		Vova.update(dt, Game.time);
 		Scene.vovaPhoneUp = Vova.phoneUp;
+		Scene.vovaCaught = Vova.locked;
+		Scene.animTime = Game.time;
 
 		// Автомат босса
 		const prevBossState = Boss.state;

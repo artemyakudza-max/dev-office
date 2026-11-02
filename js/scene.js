@@ -8,6 +8,8 @@ const Scene = {
 
 	// Состояния для отрисовки (меняет main.js)
 	vovaPhoneUp: false,
+	vovaCaught: false,   // Вова пойман — телефон заблокирован
+	animTime: 0,         // игровое время для анимаций
 	bossState: "AT_FLIPCHART",
 	bossTelegraph: false, // маркер на полке — сигнал скорого поворота
 
@@ -68,17 +70,7 @@ const Scene = {
 		this.drawTable(ctx);
 		this.drawPlant(ctx);
 
-		// Вова — заглушка (сидит за столом, вид сбоку). Листает — ярче, слушает — тусклее
-		ctx.fillStyle = this.vovaPhoneUp ? "#4a8a4a" : "#3a6a3a";
-		ctx.fillRect(60, 360, 40, 64); // тело
-		ctx.fillStyle = "#e0b090";
-		ctx.fillRect(66, 330, 28, 30); // голова
-
-		// Телефон: над столом при удержании, под столом при отпускании
-		if (this.vovaPhoneUp) {
-			ctx.fillStyle = "#222";
-			ctx.fillRect(100, 400, 12, 20);
-		}
+		this.drawVova(ctx);
 
 		// Босс — заглушка. Цвет и поза зависят от состояния автомата:
 		// у флипчарта — боком (тусклый), поворот — промежуточный, смотрит — лицом (яркий)
@@ -305,6 +297,129 @@ const Scene = {
 		ctx.fillRect(330, 422, 6, 20);
 		ctx.fillStyle = "#4f7f4a";
 		ctx.fillRect(342, 418, 4, 24);
+	},
+
+	// Вова: сидит за столом, вид сбоку, лицом вправо. Пиксель-арт кодом,
+	// палитра от референса vova.png (светло-русые волосы, чёрный худи)
+	// Позы: слушает / листает / пойман. Анимация — по animTime
+	drawVova(ctx) {
+		const u = 2; // размер «пикселя»
+		const P = {
+			hair: "#b98d5a",
+			hairDark: "#8a6238",
+			skin: "#e8b48c",
+			skinDark: "#c98f68",
+			hoodie: "#23262e",
+			hoodieLight: "#2e323c",
+			jeans: "#3a3f4a",
+			phone: "#14161a",
+			screen: "#4a7a9a",
+			eye: "#26262a",
+		};
+
+		// Анимация: кивок при слушании, палец при листании
+		const frame = Math.floor(this.animTime * 2) % 2;
+		const nod = this.vovaPhoneUp ? 0 : frame; // кивок 0/1 пикселя вниз
+		const caught = this.vovaCaught;
+
+		const bx = 56, by = 326; // базовая точка (верх головы)
+
+		// --- Торс: худи ---
+		ctx.fillStyle = P.hoodie;
+		ctx.fillRect(bx + 2, by + 34, 40, 60); // корпус до стола (y=420)
+		// Капюшон за спиной
+		ctx.fillStyle = P.hoodieLight;
+		ctx.fillRect(bx, by + 32, 10, 18);
+		// Ворот
+		ctx.fillStyle = P.hoodieLight;
+		ctx.fillRect(bx + 26, by + 32, 16, 6);
+		// Шнурки капюшона
+		ctx.fillStyle = "#d8d8d8";
+		ctx.fillRect(bx + 30, by + 38, 2, 10);
+		ctx.fillRect(bx + 38, by + 38, 2, 8);
+		// Молния
+		ctx.fillStyle = "#3a3e48";
+		ctx.fillRect(bx + 34, by + 40, 2, 52);
+
+		// --- Голова (профиль вправо) ---
+		const hy = by + nod;
+		// Волосы: верх зигзагом + затылок слева
+		ctx.fillStyle = P.hair;
+		ctx.fillRect(bx + 8, hy + 4, 26, 10);
+		ctx.fillRect(bx + 6, hy + 8, 6, 16); // затылок
+		// Зигзаг сверху
+		ctx.fillRect(bx + 10, hy + 2, 6, 2);
+		ctx.fillRect(bx + 18, hy, 8, 4);
+		ctx.fillRect(bx + 28, hy + 2, 6, 2);
+		// Тёмные пряди
+		ctx.fillStyle = P.hairDark;
+		ctx.fillRect(bx + 14, hy + 4, 4, 8);
+		ctx.fillRect(bx + 24, hy + 6, 4, 6);
+		// Лицо
+		ctx.fillStyle = P.skin;
+		ctx.fillRect(bx + 12, hy + 14, 22, 14);
+		// Челюсть/подбородок
+		ctx.fillRect(bx + 16, hy + 28, 14, 4);
+		// Ухо
+		ctx.fillStyle = P.skinDark;
+		ctx.fillRect(bx + 10, hy + 18, 4, 6);
+		// Глаз: обычный или широкий (пойман)
+		if (caught) {
+			ctx.fillStyle = "#ffffff";
+			ctx.fillRect(bx + 24, hy + 16, 8, 8);
+			ctx.fillStyle = P.eye;
+			ctx.fillRect(bx + 27, hy + 19, 4, 4);
+		} else {
+			ctx.fillStyle = P.eye;
+			ctx.fillRect(bx + 26, hy + 18, 4, 4);
+			// Бровь
+			ctx.fillStyle = P.hairDark;
+			ctx.fillRect(bx + 24, hy + 14, 8, 2);
+		}
+		// Рот: ухмылка при листании, прямая при слушании, «о» при поимке
+		ctx.fillStyle = "#b06a5a";
+		if (caught) {
+			ctx.fillRect(bx + 26, hy + 26, 4, 4);
+		} else if (this.vovaPhoneUp) {
+			ctx.fillRect(bx + 26, hy + 26, 8, 2);
+			ctx.fillRect(bx + 32, hy + 24, 2, 2); // уголок вверх
+		} else {
+			ctx.fillRect(bx + 26, hy + 26, 6, 2);
+		}
+
+		// --- Руки и телефон ---
+		if (caught) {
+			// Пойман: телефон замирает наверху, руки вскинуты
+			ctx.fillStyle = P.hoodie;
+			ctx.fillRect(bx + 40, by + 30, 8, 16); // рука вверх
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 40, by + 26, 8, 6); // кисть
+			ctx.fillStyle = P.phone;
+			ctx.fillRect(bx + 38, by + 8, 12, 20);
+			ctx.fillStyle = P.screen;
+			ctx.fillRect(bx + 40, by + 10, 8, 14);
+		} else if (this.vovaPhoneUp) {
+			// Листает: локоть на столе, телефон над коленями, большой палец двигается
+			ctx.fillStyle = P.hoodie;
+			ctx.fillRect(bx + 40, by + 52, 10, 30); // рука
+			ctx.fillRect(bx + 44, by + 74, 14, 8); // предплечье к телефону
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 56, by + 72, 6, 8); // кисть
+			// Телефон
+			ctx.fillStyle = P.phone;
+			ctx.fillRect(bx + 58, by + 56, 14, 22);
+			ctx.fillStyle = P.screen;
+			ctx.fillRect(bx + 60, by + 58, 10, 16);
+			// Большой палец листает (2 кадра)
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 60 + frame * 4, by + 70, 4, 4);
+		} else {
+			// Слушает: руки на столе
+			ctx.fillStyle = P.hoodie;
+			ctx.fillRect(bx + 40, by + 56, 10, 36); // рука вниз
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 40, by + 90, 10, 6); // кисть на столе
+		}
 	},
 
 	// Пиксельный «график» на листе флипчарта — 4 варианта по номеру листа
