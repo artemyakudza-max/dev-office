@@ -74,6 +74,7 @@ const Scene = {
 
 		this.drawRoom(ctx, x0, x1, y0, y1);
 		this.drawPoster(ctx);
+		this.drawClock(ctx);
 		this.drawWindow(ctx);
 		this.drawLamps(ctx);
 		this.drawFlipchart(ctx);
@@ -169,6 +170,37 @@ const Scene = {
 		ctx.fillStyle = "#8a867a";
 		ctx.fillRect(x + 8, y + 8, 40, 3);
 		ctx.fillRect(x + 8, y + 14, 28, 3);
+	},
+
+	// Настенные часы — на них смотрит босс в фальстарте (слева от окна)
+	drawClock(ctx) {
+		const cx = 168, cy = 84, r = 18;
+		// Корпус
+		ctx.fillStyle = "#3f4552";
+		ctx.fillRect(cx - r - 4, cy - r - 4, (r + 4) * 2, (r + 4) * 2);
+		// Циферблат
+		ctx.fillStyle = "#e8e8e4";
+		ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+		// Срезаем углы «круга» пикселями
+		ctx.fillStyle = "#3f4552";
+		ctx.fillRect(cx - r, cy - r, 4, 4);
+		ctx.fillRect(cx + r - 4, cy - r, 4, 4);
+		ctx.fillRect(cx - r, cy + r - 4, 4, 4);
+		ctx.fillRect(cx + r - 4, cy + r - 4, 4, 4);
+		// Метки 12/3/6/9
+		ctx.fillStyle = "#2a2e38";
+		ctx.fillRect(cx - 1, cy - r + 2, 2, 4);
+		ctx.fillRect(cx - 1, cy + r - 6, 2, 4);
+		ctx.fillRect(cx - r + 2, cy - 1, 4, 2);
+		ctx.fillRect(cx + r - 6, cy - 1, 4, 2);
+		// Стрелки: почти конец совещания (без минутной — часовая к 12)
+		ctx.fillStyle = "#2a2e38";
+		ctx.fillRect(cx - 1, cy - 10, 2, 10); // часовая к 12
+		ctx.fillRect(cx - 1, cy - 2, 2, 8);   // хвост
+		ctx.fillRect(cx, cy - 1, 8, 2);       // минутная на 3 (15 минут)
+		// Центр
+		ctx.fillStyle = "#c05050";
+		ctx.fillRect(cx - 1, cy - 1, 2, 2);
 	},
 
 	// Окно: ночная Москва-Сити — кластер стеклянных башен
@@ -591,19 +623,61 @@ const Scene = {
 		ctx.fillRect(342, 418, 4, 24);
 	},
 
-	// Пиксельный «график» на листе флипчарта — 4 варианта по номеру листа
+	// Листы флипчарта — 4 разных «доклада» по номеру цикла босса
 	drawChart(ctx, x, y, w, h, variant) {
 		ctx.fillStyle = "#ffffff";
 		ctx.fillRect(x, y, w, h);
-		ctx.fillStyle = "#2f5fd0"; // синий бренда вместо прежнего голубого
-		const bars = 5;
-		const bw = Math.floor(w / bars) - 2;
-		for (let i = 0; i < bars; i++) {
-			const t = (variant * 7 + i * 3) % 10;
-			const bh = Math.max(4, Math.floor(h * (0.2 + t * 0.07)));
-			ctx.fillRect(x + 2 + i * (bw + 2), y + h - bh - 2, bw, bh);
+		const blue = "#2f5fd0";
+		const red = "#c05050";
+		const dark = "#2a2e38";
+
+		// Заголовок «документа»
+		ctx.fillStyle = dark;
+		ctx.fillRect(x + 4, y + 4, w - 20, 3);
+		ctx.fillStyle = "#9a96a0";
+		ctx.fillRect(x + 4, y + 10, w - 32, 2);
+
+		if (variant === 0) {
+			// Столбчатая диаграмма роста
+			ctx.fillStyle = blue;
+			const bw = 8;
+			for (let i = 0; i < 5; i++) {
+				const bh = 10 + ((i * 13) % 30);
+				ctx.fillRect(x + 6 + i * (bw + 3), y + h - 8 - bh, bw, bh);
+			}
+		} else if (variant === 1) {
+			// Линия роста вверх (ступеньками)
+			ctx.fillStyle = blue;
+			const steps = 6;
+			for (let i = 0; i < steps; i++) {
+				const lx = x + 6 + i * ((w - 14) / steps);
+				const ly = y + h - 12 - i * 8;
+				ctx.fillRect(lx, ly, (w - 14) / steps, 3);
+				if (i < steps - 1) ctx.fillRect(lx + (w - 14) / steps - 3, ly - 8, 3, 8);
+			}
+		} else if (variant === 2) {
+			// Падение: красная линия вниз (повод для совещания)
+			ctx.fillStyle = red;
+			const steps = 6;
+			for (let i = 0; i < steps; i++) {
+				const lx = x + 6 + i * ((w - 14) / steps);
+				const ly = y + 24 + i * 7;
+				ctx.fillRect(lx, ly, (w - 14) / steps, 3);
+				if (i < steps - 1) ctx.fillRect(lx + (w - 14) / steps - 3, ly, 3, 7);
+			}
+			// Тревожный восклицательный блок
+			ctx.fillStyle = red;
+			ctx.fillRect(x + w - 14, y + 16, 6, 10);
+			ctx.fillRect(x + w - 14, y + 28, 6, 3);
+		} else {
+			// «Список задач»: строки с галочками
+			for (let i = 0; i < 5; i++) {
+				const ly = y + 22 + i * 12;
+				ctx.fillStyle = i < 3 ? "#4a8a4a" : "#9a96a0";
+				ctx.fillRect(x + 6, ly, 6, 6);
+				ctx.fillStyle = "#6a667a";
+				ctx.fillRect(x + 16, ly + 2, w - 26, 3);
+			}
 		}
-		ctx.fillStyle = "#c05050";
-		ctx.fillRect(x + 2, y + 6 + variant * 4, w - 4, 3);
 	},
 };
