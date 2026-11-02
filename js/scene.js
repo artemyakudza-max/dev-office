@@ -82,26 +82,7 @@ const Scene = {
 		this.drawTable(ctx);
 		this.drawPlant(ctx);
 
-		// Босс — заглушка. Цвет и поза зависят от состояния автомата:
-		// у флипчарта — боком (тусклый), поворот — промежуточный, смотрит — лицом (яркий)
-		const bossColors = {
-			AT_FLIPCHART: "#6a4a6a",
-			TURNING: "#8a5a8a",
-			WATCHING: "#c060c0",
-			FAKEOUT: "#c060c0",
-		};
-		ctx.fillStyle = bossColors[this.bossState] || "#6a4a6a";
-		ctx.fillRect(260, 340, 44, 80); // тело
-		ctx.fillStyle = "#e0b090";
-		// Голова: у флипчарта — к флипчарту (вправо), в фальстарте — к окну (влево-вверх),
-		// в остальных состояниях — на игрока
-		if (this.bossState === "AT_FLIPCHART") {
-			ctx.fillRect(274, 310, 30, 30);
-		} else if (this.bossState === "FAKEOUT") {
-			ctx.fillRect(258, 302, 30, 30);
-		} else {
-			ctx.fillRect(266, 310, 30, 30);
-		}
+		this.drawBoss(ctx);
 
 		ctx.restore();
 	},
@@ -447,6 +428,123 @@ const Scene = {
 			ctx.fillRect(bx + 36, by + 78, 20, 10); // предплечье на столе
 			ctx.fillStyle = P.skin;
 			ctx.fillRect(bx + 52, by + 86, 12, 8); // кисть на столешнице (y=420)
+		}
+	},
+
+	// Босс: стоит у флипчарта, лицом к игроку. Пиксель-арт кодом.
+	// Силуэт «босса»: костюм, синий галстук (акцент ВТБ), лысый в очках.
+	// Состояния: у флипчарта (спиной, жестикулирует) / поворот / смотрит / фальстарт
+	drawBoss(ctx) {
+		const P = {
+			suit: "#2a2e3a",
+			suitLight: "#343846",
+			shirt: "#e8e8e8",
+			tie: "#2f5fd0",
+			pants: "#262a34",
+			shoe: "#1c1f26",
+			skin: "#d8a878",
+			skinDark: "#b8885c",
+			glasses: "#14161a",
+		};
+
+		const frame = Math.floor(this.animTime * 2) % 2;
+		const state = this.bossState;
+		// Ноги на полу (y=478), рост ~150
+		const bx = 258, by = 330; // верх головы
+
+		// --- Ноги и обувь (видны во всех состояниях) ---
+		ctx.fillStyle = P.pants;
+		ctx.fillRect(bx + 6, by + 108, 14, 34); // левая нога
+		ctx.fillRect(bx + 26, by + 108, 14, 34); // правая нога
+		ctx.fillStyle = P.shoe;
+		ctx.fillRect(bx + 4, by + 142, 18, 8);
+		ctx.fillRect(bx + 24, by + 142, 18, 8);
+
+		// --- Корпус: пиджак ---
+		ctx.fillStyle = P.suit;
+		ctx.fillRect(bx + 2, by + 44, 42, 66);
+		// Плечи шире
+		ctx.fillRect(bx, by + 44, 46, 10);
+
+		if (state === "AT_FLIPCHART") {
+			// Спиной/боком к игроку: затылок, рука тянетсся к флипчарту
+			ctx.fillStyle = P.suitLight;
+			ctx.fillRect(bx + 2, by + 44, 42, 8); // складка пиджака
+			// Рука к флипчарту: жестикуляция — 2 кадра (указывает/рисует)
+			const armY = frame === 0 ? by + 52 : by + 62;
+			ctx.fillStyle = P.suit;
+			ctx.fillRect(bx + 42, armY, 22, 8);
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 62, armY - 2, 6, 10); // кисть с маркером
+			ctx.fillStyle = "#c05050";
+			ctx.fillRect(bx + 66, armY - 4, 4, 6); // маркер
+			// Голова: затылок (лысый верх, волосы по бокам)
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 10, by + 14, 26, 30);
+			ctx.fillStyle = P.skinDark;
+			ctx.fillRect(bx + 10, by + 14, 26, 6); // лысина в тени
+			ctx.fillStyle = "#4a4038";
+			ctx.fillRect(bx + 8, by + 26, 4, 14); // волосы сзади
+			ctx.fillRect(bx + 10, by + 40, 26, 4); // воротник
+		} else {
+			// Лицом к игроку: рубашка, галстук, лицо в очках
+			ctx.fillStyle = P.shirt;
+			ctx.fillRect(bx + 16, by + 44, 14, 30);
+			ctx.fillStyle = P.tie;
+			ctx.fillRect(bx + 20, by + 48, 6, 26);
+			ctx.fillStyle = P.suitLight;
+			ctx.fillRect(bx + 12, by + 44, 4, 40); // лацканы
+			ctx.fillRect(bx + 30, by + 44, 4, 40);
+
+			if (state === "TURNING") {
+				// Поворот: голова ещё полубоком, плечи развёрнуты
+				ctx.fillStyle = P.skin;
+				ctx.fillRect(bx + 12, by + 14, 22, 30);
+				ctx.fillStyle = P.skinDark;
+				ctx.fillRect(bx + 12, by + 14, 8, 30); // половина в тени
+				ctx.fillStyle = P.glasses;
+				ctx.fillRect(bx + 24, by + 24, 10, 4); // очки в полупрофиль
+			} else {
+				// Смотрит / фальстарт: лицо целиком
+				ctx.fillStyle = P.skin;
+				ctx.fillRect(bx + 10, by + 14, 26, 30);
+				// Лысина: блеск сверху
+				ctx.fillStyle = P.skinDark;
+				ctx.fillRect(bx + 14, by + 14, 18, 4);
+				ctx.fillStyle = "#e8c090";
+				ctx.fillRect(bx + 20, by + 15, 6, 2);
+				// Очки
+				ctx.fillStyle = P.glasses;
+				ctx.fillRect(bx + 12, by + 24, 22, 5);
+				ctx.fillStyle = "#ffffff";
+				ctx.fillRect(bx + 14, by + 25, 7, 3);
+				ctx.fillRect(bx + 25, by + 25, 7, 3);
+				ctx.fillStyle = P.glasses;
+				ctx.fillRect(bx + 20, by + 25, 2, 3); // перемычка
+				// Глаза: сердитые при «смотрит», подняты к окну при фальстарте
+				ctx.fillStyle = P.glasses;
+				if (state === "FAKEOUT") {
+					ctx.fillRect(bx + 16, by + 22, 4, 3); // зрачки вверх-влево
+					ctx.fillRect(bx + 27, by + 22, 4, 3);
+				} else {
+					ctx.fillRect(bx + 16, by + 26, 4, 2);
+					ctx.fillRect(bx + 27, by + 26, 4, 2);
+					// Сердитые брови
+					ctx.fillRect(bx + 13, by + 21, 8, 2);
+					ctx.fillRect(bx + 25, by + 21, 8, 2);
+				}
+				// Рот: поджатый
+				ctx.fillStyle = "#8a5a48";
+				ctx.fillRect(bx + 18, by + 36, 10, 2);
+				// Позиция «смотрит»: руки скрещены, покачивание
+				if (state === "WATCHING") {
+					const sway = frame === 0 ? 0 : 2;
+					ctx.fillStyle = P.suit;
+					ctx.fillRect(bx + 2 + sway, by + 62, 42, 10); // скрещенные руки
+					ctx.fillStyle = P.skin;
+					ctx.fillRect(bx + 20 + sway, by + 62, 8, 6); // кисть
+				}
+			}
 		}
 	},
 
