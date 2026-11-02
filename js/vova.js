@@ -1,13 +1,16 @@
 // Состояние Вовы: телефон, оглушение после поимки (ТЗ §3.1, §6.4)
 const Vova = {
-	phoneUp: false,      // телефон логически наверху (с момента pointerdown, не анимации)
+	phoneUp: false,      // телефон логически наверху
 	phoneUpStart: 0,     // игровое время подъёма телефона
+	stateTime: 0,        // сколько секунд телефон в текущем состоянии (вверх/вниз)
 	stunLeft: 0,         // сколько секунд оглушения осталось
 	warnings: 0,         // замечания
 
 	reset() {
 		this.phoneUp = false;
 		this.phoneUpStart = 0;
+		// Телефон «внизу» изначально — первый тап срабатывает сразу
+		this.stateTime = CONFIG.phone.minDownSec;
 		this.stunLeft = 0;
 		this.warnings = 0;
 	},
@@ -18,20 +21,32 @@ const Vova = {
 			// Оглушение: ввод игнорируется, телефон внизу
 			this.stunLeft -= dt;
 			this.phoneUp = false;
-			if (this.stunLeft <= 0 && Input.pressed) {
-				// Палец всё ещё зажат — телефон «догоняет» состояние пальца
-				this.phoneUp = true;
-				this.phoneUpStart = gameTime;
+			if (this.stunLeft <= 0) {
+				// Палец всё ещё зажат — телефон «догоняет» сразу, без задержки
+				this.stateTime = CONFIG.phone.minDownSec;
+				if (Input.pressed) {
+					this.phoneUp = true;
+					this.phoneUpStart = gameTime;
+					this.stateTime = 0;
+				}
 			}
 			return;
 		}
 
-		const wantUp = Input.pressed;
-		if (wantUp && !this.phoneUp) {
-			this.phoneUp = true;
-			this.phoneUpStart = gameTime;
-		} else if (!wantUp) {
-			this.phoneUp = false;
+		// Минимальное время состояний (защита от спама двумя пальцами):
+		// наверху — не меньше minUpSec, внизу — не меньше minDownSec
+		this.stateTime += dt;
+		if (this.phoneUp) {
+			if (!Input.pressed && this.stateTime >= CONFIG.phone.minUpSec) {
+				this.phoneUp = false;
+				this.stateTime = 0;
+			}
+		} else {
+			if (Input.pressed && this.stateTime >= CONFIG.phone.minDownSec) {
+				this.phoneUp = true;
+				this.phoneUpStart = gameTime;
+				this.stateTime = 0;
+			}
 		}
 	},
 
