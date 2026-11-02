@@ -1,0 +1,91 @@
+// Отрисовка сцены-заглушки: фон, стол, флипчарт, босс и Вова прямоугольниками
+// Логические координаты 360×640 (портрет), масштабируются под вьюпорт (ТЗ §5.4)
+const Scene = {
+	W: 360,
+	H: 640,
+	canvas: null,
+	ctx: null,
+
+	// Состояние Вовы для отрисовки (меняет main.js)
+	vovaPhoneUp: false,
+
+	init(canvas) {
+		this.canvas = canvas;
+		this.ctx = canvas.getContext("2d");
+		this.resize();
+		window.addEventListener("resize", () => this.resize());
+	},
+
+	// Подгоняем canvas под вьюпорт с учётом плотности пикселей
+	resize() {
+		const dpr = window.devicePixelRatio || 1;
+		this.canvas.width = this.canvas.clientWidth * dpr;
+		this.canvas.height = this.canvas.clientHeight * dpr;
+	},
+
+	// Масштаб сцены: вписываем 360×640 в вьюпорт с сохранением пропорций (letterbox)
+	getScale() {
+		const dpr = window.devicePixelRatio || 1;
+		const w = this.canvas.width;
+		const h = this.canvas.height;
+		return Math.min(w / this.W, h / this.H);
+	},
+
+	draw() {
+		const ctx = this.ctx;
+		const dpr = window.devicePixelRatio || 1;
+		const scale = this.getScale();
+		const offX = (this.canvas.width - this.W * scale) / 2;
+		const offY = (this.canvas.height - this.H * scale) / 2;
+
+		// Фон вне сцены и стена переговорной
+		ctx.fillStyle = "#101018";
+		ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+		ctx.save();
+		ctx.translate(offX, offY);
+		ctx.scale(scale, scale);
+
+		// Стена
+		ctx.fillStyle = "#2a2a3e";
+		ctx.fillRect(0, 0, this.W, this.H);
+		// Окно
+		ctx.fillStyle = "#3a4a6a";
+		ctx.fillRect(230, 60, 100, 120);
+		// Пол
+		ctx.fillStyle = "#3e3e52";
+		ctx.fillRect(0, 480, this.W, this.H - 480);
+
+		// Флипчарт (справа)
+		ctx.fillStyle = "#d8d8d8";
+		ctx.fillRect(250, 300, 80, 100);
+		ctx.fillStyle = "#555";
+		ctx.fillRect(288, 400, 6, 80);
+
+		// Стол (слева, перед Вовой)
+		ctx.fillStyle = "#7a5a3a";
+		ctx.fillRect(20, 420, 180, 16);
+		ctx.fillStyle = "#5a4028";
+		ctx.fillRect(30, 436, 10, 60);
+		ctx.fillRect(180, 436, 10, 60);
+
+		// Вова — заглушка (сидит за столом, вид сбоку)
+		ctx.fillStyle = this.vovaPhoneUp ? "#4a8a4a" : "#3a6a3a";
+		ctx.fillRect(60, 360, 40, 64); // тело
+		ctx.fillStyle = "#e0b090";
+		ctx.fillRect(66, 330, 28, 30); // голова
+
+		// Телефон: над столом при удержании, под столом при отпускании
+		if (this.vovaPhoneUp) {
+			ctx.fillStyle = "#222";
+			ctx.fillRect(100, 400, 12, 20);
+		}
+
+		// Босс — заглушка (стоит у флипчарта)
+		ctx.fillStyle = "#6a4a6a";
+		ctx.fillRect(260, 340, 44, 80); // тело
+		ctx.fillStyle = "#e0b090";
+		ctx.fillRect(266, 310, 30, 30); // голова
+
+		ctx.restore();
+	},
+};

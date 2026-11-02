@@ -1,0 +1,34 @@
+/* Игра занимает весь вьюпорт, без скролла и зума */
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	overflow: hidden;
+	background: #1a1a2e;
+	touch-action: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+}
+
+#game {
+	position: fixed;
+	inset: 0;
+	touch-action: none;
+}
+
+#scene {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+	image-rendering: pixelated;
+}
+
+/* DOM-слой для UI поверх canvas */
+#ui {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
