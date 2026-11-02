@@ -32,3 +32,25 @@ html, body {
 	inset: 0;
 	pointer-events: none;
 }
+
+/* Плашки (мемы, реплики босса): всплывают и тают */
+@keyframes bubbleFloat {
+	0%   { opacity: 0; transform: translate(-50%, -20%); }
+	15%  { opacity: 1; transform: translate(-50%, -60%); }
+	80%  { opacity: 1; transform: translate(-50%, -90%); }
+	100% { opacity: 0; transform: translate(-50%, -110%); }
+}
+
+.bubble {
+	position: absolute;
+	max-width: 180px;
+	padding: 8px 12px;
+	background: #f0f0f0;
+	color: #222;
+	border-radius: 8px;
+	font-family: system-ui, sans-serif;
+	font-size: 13px;
+	line-height: 1.3;
+	pointer-events: none;
+	animation: bubbleFloat 1.5s ease-out forwards;
+}

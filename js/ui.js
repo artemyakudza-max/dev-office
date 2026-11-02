@@ -148,6 +148,39 @@ const UI = {
 		}
 	},
 
+	// Плашка над объектом сцены (координаты — логические, 360×640).
+	// Всплывает и тает за 1,5 с (анимация bubbleFloat)
+	bubble(text, lx, ly) {
+		const p = Scene.toScreen(lx, ly);
+		const el = document.createElement("div");
+		el.className = "bubble";
+		el.textContent = text;
+		el.style.left = p.x + "px";
+		el.style.top = p.y + "px";
+		this.root.appendChild(el);
+		setTimeout(() => el.remove(), 1500);
+	},
+
+	// Обучение: плашка первые 3 с или до первого касания (ТЗ §6.2)
+	showTutorial() {
+		this.tutorialEl = document.createElement("div");
+		this.tutorialEl.textContent = "Держи — Вова листает. Отпусти — босс смотрит";
+		this.tutorialEl.style.cssText = `
+			position: absolute; top: 18%; left: 50%; transform: translateX(-50%);
+			max-width: 280px; padding: 12px 16px;
+			background: #f0f0f0; color: #222; border-radius: 10px;
+			font-family: system-ui, sans-serif; font-size: 15px; text-align: center;
+		`;
+		this.root.appendChild(this.tutorialEl);
+	},
+
+	hideTutorial() {
+		if (this.tutorialEl) {
+			this.tutorialEl.remove();
+			this.tutorialEl = null;
+		}
+	},
+
 	// Небольшая плашка-уведомление внизу экрана
 	toast(message) {
 		const el = document.createElement("div");

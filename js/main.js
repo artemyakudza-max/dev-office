@@ -6,6 +6,10 @@
 		phoneUpTime: 0,   // сколько секунд телефон был наверху («свои дела»)
 		over: false,
 		paused: false,
+		memeTimer: 0,     // через сколько секунд показать следующую мем-плашку
+		lastMeme: -1,     // индекс последнего мема (не повторять подряд)
+		lastBossLine: -1, // индекс последней реплики босса (не повторять подряд)
+		tutorialDone: false,
 	};
 
 	Input.init();
@@ -13,6 +17,7 @@
 	Scene.init(document.getElementById("scene"));
 	Boss.reset();
 	Vova.reset();
+	UI.showTutorial();
 
 	let lastTime = performance.now();
 
@@ -41,6 +46,7 @@
 		Scene.vovaStunned = Vova.stunLeft > 0;
 
 		// Автомат босса
+		const prevBossState = Boss.state;
 		Boss.update(dt, Game.roundTime);
 		Scene.bossState = Boss.state;
 		Scene.bossTelegraph = Boss.isTelegraphing();
@@ -48,6 +54,36 @@
 		// Поимка: только когда босс смотрит на аудиторию
 		if (Boss.state === "WATCHING" && Vova.checkCaught(Boss.stateTime, Game.time)) {
 			caught();
+		}
+
+		// Обучение: плашка до первого касания или 3 с (ТЗ §6.2)
+		if (!Game.tutorialDone && (Input.pressed || Game.time >= 3)) {
+			Game.tutorialDone = true;
+			UI.hideTutorial();
+		}
+
+		// Реплика босса при переходе в «Смотрит», не подряд одна и та же (ТЗ §5.5)
+		if (Boss.state === "WATCHING" && prevBossState !== "WATCHING") {
+			let i;
+			do {
+				i = Math.floor(Math.random() * CONFIG.bossLines.length);
+			} while (i === Game.lastBossLine);
+			Game.lastBossLine = i;
+			UI.bubble(CONFIG.bossLines[i], 280, 300);
+		}
+
+		// Мем-плашки при листании, каждые 2–3 с (ТЗ §5.5)
+		if (Vova.phoneUp && Vova.stunLeft <= 0) {
+			Game.memeTimer -= dt;
+			if (Game.memeTimer <= 0) {
+				Game.memeTimer = 2 + Math.random();
+				let i;
+				do {
+					i = Math.floor(Math.random() * CONFIG.memes.length);
+				} while (i === Game.lastMeme);
+				Game.lastMeme = i;
+				UI.bubble(CONFIG.memes[i], 106, 390);
+			}
 		}
 
 		// HUD
@@ -97,6 +133,10 @@
 		Game.phoneUpTime = 0;
 		Game.over = false;
 		Game.paused = false;
+		Game.memeTimer = 0;
+		Game.lastMeme = -1;
+		Game.lastBossLine = -1;
+		Game.tutorialDone = true; // обучение показываем только в первом забеге
 		Boss.reset();
 		Vova.reset();
 		Input.reset();

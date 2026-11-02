@@ -34,6 +34,19 @@ const Scene = {
 		return Math.min(w / this.W, h / this.H);
 	},
 
+	// Преобразование логических координат в CSS-пиксели экрана
+	// (для позиционирования DOM-плашек над объектами сцены)
+	toScreen(lx, ly) {
+		const dpr = window.devicePixelRatio || 1;
+		const scale = this.getScale();
+		const offX = (this.canvas.width - this.W * scale) / 2;
+		const offY = (this.canvas.height - this.H * scale) / 2;
+		return {
+			x: (offX + lx * scale) / dpr,
+			y: (offY + ly * scale) / dpr,
+		};
+	},
+
 	draw() {
 		const ctx = this.ctx;
 		const dpr = window.devicePixelRatio || 1;
@@ -58,9 +71,10 @@ const Scene = {
 		ctx.fillStyle = "#3e3e52";
 		ctx.fillRect(0, 480, this.W, this.H - 480);
 
-		// Флипчарт (справа)
+		// Флипчарт (справа) с листами-«графиками», смена по номеру цикла босса
 		ctx.fillStyle = "#d8d8d8";
 		ctx.fillRect(250, 300, 80, 100);
+		this.drawChart(ctx, 258, 308, 64, 84, Boss.cycleCount % 4);
 		ctx.fillStyle = "#555";
 		ctx.fillRect(288, 400, 6, 80);
 		// Телеграф: маркер на полке флипчарта — сигнал скорого поворота
@@ -113,5 +127,23 @@ const Scene = {
 		}
 
 		ctx.restore();
+	},
+
+	// Пиксельный «график» на листе флипчарта — 4 варианта по номеру листа
+	drawChart(ctx, x, y, w, h, variant) {
+		ctx.fillStyle = "#ffffff";
+		ctx.fillRect(x, y, w, h);
+		ctx.fillStyle = "#3a6a9a";
+		const bars = 5;
+		const bw = Math.floor(w / bars) - 2;
+		for (let i = 0; i < bars; i++) {
+			// разные «данные» на каждом листе
+			const t = (variant * 7 + i * 3) % 10;
+			const bh = Math.max(4, Math.floor(h * (0.2 + t * 0.07)));
+			ctx.fillRect(x + 2 + i * (bw + 2), y + h - bh - 2, bw, bh);
+		}
+		// «линия тренда»
+		ctx.fillStyle = "#c05050";
+		ctx.fillRect(x + 2, y + 6 + variant * 4, w - 4, 3);
 	},
 };
