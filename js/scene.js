@@ -292,24 +292,27 @@ const Scene = {
 		this.drawChart(ctx, 256, 304, 68, 88, Boss.cycleCount % 4);
 	},
 
-	// Офисное кресло Вовы
+	// Офисное кресло Вовы (вид сбоку): спинка, сиденье, газлифт, крестовина с колёсами
 	drawChair(ctx) {
-		// Спинка
+		// Спинка — вертикальная плита за спиной
 		ctx.fillStyle = "#262a33";
-		ctx.fillRect(42, 344, 16, 74);
+		ctx.fillRect(44, 344, 16, 72);
 		ctx.fillStyle = "#2f5fd0"; // синий акцент бренда
-		ctx.fillRect(42, 344, 16, 6);
-		// Сиденье
+		ctx.fillRect(44, 344, 16, 6);
+		// Сиденье — горизонтальная плита, таз на её уровне
 		ctx.fillStyle = "#262a33";
-		ctx.fillRect(42, 412, 60, 12);
-		// Колесо-стойка
+		ctx.fillRect(44, 414, 62, 10);
+		ctx.fillStyle = "#31353f";
+		ctx.fillRect(44, 414, 62, 3);
+		// Газлифт
 		ctx.fillStyle = "#3a3f4a";
-		ctx.fillRect(66, 424, 8, 44);
+		ctx.fillRect(68, 424, 8, 44);
 		// Крестовина
-		ctx.fillRect(48, 468, 44, 6);
-		// Колёсики
-		ctx.fillRect(48, 474, 8, 6);
-		ctx.fillRect(84, 474, 8, 6);
+		ctx.fillRect(50, 468, 46, 6);
+		// Колёсики — касаются пола (y=478)
+		ctx.fillStyle = "#1c1f26";
+		ctx.fillRect(50, 472, 8, 6);
+		ctx.fillRect(88, 472, 8, 6);
 	},
 
 	// Вова: сидит за столом, вид сбоку, лицом вправо. Пиксель-арт кодом,
@@ -335,20 +338,25 @@ const Scene = {
 		const caught = this.vovaCaught;
 		const bx = 56, by = 326; // базовая точка (верх головы)
 
-		// --- Ноги: бёдра под столом, голени видны ниже столешницы ---
+		// --- Ноги: бёдра параллельны полу, колени под прямым углом, стопы на полу ---
+		// Бёдра на сиденье
 		ctx.fillStyle = P.jeans;
-		ctx.fillRect(bx + 10, by + 78, 44, 16); // бедро к столу
+		ctx.fillRect(bx + 2, by + 76, 38, 16);
+		// Бедро вперёд (вправо), чуть ниже столешницы
+		ctx.fillRect(bx + 4, by + 92, 42, 16);
+		// Голень дальняя (в тени)
 		ctx.fillStyle = P.jeansDark;
-		ctx.fillRect(bx + 34, by + 94, 12, 72); // голень дальняя
+		ctx.fillRect(bx + 30, by + 112, 10, 32);
+		// Голень ближняя — вертикально от колена
 		ctx.fillStyle = P.jeans;
-		ctx.fillRect(bx + 46, by + 92, 12, 74); // голень ближняя
-		// Кроссовки
+		ctx.fillRect(bx + 40, by + 108, 12, 36);
+		// Кроссовки на полу (y=478)
+		ctx.fillStyle = "#c8c8c8";
+		ctx.fillRect(bx + 28, by + 144, 14, 8); // дальняя
 		ctx.fillStyle = P.shoe;
-		ctx.fillRect(bx + 32, by + 164, 16, 8);
-		ctx.fillRect(bx + 44, by + 164, 16, 8);
+		ctx.fillRect(bx + 40, by + 144, 18, 8); // ближняя, носок вправо
 		ctx.fillStyle = "#b8b8b8";
-		ctx.fillRect(bx + 32, by + 170, 16, 3);
-		ctx.fillRect(bx + 44, by + 170, 16, 3);
+		ctx.fillRect(bx + 40, by + 150, 18, 2);
 
 		// --- Торс: худи (сидит, до сиденья кресла) ---
 		ctx.fillStyle = P.hoodie;
@@ -410,61 +418,65 @@ const Scene = {
 
 		// --- Руки и телефон ---
 		if (caught) {
+			// Пойман: рука вскинута, телефон замер у лица
 			ctx.fillStyle = P.hoodie;
-			ctx.fillRect(bx + 40, by + 30, 8, 16);
+			ctx.fillRect(bx + 30, by + 24, 8, 18);
 			ctx.fillStyle = P.skin;
-			ctx.fillRect(bx + 40, by + 26, 8, 6);
+			ctx.fillRect(bx + 28, by + 18, 8, 8);
 			ctx.fillStyle = P.phone;
-			ctx.fillRect(bx + 38, by + 8, 12, 20);
+			ctx.fillRect(bx + 26, by - 4, 12, 22);
 			ctx.fillStyle = P.screen;
-			ctx.fillRect(bx + 40, by + 10, 8, 14);
+			ctx.fillRect(bx + 28, by - 2, 8, 16);
 		} else if (this.vovaPhoneUp) {
+			// Листает: локоть на столе, телефон над столом, палец двигается
 			ctx.fillStyle = P.hoodie;
-			ctx.fillRect(bx + 40, by + 52, 10, 30);
-			ctx.fillRect(bx + 44, by + 74, 14, 8);
+			ctx.fillRect(bx + 32, by + 40, 10, 26); // плечо/локоть
+			ctx.fillRect(bx + 38, by + 62, 16, 10); // предплечье к телефону
 			ctx.fillStyle = P.skin;
-			ctx.fillRect(bx + 56, by + 72, 6, 8);
+			ctx.fillRect(bx + 52, by + 60, 8, 10); // кисть
 			ctx.fillStyle = P.phone;
-			ctx.fillRect(bx + 58, by + 56, 14, 22);
+			ctx.fillRect(bx + 56, by + 38, 16, 26);
 			ctx.fillStyle = P.screen;
-			ctx.fillRect(bx + 60, by + 58, 10, 16);
+			ctx.fillRect(bx + 58, by + 40, 12, 20);
 			ctx.fillStyle = P.skin;
-			ctx.fillRect(bx + 60 + frame * 4, by + 70, 4, 4);
+			ctx.fillRect(bx + 58 + frame * 4, by + 54, 4, 4); // большой палец
 		} else {
+			// Слушает: предплечье лежит на столе, кисть на столешнице
 			ctx.fillStyle = P.hoodie;
-			ctx.fillRect(bx + 40, by + 56, 10, 36);
+			ctx.fillRect(bx + 32, by + 40, 10, 44); // плечо вниз к столу
+			ctx.fillRect(bx + 36, by + 78, 20, 10); // предплечье на столе
 			ctx.fillStyle = P.skin;
-			ctx.fillRect(bx + 40, by + 90, 10, 6);
+			ctx.fillRect(bx + 52, by + 86, 12, 8); // кисть на столешнице (y=420)
 		}
 	},
 
-	// Стол (слева, перед Вовой) с бумагами и кофе.
-	// Рисуется ПОСЛЕ Вовы, чтобы столешница перекрывала бёдра
+	// Стол перед Вовой (справа от него) с бумагами и кофе.
+	// Рисуется ПОСЛЕ Вовы, чтобы столешница перекрывала колени
 	drawTable(ctx) {
 		ctx.fillStyle = "#7a5433";
-		ctx.fillRect(12, 420, 192, 16);
+		ctx.fillRect(100, 420, 104, 16);
 		ctx.fillStyle = "#96683c";
-		ctx.fillRect(12, 420, 192, 4);
+		ctx.fillRect(100, 420, 104, 4);
 		ctx.fillStyle = "#55381f";
-		ctx.fillRect(12, 432, 192, 4);
+		ctx.fillRect(100, 432, 104, 4);
 		ctx.fillStyle = "#4a3420";
-		ctx.fillRect(24, 436, 12, 60);
-		ctx.fillRect(180, 436, 12, 60);
+		ctx.fillRect(108, 436, 12, 60);
+		ctx.fillRect(188, 436, 12, 60);
 		// Бумаги
 		ctx.fillStyle = "#d8d4c8";
-		ctx.fillRect(36, 412, 28, 8);
-		ctx.fillRect(40, 408, 28, 6);
+		ctx.fillRect(124, 412, 28, 8);
+		ctx.fillRect(128, 408, 28, 6);
 		// Кружка кофе
 		ctx.fillStyle = "#d8d8d8";
-		ctx.fillRect(158, 404, 16, 16);
+		ctx.fillRect(168, 404, 16, 16);
 		ctx.fillStyle = "#3a2a1a";
-		ctx.fillRect(160, 406, 12, 4);
+		ctx.fillRect(170, 406, 12, 4);
 		ctx.fillStyle = "#d8d8d8";
-		ctx.fillRect(174, 408, 4, 8);
+		ctx.fillRect(184, 408, 4, 8);
 		// Пар
 		ctx.fillStyle = "rgba(220, 220, 220, 0.25)";
-		ctx.fillRect(164, 396, 3, 6);
-		ctx.fillRect(170, 392, 3, 8);
+		ctx.fillRect(174, 396, 3, 6);
+		ctx.fillRect(180, 392, 3, 8);
 	},
 
 	// Растение в углу справа (в agile-офисах ВТБ много зелени)
