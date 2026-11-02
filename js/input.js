@@ -23,4 +23,11 @@ const Input = {
 		// запрет контекстного меню по долгому тапу
 		window.addEventListener("contextmenu", (e) => e.preventDefault());
 	},
+
+	// Забыть текущее касание (используется при выходе из паузы,
+	// чтобы касание возврата не поднимало телефон)
+	reset() {
+		this.pressed = false;
+		this.pointerId = null;
+	},
 };

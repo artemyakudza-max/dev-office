@@ -1,8 +1,11 @@
 // Точка входа: игровой цикл с delta time (скорость не зависит от FPS)
 (function () {
 	const Game = {
-		time: 0,   // игровое время в секундах (паузы его замирают — в шаге 4+)
+		time: 0,          // игровое время в секундах (для таймеров автомата и Вовы)
+		roundTime: 0,     // сколько секунд идёт забег
+		phoneUpTime: 0,   // сколько секунд телефон был наверху («свои дела»)
 		over: false,
+		paused: false,
 	};
 
 	Input.init();
@@ -25,9 +28,12 @@
 	}
 
 	function update(dt) {
-		if (Game.over) return; // после провала сцена замирает
+		if (Game.over) return; // после финала сцена замирает
+		if (Game.paused) return; // пауза: таймеры замирают
 
 		Game.time += dt;
+		Game.roundTime += dt;
+		if (Vova.phoneUp) Game.phoneUpTime += dt;
 
 		// Телефон: удержание = наверху, отпускание = под столом
 		Vova.update(dt, Game.time);
@@ -41,6 +47,15 @@
 		// Поимка: только когда босс смотрит на аудиторию
 		if (Boss.state === "WATCHING" && Vova.checkCaught(Boss.stateTime, Game.time)) {
 			caught();
+		}
+
+		// HUD
+		const percent = Math.round(Game.phoneUpTime / CONFIG.scoring.roundSec * 100);
+		UI.updateHUD(Game.roundTime, percent);
+
+		// Победа: таймер забега дошёл до конца
+		if (Game.roundTime >= CONFIG.round.durationSec) {
+			win(percent);
 		}
 	}
 
@@ -57,6 +72,33 @@
 			UI.showFailStub();
 		}
 	}
+
+	function win(percent) {
+		Game.over = true;
+		UI.showWinStub(percent);
+	}
+
+	// Автоматическая пауза: ушёл с вкладки / свернул окно (ТЗ §6.5)
+	function pause() {
+		if (Game.over || Game.paused) return;
+		Game.paused = true;
+		Input.reset(); // касание возврата не должно поднимать телефон
+		UI.showPause();
+	}
+
+	function resume() {
+		Game.paused = false;
+		UI.hidePause();
+	}
+
+	document.addEventListener("visibilitychange", () => {
+		if (document.hidden) pause();
+	});
+	window.addEventListener("blur", pause);
+	// Возврат по касанию (слушаем на оверлее паузы через pointerdown на window)
+	window.addEventListener("pointerdown", () => {
+		if (Game.paused) resume();
+	});
 
 	requestAnimationFrame(tick);
 })();
