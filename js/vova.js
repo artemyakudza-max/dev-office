@@ -1,9 +1,8 @@
-// Состояние Вовы: телефон, оглушение после поимки (ТЗ §3.1, §6.4)
+// Состояние Вовы: телефон (ТЗ §3.1)
 const Vova = {
 	phoneUp: false,      // телефон логически наверху
 	phoneUpStart: 0,     // игровое время подъёма телефона
 	stateTime: 0,        // сколько секунд телефон в текущем состоянии (вверх/вниз)
-	stunLeft: 0,         // сколько секунд оглушения осталось
 	warnings: 0,         // замечания
 
 	reset() {
@@ -11,28 +10,11 @@ const Vova = {
 		this.phoneUpStart = 0;
 		// Телефон «внизу» изначально — первый тап срабатывает сразу
 		this.stateTime = CONFIG.phone.minDownSec;
-		this.stunLeft = 0;
 		this.warnings = 0;
 	},
 
 	// gameTime — общее игровое время в секундах (ведёт main.js)
 	update(dt, gameTime) {
-		if (this.stunLeft > 0) {
-			// Оглушение: ввод игнорируется, телефон внизу
-			this.stunLeft -= dt;
-			this.phoneUp = false;
-			if (this.stunLeft <= 0) {
-				// Палец всё ещё зажат — телефон «догоняет» сразу, без задержки
-				this.stateTime = CONFIG.phone.minDownSec;
-				if (Input.pressed) {
-					this.phoneUp = true;
-					this.phoneUpStart = gameTime;
-					this.stateTime = 0;
-				}
-			}
-			return;
-		}
-
 		// Минимальное время состояний (защита от спама двумя пальцами):
 		// наверху — не меньше minUpSec, внизу — не меньше minDownSec
 		this.stateTime += dt;

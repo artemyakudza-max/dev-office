@@ -34,19 +34,18 @@ const UI = {
 		this.percentLabel.textContent = `Свои дела: ${percent}%`;
 	},
 
-	// Красная вспышка + текст «ЗАМЕЧАНИЕ 1/2» на 1 секунду
-	showWarning(count) {
-		const el = document.createElement("div");
-		el.textContent = `ЗАМЕЧАНИЕ ${count}/${CONFIG.warnings.max}`;
-		el.style.cssText = `
-			position: absolute; inset: 0;
-			display: flex; align-items: center; justify-content: center;
-			background: rgba(200, 30, 30, 0.35);
-			color: #fff; font-size: 28px; font-weight: bold;
-			font-family: system-ui, sans-serif;
+	// Окно гнева босса: красный оверлей с гневной фразой на время заморозки
+	showAngry(count) {
+		const el = this._overlay();
+		el.style.background = "rgba(150, 20, 20, 0.88)";
+		const phrase = CONFIG.bossAngryLines[
+			Math.floor(Math.random() * CONFIG.bossAngryLines.length)
+		];
+		el.innerHTML = `
+			<p style="font-size: 24px; font-weight: bold; margin: 0 16px 10px; max-width: 300px;">${phrase}</p>
+			<p style="margin: 0; color: #ffc0c0; font-size: 16px;">ЗАМЕЧАНИЕ ${count}/${CONFIG.warnings.max}</p>
 		`;
-		this.root.appendChild(el);
-		setTimeout(() => el.remove(), 1000);
+		setTimeout(() => el.remove(), CONFIG.phone.angrySec * 1000);
 	},
 
 	// Оверлей на весь экран (используют пауза и финалы)
@@ -149,7 +148,7 @@ const UI = {
 	},
 
 	// Плашка над объектом сцены (координаты — логические, 360×640).
-	// Всплывает и тает за 1,5 с (анимация bubbleFloat)
+	// Всплывает и тает, длительность из конфига
 	bubble(text, lx, ly) {
 		const p = Scene.toScreen(lx, ly);
 		const el = document.createElement("div");
@@ -157,8 +156,9 @@ const UI = {
 		el.textContent = text;
 		el.style.left = p.x + "px";
 		el.style.top = p.y + "px";
+		el.style.animationDuration = CONFIG.ui.bubbleSec + "s";
 		this.root.appendChild(el);
-		setTimeout(() => el.remove(), 1500);
+		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
 	},
 
 	// Обучение: плашка первые 3 с или до первого касания (ТЗ §6.2)

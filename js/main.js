@@ -6,6 +6,7 @@
 		phoneUpTime: 0,   // сколько секунд телефон был наверху («свои дела»)
 		over: false,
 		paused: false,
+		frozen: 0,        // заморозка игры (окно гнева босса), в секундах
 		memeTimer: 0,     // через сколько секунд показать следующую мем-плашку
 		lastMeme: -1,     // индекс последнего мема (не повторять подряд)
 		lastBossLine: -1, // индекс последней реплики босса (не повторять подряд)
@@ -35,6 +36,11 @@
 	function update(dt) {
 		if (Game.over) return; // после финала сцена замирает
 		if (Game.paused) return; // пауза: таймеры замирают
+		if (Game.frozen > 0) {
+			// Окно гнева босса: игра стоит — штраф «-2,5 сек игрового времени»
+			Game.frozen -= dt;
+			return;
+		}
 
 		Game.time += dt;
 		Game.roundTime += dt;
@@ -43,7 +49,6 @@
 		// Телефон: удержание = наверху, отпускание = под столом
 		Vova.update(dt, Game.time);
 		Scene.vovaPhoneUp = Vova.phoneUp;
-		Scene.vovaStunned = Vova.stunLeft > 0;
 
 		// Автомат босса
 		const prevBossState = Boss.state;
@@ -98,20 +103,24 @@
 
 	function caught() {
 		Vova.warnings++;
-		Vova.stunLeft = CONFIG.phone.stunSec;
 		Vova.phoneUp = false;
-		UI.showWarning(Vova.warnings);
+		Vova.stateTime = 0;
 		// Вибрация только на Android, на iOS API нет — тихо пропускаем
 		if (navigator.vibrate) navigator.vibrate(80);
 
 		if (Vova.warnings >= CONFIG.warnings.max) {
+			// Провал: окно гнева, затем финальный экран
 			Game.over = true;
-			// Финальный экран через 1 с — игрок видит финальную позу (ТЗ §9.1)
+			UI.showAngry(Vova.warnings);
 			const second = Math.ceil(Game.roundTime);
 			setTimeout(() => {
 				if (navigator.vibrate) navigator.vibrate(200);
 				UI.showFinal("fail", { second }, restart);
-			}, 1000);
+			}, CONFIG.phone.angrySec * 1000);
+		} else {
+			// Окно гнева блокирует игру — штраф «-2,5 сек игрового времени»
+			UI.showAngry(Vova.warnings);
+			Game.frozen = CONFIG.phone.angrySec;
 		}
 	}
 
@@ -133,6 +142,7 @@
 		Game.phoneUpTime = 0;
 		Game.over = false;
 		Game.paused = false;
+		Game.frozen = 0;
 		Game.memeTimer = 0;
 		Game.lastMeme = -1;
 		Game.lastBossLine = -1;
