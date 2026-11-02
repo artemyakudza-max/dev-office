@@ -4,6 +4,7 @@ const Vova = {
 	phoneUpStart: 0,     // игровое время подъёма телефона
 	stateTime: 0,        // сколько секунд телефон в текущем состоянии (вверх/вниз)
 	warnings: 0,         // замечания
+	locked: false,       // после замечания телефон заблокирован до отворота босса
 
 	reset() {
 		this.phoneUp = false;
@@ -11,10 +12,16 @@ const Vova = {
 		// Телефон «внизу» изначально — первый тап срабатывает сразу
 		this.stateTime = CONFIG.phone.minDownSec;
 		this.warnings = 0;
+		this.locked = false;
 	},
 
 	// gameTime — общее игровое время в секундах (ведёт main.js)
 	update(dt, gameTime) {
+		// Блокировка после замечания: телефон спрятан, ввод игнорируется
+		if (this.locked) {
+			this.phoneUp = false;
+			return;
+		}
 		// Минимальное время состояний (защита от спама двумя пальцами):
 		// наверху — не меньше minUpSec, внизу — не меньше minDownSec
 		this.stateTime += dt;

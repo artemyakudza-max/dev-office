@@ -54,3 +54,85 @@ html, body {
 	pointer-events: none;
 	animation: bubbleFloat 1.8s ease-out forwards; /* длительность правится в config.js → ui.bubbleSec */
 }
+
+/* Финальная карточка результата — в духе игровых экранов */
+.final-card {
+	max-width: 300px;
+	margin: 0 16px;
+	padding: 26px 22px;
+	background: linear-gradient(180deg, #2c2c44, #1d1d30);
+	border: 2px solid #c9a227;
+	border-radius: 14px;
+	box-shadow: 0 0 30px rgba(201, 162, 39, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.final-header {
+	font-size: 13px;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	color: #9a9ab0;
+	margin: 0 0 14px;
+}
+
+.final-percent {
+	font-size: 54px;
+	font-weight: 800;
+	color: #ffffff;
+	line-height: 1;
+}
+
+.final-sub {
+	color: #b0b0c0;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+.final-divider {
+	height: 1px;
+	background: rgba(201, 162, 39, 0.4);
+	margin: 18px 0;
+}
+
+.final-label {
+	font-size: 11px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #9a9ab0;
+}
+
+.final-rank {
+	font-size: 22px;
+	font-weight: 700;
+	color: #f0c040;
+	margin-top: 4px;
+}
+
+.final-text {
+	font-size: 19px;
+	line-height: 1.45;
+	margin: 0;
+	color: #ffffff;
+}
+
+.final-btn {
+	display: block;
+	width: 100%;
+	padding: 13px;
+	margin-top: 12px;
+	border: none;
+	border-radius: 8px;
+	color: #fff;
+	font-size: 16px;
+	font-family: system-ui, sans-serif;
+}
+
+.final-btn-share {
+	background: #3a5a8a;
+	margin-top: 20px;
+}
+
+.final-btn-again {
+	background: #4a8a4a;
+	font-size: 18px;
+	font-weight: bold;
+}

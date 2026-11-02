@@ -77,8 +77,14 @@
 			UI.bubble(CONFIG.bossLines[i], 280, 300);
 		}
 
+		// Разблокировка телефона: босс отвернулся от аудитории
+		if (Vova.locked && Boss.state !== "WATCHING") {
+			Vova.locked = false;
+			Vova.stateTime = CONFIG.phone.minDownSec; // поднимается сразу, если палец зажат
+		}
+
 		// Мем-плашки при листании, каждые 2–3 с (ТЗ §5.5)
-		if (Vova.phoneUp && Vova.stunLeft <= 0) {
+		if (Vova.phoneUp) {
 			Game.memeTimer -= dt;
 			if (Game.memeTimer <= 0) {
 				Game.memeTimer = 2 + Math.random();
@@ -105,6 +111,7 @@
 		Vova.warnings++;
 		Vova.phoneUp = false;
 		Vova.stateTime = 0;
+		Vova.locked = true; // телефон спрятан, пока босс не отвернётся
 		// Вибрация только на Android, на iOS API нет — тихо пропускаем
 		if (navigator.vibrate) navigator.vibrate(80);
 

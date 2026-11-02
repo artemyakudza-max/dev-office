@@ -87,38 +87,44 @@ const UI = {
 		return CONFIG.ranks[CONFIG.ranks.length - 1].title;
 	},
 
-	// Финальный экран: один шаблон, три исхода (ТЗ §9)
+	// Финальный экран: один шаблон-карточка, три исхода (ТЗ §9)
 	// kind: "win" | "fail" | "easter"
 	showFinal(kind, data, onRestart) {
-		let text = "";
-		let sub = "";
+		let body = "";
 		let shareText = "";
 
 		if (kind === "win") {
-			text = `Вова дожил до конца совещания. ${this.rankFor(data.percent)}. ${data.percent}% рабочего времени занимался своими делами`;
-			sub = `Замечаний: ${data.warnings}`;
+			body = `
+				<div class="final-header">${CONFIG.winHeader}</div>
+				<div class="final-percent">${data.percent}%</div>
+				<div class="final-sub">${CONFIG.winStat}</div>
+				<div class="final-divider"></div>
+				<div class="final-label">${CONFIG.rankLabel}</div>
+				<div class="final-rank">«${this.rankFor(data.percent)}»</div>
+				<div class="final-sub" style="margin-top: 10px;">Замечаний: ${data.warnings}</div>
+			`;
 			shareText = CONFIG.shareText.replace("{P}", data.percent);
 		} else if (kind === "fail") {
-			text = CONFIG.failText.replace("{N}", data.second);
+			body = `
+				<div class="final-header">Замечание №${CONFIG.warnings.max}</div>
+				<div class="final-text">${CONFIG.failText.replace("{N}", data.second)}</div>
+			`;
 			shareText = CONFIG.shareTextFail.replace("{N}", data.second);
 		} else {
 			// пасхалка: победа с 0% «своих дел»
-			text = CONFIG.easterText;
+			body = `
+				<div class="final-header">${CONFIG.winHeader}</div>
+				<div class="final-text">${CONFIG.easterText}</div>
+			`;
 			shareText = CONFIG.easterShareText;
 		}
 
 		const el = this._overlay();
 		el.innerHTML = `
-			<div style="max-width: 300px; padding: 24px; background: #26263a;
-				border-radius: 12px; margin: 0 16px;">
-				<p style="font-size: 20px; line-height: 1.4; margin: 0 0 8px;">${text}</p>
-				${sub ? `<p style="color: #9a9ab0; margin: 0 0 8px;">${sub}</p>` : ""}
-				<button id="share-btn" style="display: block; width: 100%; padding: 12px;
-					margin: 16px 0 0; border: none; border-radius: 8px;
-					background: #3a5a8a; color: #fff; font-size: 16px;">Поделиться</button>
-				<button id="again-btn" style="display: block; width: 100%; padding: 14px;
-					margin: 10px 0 0; border: none; border-radius: 8px;
-					background: #4a8a4a; color: #fff; font-size: 18px; font-weight: bold;">Ещё раз</button>
+			<div class="final-card">
+				${body}
+				<button id="share-btn" class="final-btn final-btn-share">Поделиться</button>
+				<button id="again-btn" class="final-btn final-btn-again">Ещё раз</button>
 			</div>
 		`;
 		el.querySelector("#share-btn").addEventListener("click", () => this.share(shareText));
