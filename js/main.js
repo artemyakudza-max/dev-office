@@ -70,13 +70,36 @@
 
 		if (Vova.warnings >= CONFIG.warnings.max) {
 			Game.over = true;
-			UI.showFailStub();
+			// Финальный экран через 1 с — игрок видит финальную позу (ТЗ §9.1)
+			const second = Math.ceil(Game.roundTime);
+			setTimeout(() => {
+				if (navigator.vibrate) navigator.vibrate(200);
+				UI.showFinal("fail", { second }, restart);
+			}, 1000);
 		}
 	}
 
 	function win(percent) {
 		Game.over = true;
-		UI.showWinStub(percent);
+		// Финальный экран через 1 с — игрок видит финальную позу (ТЗ §9.1)
+		setTimeout(() => {
+			if (navigator.vibrate) navigator.vibrate(200);
+			// Пасхалка: победа, ни разу не подняв телефон (ТЗ §3.8)
+			const kind = percent === 0 ? "easter" : "win";
+			UI.showFinal(kind, { percent, warnings: Vova.warnings }, restart);
+		}, 1000);
+	}
+
+	// Полный сброс состояния забега (ТЗ §10)
+	function restart() {
+		Game.time = 0;
+		Game.roundTime = 0;
+		Game.phoneUpTime = 0;
+		Game.over = false;
+		Game.paused = false;
+		Boss.reset();
+		Vova.reset();
+		Input.reset();
 	}
 
 	// Автоматическая пауза: ушёл с вкладки / свернул окно (ТЗ §6.5)

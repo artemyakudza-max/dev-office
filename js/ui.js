@@ -1,4 +1,4 @@
-// UI: DOM-слой поверх canvas — HUD, вспышка замечания, пауза, заглушки финалов
+// UI: DOM-слой поверх canvas — HUD, вспышка замечания, пауза, финальные экраны
 const UI = {
 	root: null,
 	timerBar: null,
@@ -46,10 +46,9 @@ const UI = {
 		setTimeout(() => el.remove(), 1000);
 	},
 
-	// Оверлей на весь экран с кнопкой «коснись» (используют пауза и финалы)
-	_overlay(html) {
+	// Оверлей на весь экран (используют пауза и финалы)
+	_overlay() {
 		const el = document.createElement("div");
-		el.innerHTML = html;
 		el.style.cssText = `
 			position: absolute; inset: 0;
 			display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -64,10 +63,11 @@ const UI = {
 
 	// Пауза: оверлей возврата
 	showPause() {
-		this.pauseEl = this._overlay(`
+		this.pauseEl = this._overlay();
+		this.pauseEl.innerHTML = `
 			<p style="font-size: 20px; margin: 0;">Совещание без тебя не ждёт.</p>
 			<p style="margin: 8px 0 0;">Коснись, чтобы вернуться</p>
-		`);
+		`;
 	},
 
 	hidePause() {
@@ -77,21 +77,84 @@ const UI = {
 		}
 	},
 
-	// Заглушка экрана провала (полный финальный экран — в шаге 6)
-	showFailStub() {
-		const el = this._overlay(`
-			<p style="font-size: 26px; font-weight: bold; margin: 0 0 16px;">Спалился!</p>
-			<p style="margin: 0 0 24px;">Коснись экрана, чтобы попробовать снова</p>
-		`);
-		el.addEventListener("pointerdown", () => location.reload());
+	// Звание по проценту (ТЗ §9.3)
+	rankFor(percent) {
+		for (const r of CONFIG.ranks) {
+			if (percent >= r.minPercent && percent <= r.maxPercent) return r.title;
+		}
+		return CONFIG.ranks[CONFIG.ranks.length - 1].title;
 	},
 
-	// Заглушка экрана победы (полный финальный экран — в шаге 6)
-	showWinStub(percent) {
-		const el = this._overlay(`
-			<p style="font-size: 26px; font-weight: bold; margin: 0 0 16px;">Дожил до конца совещания!</p>
-			<p style="margin: 0 0 24px;">Свои дела: ${percent}%. Коснись, чтобы сыграть ещё</p>
-		`);
-		el.addEventListener("pointerdown", () => location.reload());
+	// Финальный экран: один шаблон, три исхода (ТЗ §9)
+	// kind: "win" | "fail" | "easter"
+	showFinal(kind, data, onRestart) {
+		let text = "";
+		let sub = "";
+		let shareText = "";
+
+		if (kind === "win") {
+			text = `Вова дожил до конца совещания. ${this.rankFor(data.percent)}. ${data.percent}% рабочего времени занимался своими делами`;
+			sub = `Замечаний: ${data.warnings}`;
+			shareText = CONFIG.shareText.replace("{P}", data.percent);
+		} else if (kind === "fail") {
+			text = `Спалился на ${data.second} секунде`;
+			shareText = CONFIG.shareTextFail.replace("{N}", data.second);
+		} else {
+			// пасхалка: победа с 0% «своих дел»
+			text = "Вова не занялся ни одним своим делом. Босс подозрительно доволен";
+			shareText = "Вова не занялся ни одним своим делом на совещании. Босс подозрительно доволен";
+		}
+
+		const el = this._overlay();
+		el.innerHTML = `
+			<div style="max-width: 300px; padding: 24px; background: #26263a;
+				border-radius: 12px; margin: 0 16px;">
+				<p style="font-size: 20px; line-height: 1.4; margin: 0 0 8px;">${text}</p>
+				${sub ? `<p style="color: #9a9ab0; margin: 0 0 8px;">${sub}</p>` : ""}
+				<button id="share-btn" style="display: block; width: 100%; padding: 12px;
+					margin: 16px 0 0; border: none; border-radius: 8px;
+					background: #3a5a8a; color: #fff; font-size: 16px;">Поделиться</button>
+				<button id="again-btn" style="display: block; width: 100%; padding: 14px;
+					margin: 10px 0 0; border: none; border-radius: 8px;
+					background: #4a8a4a; color: #fff; font-size: 18px; font-weight: bold;">Ещё раз</button>
+			</div>
+		`;
+		el.querySelector("#share-btn").addEventListener("click", () => this.share(shareText));
+		el.querySelector("#again-btn").addEventListener("click", () => {
+			el.remove();
+			onRestart();
+		});
+	},
+
+	// Шеринг: системное меню на мобиле, буфер обмена на десктопе (ТЗ §9.2)
+	async share(text) {
+		const url = location.href;
+		if (navigator.share) {
+			try {
+				await navigator.share({ text, url });
+			} catch (e) {
+				// игрок отменил шеринг — не ошибка
+			}
+		} else {
+			try {
+				await navigator.clipboard.writeText(text + " " + url);
+				this.toast("Ссылка скопирована");
+			} catch (e) {
+				this.toast("Не удалось скопировать");
+			}
+		}
+	},
+
+	// Небольшая плашка-уведомление внизу экрана
+	toast(message) {
+		const el = document.createElement("div");
+		el.textContent = message;
+		el.style.cssText = `
+			position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+			padding: 10px 18px; background: #33334a; color: #fff;
+			border-radius: 8px; font-family: system-ui, sans-serif; font-size: 14px;
+		`;
+		this.root.appendChild(el);
+		setTimeout(() => el.remove(), 2000);
 	},
 };
