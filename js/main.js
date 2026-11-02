@@ -131,7 +131,7 @@
 			const second = Math.ceil(Game.roundTime);
 			setTimeout(() => {
 				if (navigator.vibrate) navigator.vibrate(200);
-				UI.showFinal("fail", { second }, restart);
+				UI.showFinal("fail", { second }, restart, goMenu);
 			}, CONFIG.phone.angrySec * 1000);
 		} else {
 			// Окно гнева блокирует игру — штраф «-2,5 сек игрового времени»
@@ -147,8 +147,15 @@
 			if (navigator.vibrate) navigator.vibrate(200);
 			// Пасхалка: победа, ни разу не подняв телефон (ТЗ §3.8)
 			const kind = percent === 0 ? "easter" : "win";
-			UI.showFinal(kind, { percent, warnings: Vova.warnings }, restart);
+			UI.showFinal(kind, { percent, warnings: Vova.warnings }, restart, goMenu);
 		}, 1000);
+	}
+
+	// Возврат на экран выбора персонажа
+	function goMenu() {
+		restart();
+		Game.screen = "select";
+		UI.showSelect(startGame);
 	}
 
 	// Полный сброс состояния забега (ТЗ §10)

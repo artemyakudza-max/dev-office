@@ -5,6 +5,7 @@ const Input = {
 
 	init() {
 		window.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return; // только левая кнопка мыши / тап
 			if (this.pointerId !== null) return; // мультитач: первый палец главный
 			this.pointerId = e.pointerId;
 			this.pressed = true;

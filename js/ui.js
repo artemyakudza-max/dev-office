@@ -80,53 +80,55 @@ const UI = {
 	},
 
 	// Экран выбора персонажа: отдельный экран с тёмным фоном (без игровой сцены).
-	// Масштабируется под весь экран; карточка Вовы запускает его мини-игру
+	// Пиксель-стилизация: шрифт Press Start 2P, рамки с «гравировкой».
+	// Выбор — только левой кнопкой мыши / тапом
 	showSelect(onStart) {
 		const el = this._overlay();
 		el.style.background = "#12141c";
 		el.innerHTML = `
 			<div style="width: 100%; height: 100%; box-sizing: border-box;
 				display: flex; flex-direction: column; align-items: center;
-				justify-content: center; padding: 5vh 5vw;">
-				<p style="font-size: 8vh; font-weight: 900; color: #fff; margin: 0;
-					font-family: system-ui, sans-serif; letter-spacing: 1px;">one <3 офис</p>
-				<p style="font-size: 3.2vh; font-weight: 700; letter-spacing: 3px;
-					text-transform: uppercase; color: #4a7ae0; margin: 1.5vh 0 0;
-					font-family: system-ui, sans-serif;">Выбор персонажа</p>
-				<p style="font-size: 2.2vh; color: #8a8a9a; margin: 0.8vh 0 4vh;
-					font-family: system-ui, sans-serif;">Кто ты сегодня в офисе?</p>
-				<div style="display: flex; gap: 2vw; width: 100%; max-width: 92vw;
+				justify-content: center; padding: 4vh 6vw;">
+				<p style="font-size: 5.4vh; color: #fff; margin: 0;
+					font-family: var(--pixel-font); text-shadow: 0.4vh 0.4vh 0 #2f5fd0;">one <3 офис</p>
+				<p style="font-size: 2.1vh; letter-spacing: 2px; color: #4a7ae0;
+					margin: 2vh 0 0; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
+				<p style="font-size: 1.7vh; color: #8a8a9a; margin: 1vh 0 3.5vh;
+					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
+				<div style="display: flex; gap: 1.6vw; width: 100%; max-width: 64vw;
 					flex: 1; min-height: 0;">
 					<div id="vova-card" style="flex: 1.3; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
-						border: 3px solid #2f5fd0; border-radius: 2.4vh; padding: 1.6vh;
-						display: flex; flex-direction: column; box-sizing: border-box;">
+						border: 3px solid #2f5fd0; border-radius: 1.8vh; padding: 1.2vh;
+						display: flex; flex-direction: column; box-sizing: border-box;
+						box-shadow: inset 0 0 0 3px #1d1d30, 0.6vh 0.6vh 0 rgba(0,0,0,0.4);">
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
-								border-radius: 1.6vh; image-rendering: pixelated; display: block;">
-						<p style="color: #fff; font-weight: bold; font-size: 3vh; margin: 1.4vh 0 0;
-							font-family: system-ui, sans-serif;">Вова</p>
-						<p style="color: #8a8a9a; font-size: 1.9vh; margin: 0.4vh 0 0;
-							font-family: system-ui, sans-serif;">Мемы под столом</p>
+								border-radius: 1.2vh; image-rendering: pixelated; display: block;">
+						<p style="color: #fff; font-size: 2vh; margin: 1.2vh 0 0;
+							font-family: var(--pixel-font);">ВОВА</p>
+						<p style="color: #8a8a9a; font-size: 1.5vh; margin: 0.6vh 0 0;
+							font-family: var(--body-font);">Успеть за 60 секунд</p>
 					</div>
 					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 2.4vh; padding: 1.6vh; display: flex; flex-direction: column;
+						border-radius: 1.8vh; padding: 1.2vh; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 8vh; margin: 0; font-family: system-ui, sans-serif;">?</p>
-						<p style="color: #3a3a4a; font-size: 1.9vh; margin: 1vh 0 0;
-							font-family: system-ui, sans-serif;">Скоро</p>
+						<p style="color: #3a3a4a; font-size: 5vh; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 1.4vh; margin: 1vh 0 0;
+							font-family: var(--body-font);">Скоро</p>
 					</div>
 					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 2.4vh; padding: 1.6vh; display: flex; flex-direction: column;
+						border-radius: 1.8vh; padding: 1.2vh; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 8vh; margin: 0; font-family: system-ui, sans-serif;">?</p>
-						<p style="color: #3a3a4a; font-size: 1.9vh; margin: 1vh 0 0;
-							font-family: system-ui, sans-serif;">Скоро</p>
+						<p style="color: #3a3a4a; font-size: 5vh; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 1.4vh; margin: 1vh 0 0;
+							font-family: var(--body-font);">Скоро</p>
 					</div>
 				</div>
 			</div>
 		`;
-		el.querySelector("#vova-card").addEventListener("pointerdown", () => {
+		el.querySelector("#vova-card").addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return; // только левая кнопка мыши / тап
 			el.remove();
 			onStart();
 		});
@@ -142,7 +144,7 @@ const UI = {
 
 	// Финальный экран: один шаблон-карточка, три исхода (ТЗ §9)
 	// kind: "win" | "fail" | "easter"
-	showFinal(kind, data, onRestart) {
+	showFinal(kind, data, onRestart, onMenu) {
 		let body = "";
 		let shareText = "";
 
@@ -178,12 +180,17 @@ const UI = {
 				${body}
 				<button id="share-btn" class="final-btn final-btn-share">Поделиться</button>
 				<button id="again-btn" class="final-btn final-btn-again">Ещё раз</button>
+				<button id="menu-btn" class="final-btn final-btn-menu">Главное меню</button>
 			</div>
 		`;
 		el.querySelector("#share-btn").addEventListener("click", () => this.share(shareText));
 		el.querySelector("#again-btn").addEventListener("click", () => {
 			el.remove();
 			onRestart();
+		});
+		el.querySelector("#menu-btn").addEventListener("click", () => {
+			el.remove();
+			onMenu();
 		});
 	},
 
@@ -220,15 +227,26 @@ const UI = {
 		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
 	},
 
-	// Обучение: плашка первые 3 с или до первого касания (ТЗ §6.2)
+	// Обучение: плашка первые 3 с или до первого касания (ТЗ §6.2).
+	// Пиксельный заголовок + читаемый текст, панель в стиле финальных карточек
 	showTutorial() {
 		this.tutorialEl = document.createElement("div");
-		this.tutorialEl.textContent = "Держи — Вова листает. Отпусти — босс смотрит";
 		this.tutorialEl.style.cssText = `
-			position: absolute; top: 18%; left: 50%; transform: translateX(-50%);
-			max-width: 280px; padding: 12px 16px;
-			background: #f0f0f0; color: #222; border-radius: 10px;
-			font-family: system-ui, sans-serif; font-size: 15px; text-align: center;
+			position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+			max-width: 320px; padding: 14px 18px;
+			background: linear-gradient(180deg, #2c2c44, #1d1d30);
+			border: 3px solid #c9a227; border-radius: 10px;
+			box-shadow: 0 0 20px rgba(201, 162, 39, 0.2);
+			text-align: center;
+		`;
+		this.tutorialEl.innerHTML = `
+			<p style="font-family: var(--pixel-font); font-size: 13px; color: #f0c040;
+				margin: 0 0 10px;">КАК ИГРАТЬ</p>
+			<p style="font-family: var(--body-font); font-size: 15px; line-height: 1.5;
+				color: #fff; margin: 0;">
+				<b>Держи</b> — Вова листает мемы.<br>
+				<b>Отпусти</b> — босс смотрит.
+			</p>
 		`;
 		this.root.appendChild(this.tutorialEl);
 	},

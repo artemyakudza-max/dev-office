@@ -1,3 +1,10 @@
+/* Пиксельный шрифт для заголовков и кнопок (кириллица поддерживается).
+   Длинные тексты — системным шрифтом для читаемости */
+:root {
+	--pixel-font: "Press Start 2P", monospace;
+	--body-font: system-ui, sans-serif;
+}
+
 /* Игра занимает весь вьюпорт, без скролла и зума */
 html, body {
 	margin: 0;
@@ -67,8 +74,9 @@ html, body {
 }
 
 .final-header {
-	font-size: 13px;
-	letter-spacing: 3px;
+	font-family: var(--pixel-font);
+	font-size: 11px;
+	letter-spacing: 1px;
 	text-transform: uppercase;
 	color: #9a9ab0;
 	margin: 0 0 14px;
@@ -94,8 +102,9 @@ html, body {
 }
 
 .final-label {
-	font-size: 11px;
-	letter-spacing: 2px;
+	font-family: var(--pixel-font);
+	font-size: 9px;
+	letter-spacing: 1px;
 	text-transform: uppercase;
 	color: #9a9ab0;
 }
@@ -135,4 +144,11 @@ html, body {
 	background: #4a8a4a;
 	font-size: 18px;
 	font-weight: bold;
+}
+
+.final-btn-menu {
+	background: #33334a;
+	font-size: 14px;
+	font-family: var(--pixel-font);
+	padding: 11px;
 }
