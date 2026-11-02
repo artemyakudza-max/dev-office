@@ -16,11 +16,43 @@ const Scene = {
 	bossState: "AT_FLIPCHART",
 	bossTelegraph: false, // маркер на полке — сигнал скорого поворота
 
+	// Загруженные спрайты (вариант B). Если файл не загрузился — null,
+	// и рисуется код-арт (фолбэк, игра не ломается)
+	sprites: { vova: null, boss: null, bg: null },
+
 	init(canvas) {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext("2d");
 		this.resize();
 		window.addEventListener("resize", () => this.resize());
+		this.loadSprites();
+	},
+
+	// Загрузка спрайтов из CONFIG.sprites. Ошибка загрузки = фолбэк на код-арт
+	loadSprites() {
+		const cfg = CONFIG.sprites;
+		if (!cfg || !cfg.useSprites) return;
+		const load = (src, key) => {
+			const img = new Image();
+			img.onload = () => { this.sprites[key] = img; };
+			img.onerror = () => { this.sprites[key] = null; };
+			img.src = src;
+		};
+		if (cfg.bg) load(cfg.bg, "bg");
+		if (cfg.vova && cfg.vova.sheet) load(cfg.vova.sheet, "vova");
+		if (cfg.boss && cfg.boss.sheet) load(cfg.boss.sheet, "boss");
+	},
+
+	// Рисует кадр frameIndex из спрайт-листа (кадры в ряд, ширина = frame.w)
+	// в прямоугольник pos/size на сцене. Возвращает true, если нарисовано
+	drawSpriteFrame(ctx, img, cfg, frameIndex) {
+		if (!img || !cfg) return false;
+		const fw = cfg.frame.w, fh = cfg.frame.h;
+		const sx = frameIndex * fw;
+		ctx.imageSmoothingEnabled = false;
+		ctx.drawImage(img, sx, 0, fw, fh,
+			cfg.pos.x, cfg.pos.y, cfg.size.w, cfg.size.h);
+		return true;
 	},
 
 	// Подгоняем canvas под вьюпорт с учётом плотности пикселей
@@ -78,11 +110,18 @@ const Scene = {
 		const y0 = -offY / scale;
 		const y1 = (this.canvas.height - offY) / scale;
 
-		this.drawRoom(ctx, x0, x1, y0, y1);
-		this.drawPoster(ctx);
-		this.drawClock(ctx);
-		this.drawWindow(ctx);
-		this.drawLamps(ctx);
+		// Фон-спрайт (вариант B): комната+окно+плакаты одним изображением.
+		// Если не загружен — код-арт комнаты по слоям (фолбэк)
+		if (this.sprites.bg) {
+			ctx.imageSmoothingEnabled = false;
+			ctx.drawImage(this.sprites.bg, x0, y0, x1 - x0, y1 - y0);
+		} else {
+			this.drawRoom(ctx, x0, x1, y0, y1);
+			this.drawPoster(ctx);
+			this.drawClock(ctx);
+			this.drawWindow(ctx);
+			this.drawLamps(ctx);
+		}
 		this.drawFlipchart(ctx);
 		this.drawChair(ctx);
 		this.drawVova(ctx);
@@ -334,9 +373,17 @@ const Scene = {
 		ctx.fillRect(88, 472, 8, 6);
 	},
 
-	// Вова: сидит за столом, вид сбоку, лицом вправо. Пиксель-арт кодом,
+	// Вова: сидит за столом, вид сбоку, лицом вправо.
+	// Спрайт (вариант B): 3 кадра — слушает / телефон / пойман.
+	// Если спрайт не загружен — пиксель-арт кодом (фолбэк),
 	// палитра от референса vova.png (светло-русые волосы, чёрный худи)
 	drawVova(ctx) {
+		// Кадр спрайта: 0 слушает, 1 телефон наверху, 2 пойман
+		if (this.sprites.vova) {
+			const fi = this.vovaCaught ? 2 : (this.vovaPhoneUp ? 1 : 0);
+			this.drawSpriteFrame(ctx, this.sprites.vova, CONFIG.sprites.vova, fi);
+			return;
+		}
 		const P = {
 			hair: "#b98d5a",
 			hairDark: "#8a6238",
@@ -469,10 +516,17 @@ const Scene = {
 		}
 	},
 
-	// Босс: стоит у флипчарта, лицом к игроку. Пиксель-арт кодом.
+	// Босс: стоит у флипчарта, лицом к игроку.
+	// Спрайт (вариант B): 4 кадра — флипчарт / поворот / смотрит / фальстарт.
+	// Если спрайт не загружен — пиксель-арт кодом (фолбэк).
 	// Силуэт «босса»: костюм, синий галстук (акцент ВТБ), лысый в очках.
-	// Состояния: у флипчарта (спиной, жестикулирует) / поворот / смотрит / фальстарт
 	drawBoss(ctx) {
+		// Кадр спрайта по состоянию автомата босса
+		if (this.sprites.boss) {
+			const map = { AT_FLIPCHART: 0, TURNING: 1, WATCHING: 2, FAKEOUT: 3 };
+			this.drawSpriteFrame(ctx, this.sprites.boss, CONFIG.sprites.boss, map[this.bossState] || 0);
+			return;
+		}
 		const P = {
 			suit: "#2a2e3a",
 			suitLight: "#343846",

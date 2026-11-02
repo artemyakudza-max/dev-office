@@ -7,12 +7,17 @@ const UI = {
 	init() {
 		this.root = document.getElementById("ui");
 
-		// HUD: полоска таймера внизу + процент в углу
+		// HUD: полоска таймера внизу + бейдж «Свои дела» в углу (пиксель-стиль)
 		const hud = document.createElement("div");
 		hud.style.cssText = "position: absolute; inset: 0;";
 		hud.innerHTML = `
-			<div id="percent" style="position: absolute; top: 10px; left: 10px;
-				color: #fff; font-family: system-ui, sans-serif; font-size: 16px;"></div>
+			<div id="percent" class="hud-badge">
+				<span class="hud-badge-icon">📱</span>
+				<span class="hud-badge-text">
+					<span class="hud-badge-label">Свои дела:</span>
+					<span class="hud-badge-value" id="percent-value">0%</span>
+				</span>
+			</div>
 			<div id="version" style="position: absolute; bottom: 14px; right: 10px;
 				color: #6a6a80; font-family: system-ui, sans-serif; font-size: 12px;"></div>
 			<div id="timerbar-bg" style="position: absolute; bottom: 0; left: 0; right: 0;
@@ -22,6 +27,7 @@ const UI = {
 		`;
 		this.root.appendChild(hud);
 		this.percentLabel = hud.querySelector("#percent");
+		this.percentValue = hud.querySelector("#percent-value");
 		this.timerBar = hud.querySelector("#timerbar");
 		hud.querySelector("#version").textContent = CONFIG.version;
 	},
@@ -31,7 +37,14 @@ const UI = {
 		const left = Math.max(0, CONFIG.round.durationSec - roundTime);
 		this.timerBar.style.width = (left / CONFIG.round.durationSec * 100) + "%";
 		this.timerBar.style.background = left < 10 ? "#c06040" : "#4a8a4a";
-		this.percentLabel.textContent = `Свои дела: ${percent}%`;
+		// Пульс бейджа только при изменении процента (не каждый кадр)
+		const text = `${percent}%`;
+		if (this.percentValue.textContent !== text) {
+			this.percentValue.textContent = text;
+			this.percentLabel.classList.remove("hud-pop");
+			void this.percentLabel.offsetWidth; // reflow — перезапуск анимации
+			this.percentLabel.classList.add("hud-pop");
+		}
 	},
 
 	// Окно гнева босса: красный оверлей с гневной фразой на время заморозки

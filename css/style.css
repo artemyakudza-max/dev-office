@@ -40,6 +40,67 @@ html, body {
 	pointer-events: none;
 }
 
+/* HUD-бейдж «Свои дела»: пиксель-панель с золотой рамкой в стиле финальных карточек */
+.hud-badge {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 12px 7px 9px;
+	background: linear-gradient(180deg, #2c2c44, #1d1d30);
+	border: 2px solid #c9a227;
+	border-radius: 8px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 0, 0, 0.35);
+	font-family: var(--pixel-font);
+	pointer-events: none;
+}
+
+.hud-badge-icon {
+	font-size: 16px;
+	line-height: 1;
+	/* лёгкое покачивание телефона — живость бейджа */
+	animation: hudIconBob 2.4s steps(2) infinite;
+}
+
+@keyframes hudIconBob {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-2px); }
+}
+
+.hud-badge-text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.hud-badge-label {
+	font-size: 7px;
+	letter-spacing: 1px;
+	color: #b0b0c0;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.hud-badge-value {
+	font-size: 13px;
+	color: #f0c040;
+	line-height: 1;
+	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Пульс значения при изменении процента */
+.hud-pop {
+	animation: hudPop 0.3s steps(3);
+}
+
+@keyframes hudPop {
+	0% { transform: scale(1); }
+	50% { transform: scale(1.25); color: #ffd966; }
+	100% { transform: scale(1); }
+}
+
 /* Плашки (мемы, реплики босса): всплывают и тают */
 @keyframes bubbleFloat {
 	0%   { opacity: 0; transform: translate(-50%, -20%); }
