@@ -6,8 +6,9 @@ const Scene = {
 	canvas: null,
 	ctx: null,
 
-	// Состояние Вовы для отрисовки (меняет main.js)
+	// Состояния для отрисовки (меняет main.js)
 	vovaPhoneUp: false,
+	bossState: "AT_FLIPCHART",
 
 	init(canvas) {
 		this.canvas = canvas;
@@ -80,11 +81,22 @@ const Scene = {
 			ctx.fillRect(100, 400, 12, 20);
 		}
 
-		// Босс — заглушка (стоит у флипчарта)
-		ctx.fillStyle = "#6a4a6a";
+		// Босс — заглушка. Цвет и поза зависят от состояния автомата:
+		// у флипчарта — боком (тусклый), поворот — промежуточный, смотрит — лицом (яркий)
+		const bossColors = {
+			AT_FLIPCHART: "#6a4a6a",
+			TURNING: "#8a5a8a",
+			WATCHING: "#c060c0",
+		};
+		ctx.fillStyle = bossColors[this.bossState] || "#6a4a6a";
 		ctx.fillRect(260, 340, 44, 80); // тело
 		ctx.fillStyle = "#e0b090";
-		ctx.fillRect(266, 310, 30, 30); // голова
+		// Голова: у флипчарта смотрит на флипчарт (смещена вправо), иначе — на игрока
+		if (this.bossState === "AT_FLIPCHART") {
+			ctx.fillRect(274, 310, 30, 30);
+		} else {
+			ctx.fillRect(266, 310, 30, 30);
+		}
 
 		ctx.restore();
 	},

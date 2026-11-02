@@ -2,6 +2,7 @@
 (function () {
 	Input.init();
 	Scene.init(document.getElementById("scene"));
+	Boss.reset();
 
 	let lastTime = performance.now();
 
@@ -17,8 +18,12 @@
 	}
 
 	function update(dt) {
-		// Шаг 1: удержание = телефон наверху, отпускание = под столом
+		// Удержание = телефон наверху, отпускание = под столом
 		Scene.vovaPhoneUp = Input.pressed;
+
+		// Автомат босса
+		Boss.update(dt);
+		Scene.bossState = Boss.state;
 	}
 
 	requestAnimationFrame(tick);
