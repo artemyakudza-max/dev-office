@@ -106,7 +106,7 @@ const UI = {
 			shareText = CONFIG.shareText.replace("{P}", data.percent);
 		} else if (kind === "fail") {
 			body = `
-				<div class="final-header">Замечание №${CONFIG.warnings.max}</div>
+				<div class="final-header">Замечаний: ${CONFIG.warnings.max}</div>
 				<div class="final-text">${CONFIG.failText.replace("{N}", data.second)}</div>
 			`;
 			shareText = CONFIG.shareTextFail.replace("{N}", data.second);
