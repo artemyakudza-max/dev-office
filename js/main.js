@@ -6,6 +6,7 @@
 		phoneUpTime: 0,   // сколько секунд телефон был наверху («свои дела»)
 		over: false,
 		paused: false,
+		screen: "select", // select | playing
 		frozen: 0,        // заморозка игры (окно гнева босса), в секундах
 		memeTimer: 0,     // через сколько секунд показать следующую мем-плашку
 		lastMeme: -1,     // индекс последнего мема (не повторять подряд)
@@ -18,7 +19,8 @@
 	Scene.init(document.getElementById("scene"));
 	Boss.reset();
 	Vova.reset();
-	UI.showTutorial();
+	// Экран выбора персонажа (ТЗ §1.3)
+	UI.showSelect(startGame);
 
 	let lastTime = performance.now();
 
@@ -34,6 +36,7 @@
 	}
 
 	function update(dt) {
+		if (Game.screen !== "playing") return; // экран выбора: сцена живёт фоном
 		if (Game.over) return; // после финала сцена замирает
 		if (Game.paused) return; // пауза: таймеры замирают
 		if (Game.frozen > 0) {
@@ -159,6 +162,14 @@
 		Boss.reset();
 		Vova.reset();
 		Input.reset();
+	}
+
+	// Старт забега после выбора персонажа
+	function startGame() {
+		Game.tutorialDone = false;
+		restart();
+		Game.screen = "playing";
+		UI.showTutorial();
 	}
 
 	// Автоматическая пауза: ушёл с вкладки / свернул окно (ТЗ §6.5)

@@ -79,6 +79,46 @@ const UI = {
 		}
 	},
 
+	// Экран выбора персонажа (ТЗ §1.3): карточка Вовы + заблокированные слоты «???»
+	showSelect(onStart) {
+		const el = this._overlay();
+		el.style.background = "rgba(16, 18, 26, 0.97)";
+		el.innerHTML = `
+			<div style="max-width: 340px; width: 100%; padding: 0 16px;">
+				<p style="font-size: 22px; font-weight: 800; letter-spacing: 2px;
+					text-transform: uppercase; color: #fff; margin: 0 0 4px;">Выбери персонажа</p>
+				<p style="font-size: 13px; color: #8a8a9a; margin: 0 0 20px;">Кто сегодня выживет на совещании?</p>
+				<div style="display: flex; gap: 12px; justify-content: center;">
+					<div id="vova-card" style="flex: 1; max-width: 130px; cursor: pointer;
+						background: linear-gradient(180deg, #2c2c44, #1d1d30);
+						border: 2px solid #2f5fd0; border-radius: 12px; padding: 10px;
+						text-align: center;">
+						<img src="assets/characters/vova.png" alt="Вова"
+							style="width: 100%; border-radius: 8px; image-rendering: pixelated; display: block;">
+						<p style="color: #fff; font-weight: bold; margin: 8px 0 0; font-family: system-ui, sans-serif;">Вова</p>
+						<p style="color: #8a8a9a; font-size: 11px; margin: 2px 0 0; font-family: system-ui, sans-serif;">Мемы под столом</p>
+					</div>
+					<div style="flex: 1; max-width: 130px; background: #1a1a26;
+						border: 2px dashed #3a3a4a; border-radius: 12px; padding: 10px;
+						text-align: center; display: flex; flex-direction: column; justify-content: center;">
+						<p style="color: #4a4a5a; font-size: 40px; margin: 0; font-family: system-ui, sans-serif;">???</p>
+						<p style="color: #4a4a5a; font-size: 11px; margin: 8px 0 0; font-family: system-ui, sans-serif;">Скоро</p>
+					</div>
+					<div style="flex: 1; max-width: 130px; background: #1a1a26;
+						border: 2px dashed #3a3a4a; border-radius: 12px; padding: 10px;
+						text-align: center; display: flex; flex-direction: column; justify-content: center;">
+						<p style="color: #4a4a5a; font-size: 40px; margin: 0; font-family: system-ui, sans-serif;">???</p>
+						<p style="color: #4a4a5a; font-size: 11px; margin: 8px 0 0; font-family: system-ui, sans-serif;">Скоро</p>
+					</div>
+				</div>
+			</div>
+		`;
+		el.querySelector("#vova-card").addEventListener("pointerdown", () => {
+			el.remove();
+			onStart();
+		});
+	},
+
 	// Звание по проценту (ТЗ §9.3)
 	rankFor(percent) {
 		for (const r of CONFIG.ranks) {
