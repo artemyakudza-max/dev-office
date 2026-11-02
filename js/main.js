@@ -41,8 +41,9 @@
 		Scene.vovaStunned = Vova.stunLeft > 0;
 
 		// Автомат босса
-		Boss.update(dt);
+		Boss.update(dt, Game.roundTime);
 		Scene.bossState = Boss.state;
+		Scene.bossTelegraph = Boss.isTelegraphing();
 
 		// Поимка: только когда босс смотрит на аудиторию
 		if (Boss.state === "WATCHING" && Vova.checkCaught(Boss.stateTime, Game.time)) {

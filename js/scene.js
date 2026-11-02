@@ -10,6 +10,7 @@ const Scene = {
 	vovaPhoneUp: false,
 	vovaStunned: false,
 	bossState: "AT_FLIPCHART",
+	bossTelegraph: false, // маркер на полке — сигнал скорого поворота
 
 	init(canvas) {
 		this.canvas = canvas;
@@ -62,6 +63,11 @@ const Scene = {
 		ctx.fillRect(250, 300, 80, 100);
 		ctx.fillStyle = "#555";
 		ctx.fillRect(288, 400, 6, 80);
+		// Телеграф: маркер на полке флипчарта — сигнал скорого поворота
+		if (this.bossTelegraph) {
+			ctx.fillStyle = "#d04040";
+			ctx.fillRect(246, 396, 10, 6);
+		}
 
 		// Стол (слева, перед Вовой)
 		ctx.fillStyle = "#7a5a3a";
@@ -91,13 +97,17 @@ const Scene = {
 			AT_FLIPCHART: "#6a4a6a",
 			TURNING: "#8a5a8a",
 			WATCHING: "#c060c0",
+			FAKEOUT: "#c060c0",
 		};
 		ctx.fillStyle = bossColors[this.bossState] || "#6a4a6a";
 		ctx.fillRect(260, 340, 44, 80); // тело
 		ctx.fillStyle = "#e0b090";
-		// Голова: у флипчарта смотрит на флипчарт (смещена вправо), иначе — на игрока
+		// Голова: у флипчарта — к флипчарту (вправо), в фальстарте — к окну (влево-вверх),
+		// в остальных состояниях — на игрока
 		if (this.bossState === "AT_FLIPCHART") {
 			ctx.fillRect(274, 310, 30, 30);
+		} else if (this.bossState === "FAKEOUT") {
+			ctx.fillRect(258, 302, 30, 30);
 		} else {
 			ctx.fillRect(266, 310, 30, 30);
 		}
