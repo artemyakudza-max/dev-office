@@ -13,6 +13,8 @@ const UI = {
 		hud.innerHTML = `
 			<div id="percent" style="position: absolute; top: 10px; left: 10px;
 				color: #fff; font-family: system-ui, sans-serif; font-size: 16px;"></div>
+			<div id="version" style="position: absolute; top: 10px; right: 10px;
+				color: #6a6a80; font-family: system-ui, sans-serif; font-size: 12px;"></div>
 			<div id="timerbar-bg" style="position: absolute; bottom: 0; left: 0; right: 0;
 				height: 8px; background: rgba(255,255,255,0.15);">
 				<div id="timerbar" style="height: 100%; width: 100%; background: #4a8a4a;"></div>
@@ -21,6 +23,7 @@ const UI = {
 		this.root.appendChild(hud);
 		this.percentLabel = hud.querySelector("#percent");
 		this.timerBar = hud.querySelector("#timerbar");
+		hud.querySelector("#version").textContent = CONFIG.version;
 	},
 
 	// Обновление HUD каждый кадр
@@ -101,8 +104,8 @@ const UI = {
 			shareText = CONFIG.shareTextFail.replace("{N}", data.second);
 		} else {
 			// пасхалка: победа с 0% «своих дел»
-			text = "Вова не занялся ни одним своим делом. Босс подозрительно доволен";
-			shareText = "Вова не занялся ни одним своим делом на совещании. Босс подозрительно доволен";
+			text = CONFIG.easterText;
+			shareText = CONFIG.easterShareText;
 		}
 
 		const el = this._overlay();
