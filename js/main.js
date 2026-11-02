@@ -199,11 +199,12 @@
 		if (Game.screen !== "playing" || Game.over || Game.paused) return;
 		Game.paused = true;
 		Input.reset(); // касание возврата не должно поднимать телефон
-		UI.showPause();
+		UI.showPause(resume);
 	}
 
 	function resume() {
 		Game.paused = false;
+		Input.reset(); // клик по кнопке паузы не должен поднимать телефон
 		UI.hidePause();
 		UI.hidePauseMenu();
 	}
@@ -212,10 +213,8 @@
 		if (document.hidden) pause();
 	});
 	window.addEventListener("blur", pause);
-	// Возврат по касанию (слушаем на оверлее паузы через pointerdown на window)
-	window.addEventListener("pointerdown", () => {
-		if (Game.paused) resume();
-	});
+	// Возврат по касанию — слушаем на самом оверлее паузы (showPause),
+	// а не на window: иначе клики по кнопкам меню паузы снимали паузу
 
 	requestAnimationFrame(tick);
 })();

@@ -63,13 +63,17 @@ const UI = {
 		return el;
 	},
 
-	// Пауза: оверлей возврата
-	showPause() {
+	// Пауза: оверлей возврата. Возврат — касание самого оверлея
+	showPause(onResume) {
 		this.pauseEl = this._overlay();
 		this.pauseEl.innerHTML = `
 			<p style="font-size: 20px; margin: 0;">Все ждут только тебя, Вова.</p>
 			<p style="margin: 8px 0 0;">Коснись, чтобы вернуться</p>
 		`;
+		this.pauseEl.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			onResume();
+		});
 	},
 
 	hidePause() {
@@ -80,58 +84,72 @@ const UI = {
 	},
 
 	// Экран выбора персонажа: отдельный экран с тёмным фоном (без игровой сцены).
-	// Пиксель-стилизация: шрифт Press Start 2P, рамки с «гравировкой».
+	// Макет фиксированный 360×640 и целиком масштабируется под вьюпорт —
+	// пропорции одинаковы на любом устройстве (как игровая сцена).
 	// Выбор — только левой кнопкой мыши / тапом
 	showSelect(onStart) {
 		const el = this._overlay();
 		el.style.background = "#12141c";
 		el.innerHTML = `
-			<div style="width: 100%; height: 100%; box-sizing: border-box;
+			<div id="select-scale" style="position: absolute; left: 50%; top: 50%;
+				width: 360px; height: 640px; transform-origin: center;
 				display: flex; flex-direction: column; align-items: center;
-				justify-content: center; padding: 3vh 6vw;">
-				<p style="font-size: 3.8vh; color: #fff; margin: 0;
-					font-family: var(--pixel-font); text-shadow: 0.3vh 0.3vh 0 #2f5fd0;">one <3 офис</p>
-				<p style="font-size: 1.5vh; letter-spacing: 2px; color: #4a7ae0;
-					margin: 1.6vh 0 0; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
-				<p style="font-size: 1.3vh; color: #8a8a9a; margin: 0.8vh 0 2.6vh;
+				justify-content: center;">
+				<p style="font-size: 30px; color: #fff; margin: 0;
+					font-family: var(--pixel-font); text-shadow: 3px 3px 0 #2f5fd0;">one <3 офис</p>
+				<div style="width: 120px; height: 4px; background: #2f5fd0; margin: 14px 0;"></div>
+				<p style="font-size: 11px; letter-spacing: 2px; color: #4a7ae0;
+					margin: 0; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
+				<p style="font-size: 13px; color: #8a8a9a; margin: 8px 0 30px;
 					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
-				<div style="display: flex; gap: 1.4vw; width: 100%; max-width: 46vw;
-					flex: 1; min-height: 0;">
-					<div id="vova-card" style="flex: 1.3; cursor: pointer;
+				<div style="display: flex; gap: 14px; align-items: stretch; height: 300px;">
+					<div id="vova-card" style="width: 132px; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
-						border: 3px solid #2f5fd0; border-radius: 1.4vh; padding: 1vh;
+						border: 3px solid #2f5fd0; border-radius: 10px; padding: 8px;
 						display: flex; flex-direction: column; box-sizing: border-box;
-						box-shadow: inset 0 0 0 3px #1d1d30, 0 0 2.4vh rgba(47, 95, 208, 0.45);">
+						box-shadow: inset 0 0 0 3px #1d1d30, 0 0 18px rgba(47, 95, 208, 0.45);">
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
-								border-radius: 1vh; image-rendering: pixelated; display: block;">
-						<p style="color: #fff; font-size: 1.5vh; margin: 1vh 0 0;
+								border-radius: 6px; image-rendering: pixelated; display: block;">
+						<p style="color: #fff; font-size: 11px; margin: 10px 0 0;
 							font-family: var(--pixel-font);">ВОВА</p>
-						<p style="color: #8a8a9a; font-size: 1.2vh; margin: 0.5vh 0 0;
+						<p style="color: #8a8a9a; font-size: 10px; margin: 4px 0 0;
 							font-family: var(--body-font);">Успеть за 60 секунд</p>
 					</div>
-					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 1.4vh; padding: 1vh; display: flex; flex-direction: column;
+					<div style="width: 96px; background: #1a1a26; border: 3px dashed #3a3a4a;
+						border-radius: 10px; padding: 8px; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 3.6vh; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 1.1vh; margin: 0.8vh 0 0;
+						<p style="color: #3a3a4a; font-size: 26px; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 10px; margin: 8px 0 0;
 							font-family: var(--body-font);">Скоро</p>
 					</div>
-					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 1.4vh; padding: 1vh; display: flex; flex-direction: column;
+					<div style="width: 96px; background: #1a1a26; border: 3px dashed #3a3a4a;
+						border-radius: 10px; padding: 8px; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 3.6vh; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 1.1vh; margin: 0.8vh 0 0;
+						<p style="color: #3a3a4a; font-size: 26px; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 10px; margin: 8px 0 0;
 							font-family: var(--body-font);">Скоро</p>
 					</div>
 				</div>
 			</div>
 		`;
+		this.fitSelect(el);
+		this._selectFitHandler = () => this.fitSelect(el);
+		window.addEventListener("resize", this._selectFitHandler);
 		el.querySelector("#vova-card").addEventListener("pointerdown", (e) => {
 			if (e.button !== 0) return; // только левая кнопка мыши / тап
+			window.removeEventListener("resize", this._selectFitHandler);
 			el.remove();
 			onStart();
 		});
+	},
+
+	// Масштаб макета 360×640 под вьюпорт с сохранением пропорций
+	fitSelect(el) {
+		const inner = el.querySelector("#select-scale");
+		if (!inner) return;
+		const s = Math.min(window.innerWidth / 380, window.innerHeight / 660);
+		inner.style.transform = `translate(-50%, -50%) scale(${s})`;
 	},
 
 	// Звание по проценту (ТЗ §9.3)
