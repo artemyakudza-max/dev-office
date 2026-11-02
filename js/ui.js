@@ -99,7 +99,7 @@ const UI = {
 					<p style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
 						font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">one <3 офис</p>
 					<p style="font-size: 8px; letter-spacing: 3px; color: #8a92a8;
-						margin: 14px 0 0; font-family: var(--pixel-font);">СИМУЛЯТОР ОФИСНОГО ВЫЖИВАНИЯ</p>
+						margin: 14px 0 0; font-family: var(--pixel-font);">ПРОВЕРЬ, НА ЧТО ТЫ СПОСОБЕН</p>
 				</div>
 				<!-- Пиксельные звёзды-разделитель -->
 				<div style="display: flex; gap: 10px; margin: 26px 0 0;">
@@ -113,11 +113,10 @@ const UI = {
 				<p style="font-size: 12px; color: #8a8a9a; margin: 0 0 14px;
 					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
 				<div style="display: flex; gap: 12px; align-items: stretch; height: 264px;">
-					<div id="vova-card" style="width: 128px; cursor: pointer;
+					<div id="vova-card" class="vova-card-glow" style="width: 128px; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
 						border: 3px solid #f0c040; border-radius: 0; padding: 7px;
-						display: flex; flex-direction: column; box-sizing: border-box;
-						box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);">
+						display: flex; flex-direction: column; box-sizing: border-box;">
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
 								image-rendering: pixelated; display: block;">
@@ -141,9 +140,9 @@ const UI = {
 							font-family: var(--body-font);">Скоро</p>
 					</div>
 				</div>
-				<!-- Футер-строка в духе аркадных экранов -->
+				<!-- Футер-строка в духе аркадных экранов: текущая версия игры -->
 				<p style="font-size: 7px; letter-spacing: 2px; color: #4a4a5a;
-					margin: auto 0 18px; font-family: var(--pixel-font);">ТАПНИ ПО КАРТОЧКЕ • ОСТОРОЖНО, БОСС</p>
+					margin: auto 0 18px; font-family: var(--pixel-font);">${CONFIG.version}</p>
 			</div>
 			<!-- CRT-эффекты поверх: сканлайны и виньетка -->
 			<div class="crt-scanlines"></div>
@@ -292,17 +291,23 @@ const UI = {
 		}
 	},
 
-	// Меню паузы: продолжить или выйти в главное меню
+	// Меню паузы: продолжить или выйти в главное меню.
+	// Клик в любую точку экрана (кроме кнопок) тоже продолжает игру
 	showPauseMenu(onResume, onMenu) {
 		this.pauseMenuEl = this._overlay();
 		this.pauseMenuEl.innerHTML = `
 			<div class="final-card" style="max-width: 260px;">
-				<p style="font-family: var(--pixel-font); font-size: 16px; color: #f0c040;
+				<p style="font-family: var(--pixel-font); font-size: 14px; color: #f0c040;
 					margin: 0 0 18px; text-align: center;">ПАУЗА</p>
 				<button id="resume-btn" class="final-btn final-btn-again">Продолжить</button>
 				<button id="pmenu-btn" class="final-btn final-btn-menu">Главное меню</button>
 			</div>
 		`;
+		this.pauseMenuEl.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			if (e.target.closest("button")) return; // кнопки обрабатывают себя сами
+			onResume();
+		});
 		this.pauseMenuEl.querySelector("#resume-btn").addEventListener("click", onResume);
 		this.pauseMenuEl.querySelector("#pmenu-btn").addEventListener("click", () => {
 			this.pauseMenuEl.remove();

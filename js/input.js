@@ -6,6 +6,9 @@ const Input = {
 	init() {
 		window.addEventListener("pointerdown", (e) => {
 			if (e.button !== 0) return; // только левая кнопка мыши / тап
+			// Касания UI-элементов (кнопки, оверлеи) не управляют телефоном —
+			// только касания игрового поля (canvas)
+			if (e.target.tagName !== "CANVAS") return;
 			if (this.pointerId !== null) return; // мультитач: первый палец главный
 			this.pointerId = e.pointerId;
 			this.pressed = true;

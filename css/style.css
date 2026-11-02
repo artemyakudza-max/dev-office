@@ -78,8 +78,18 @@ html, body {
 	font-size: 11px;
 	letter-spacing: 1px;
 	text-transform: uppercase;
-	color: #9a9ab0;
+	color: #f0c040;
 	margin: 0 0 14px;
+}
+
+/* Пульсирующее свечение рамки выбранного персонажа */
+@keyframes selectGlow {
+	0%, 100% { box-shadow: inset 0 0 0 3px #1d1d30, 0 0 10px rgba(240, 192, 64, 0.35), 4px 4px 0 rgba(0, 0, 0, 0.5); }
+	50% { box-shadow: inset 0 0 0 3px #1d1d30, 0 0 26px rgba(240, 192, 64, 0.7), 4px 4px 0 rgba(0, 0, 0, 0.5); }
+}
+
+.vova-card-glow {
+	animation: selectGlow 1.2s ease-in-out infinite;
 }
 
 .final-percent {
@@ -150,12 +160,10 @@ html, body {
 
 .final-btn-again {
 	background: #4a8a4a;
-	font-size: 13px;
 }
 
 .final-btn-menu {
 	background: #33334a;
-	font-size: 10px;
 }
 
 /* CRT-эффекты для главного меню: сканлайны и виньетка по краям */
