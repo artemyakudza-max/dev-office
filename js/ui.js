@@ -13,7 +13,7 @@ const UI = {
 		hud.innerHTML = `
 			<div id="percent" style="position: absolute; top: 10px; left: 10px;
 				color: #fff; font-family: system-ui, sans-serif; font-size: 16px;"></div>
-			<div id="version" style="position: absolute; top: 10px; right: 10px;
+			<div id="version" style="position: absolute; bottom: 14px; right: 10px;
 				color: #6a6a80; font-family: system-ui, sans-serif; font-size: 12px;"></div>
 			<div id="timerbar-bg" style="position: absolute; bottom: 0; left: 0; right: 0;
 				height: 8px; background: rgba(255,255,255,0.15);">
@@ -88,40 +88,40 @@ const UI = {
 		el.innerHTML = `
 			<div style="width: 100%; height: 100%; box-sizing: border-box;
 				display: flex; flex-direction: column; align-items: center;
-				justify-content: center; padding: 4vh 6vw;">
-				<p style="font-size: 5.4vh; color: #fff; margin: 0;
-					font-family: var(--pixel-font); text-shadow: 0.4vh 0.4vh 0 #2f5fd0;">one <3 офис</p>
-				<p style="font-size: 2.1vh; letter-spacing: 2px; color: #4a7ae0;
-					margin: 2vh 0 0; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
-				<p style="font-size: 1.7vh; color: #8a8a9a; margin: 1vh 0 3.5vh;
+				justify-content: center; padding: 3vh 6vw;">
+				<p style="font-size: 3.8vh; color: #fff; margin: 0;
+					font-family: var(--pixel-font); text-shadow: 0.3vh 0.3vh 0 #2f5fd0;">one <3 офис</p>
+				<p style="font-size: 1.5vh; letter-spacing: 2px; color: #4a7ae0;
+					margin: 1.6vh 0 0; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
+				<p style="font-size: 1.3vh; color: #8a8a9a; margin: 0.8vh 0 2.6vh;
 					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
-				<div style="display: flex; gap: 1.6vw; width: 100%; max-width: 64vw;
+				<div style="display: flex; gap: 1.4vw; width: 100%; max-width: 46vw;
 					flex: 1; min-height: 0;">
 					<div id="vova-card" style="flex: 1.3; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
-						border: 3px solid #2f5fd0; border-radius: 1.8vh; padding: 1.2vh;
+						border: 3px solid #2f5fd0; border-radius: 1.4vh; padding: 1vh;
 						display: flex; flex-direction: column; box-sizing: border-box;
-						box-shadow: inset 0 0 0 3px #1d1d30, 0.6vh 0.6vh 0 rgba(0,0,0,0.4);">
+						box-shadow: inset 0 0 0 3px #1d1d30, 0 0 2.4vh rgba(47, 95, 208, 0.45);">
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
-								border-radius: 1.2vh; image-rendering: pixelated; display: block;">
-						<p style="color: #fff; font-size: 2vh; margin: 1.2vh 0 0;
+								border-radius: 1vh; image-rendering: pixelated; display: block;">
+						<p style="color: #fff; font-size: 1.5vh; margin: 1vh 0 0;
 							font-family: var(--pixel-font);">ВОВА</p>
-						<p style="color: #8a8a9a; font-size: 1.5vh; margin: 0.6vh 0 0;
+						<p style="color: #8a8a9a; font-size: 1.2vh; margin: 0.5vh 0 0;
 							font-family: var(--body-font);">Успеть за 60 секунд</p>
 					</div>
 					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 1.8vh; padding: 1.2vh; display: flex; flex-direction: column;
+						border-radius: 1.4vh; padding: 1vh; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 5vh; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 1.4vh; margin: 1vh 0 0;
+						<p style="color: #3a3a4a; font-size: 3.6vh; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 1.1vh; margin: 0.8vh 0 0;
 							font-family: var(--body-font);">Скоро</p>
 					</div>
 					<div style="flex: 1; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 1.8vh; padding: 1.2vh; display: flex; flex-direction: column;
+						border-radius: 1.4vh; padding: 1vh; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 5vh; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 1.4vh; margin: 1vh 0 0;
+						<p style="color: #3a3a4a; font-size: 3.6vh; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 1.1vh; margin: 0.8vh 0 0;
 							font-family: var(--body-font);">Скоро</p>
 					</div>
 				</div>
@@ -227,22 +227,80 @@ const UI = {
 		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
 	},
 
+	// Кнопка паузы (две палки) в правом верхнем углу во время игры
+	showPauseBtn(onPause) {
+		if (this.pauseBtn) return;
+		this.pauseBtn = document.createElement("div");
+		this.pauseBtn.innerHTML = `
+			<div style="width: 6px; height: 18px; background: #fff;"></div>
+			<div style="width: 6px; height: 18px; background: #fff;"></div>
+		`;
+		this.pauseBtn.style.cssText = `
+			position: absolute; top: 10px; right: 10px;
+			display: flex; gap: 5px; align-items: center; justify-content: center;
+			width: 40px; height: 40px; box-sizing: border-box;
+			background: rgba(38, 38, 58, 0.85);
+			border: 2px solid #4a5064; border-radius: 6px;
+			cursor: pointer; pointer-events: auto; z-index: 10;
+		`;
+		this.pauseBtn.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			e.stopPropagation();
+			onPause();
+		});
+		this.root.appendChild(this.pauseBtn);
+	},
+
+	hidePauseBtn() {
+		if (this.pauseBtn) {
+			this.pauseBtn.remove();
+			this.pauseBtn = null;
+		}
+	},
+
+	// Меню паузы: продолжить или выйти в главное меню
+	showPauseMenu(onResume, onMenu) {
+		this.pauseMenuEl = this._overlay();
+		this.pauseMenuEl.innerHTML = `
+			<div class="final-card" style="max-width: 260px;">
+				<p style="font-family: var(--pixel-font); font-size: 16px; color: #f0c040;
+					margin: 0 0 18px; text-align: center;">ПАУЗА</p>
+				<button id="resume-btn" class="final-btn final-btn-again">Продолжить</button>
+				<button id="pmenu-btn" class="final-btn final-btn-menu">Главное меню</button>
+			</div>
+		`;
+		this.pauseMenuEl.querySelector("#resume-btn").addEventListener("click", onResume);
+		this.pauseMenuEl.querySelector("#pmenu-btn").addEventListener("click", () => {
+			this.pauseMenuEl.remove();
+			this.pauseMenuEl = null;
+			onMenu();
+		});
+	},
+
+	hidePauseMenu() {
+		if (this.pauseMenuEl) {
+			this.pauseMenuEl.remove();
+			this.pauseMenuEl = null;
+		}
+	},
+
 	// Обучение: плашка первые 3 с или до первого касания (ТЗ §6.2).
 	// Пиксельный заголовок + читаемый текст, панель в стиле финальных карточек
 	showTutorial() {
 		this.tutorialEl = document.createElement("div");
 		this.tutorialEl.style.cssText = `
-			position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
-			max-width: 320px; padding: 14px 18px;
+			position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+			max-width: 360px; padding: 18px 22px;
 			background: linear-gradient(180deg, #2c2c44, #1d1d30);
 			border: 3px solid #c9a227; border-radius: 10px;
 			box-shadow: 0 0 20px rgba(201, 162, 39, 0.2);
 			text-align: center;
+			animation: tutorialPulse 1s ease-in-out infinite;
 		`;
 		this.tutorialEl.innerHTML = `
-			<p style="font-family: var(--pixel-font); font-size: 13px; color: #f0c040;
-				margin: 0 0 10px;">КАК ИГРАТЬ</p>
-			<p style="font-family: var(--body-font); font-size: 15px; line-height: 1.5;
+			<p style="font-family: var(--pixel-font); font-size: 16px; color: #f0c040;
+				margin: 0 0 12px;">КАК ИГРАТЬ</p>
+			<p style="font-family: var(--body-font); font-size: 17px; line-height: 1.5;
 				color: #fff; margin: 0;">
 				<b>Держи</b> — Вова листает мемы.<br>
 				<b>Отпусти</b> — босс смотрит.

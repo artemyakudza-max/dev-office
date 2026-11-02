@@ -154,6 +154,7 @@
 	// Возврат на экран выбора персонажа
 	function goMenu() {
 		restart();
+		UI.hidePauseBtn();
 		Game.screen = "select";
 		UI.showSelect(startGame);
 	}
@@ -177,10 +178,19 @@
 
 	// Старт забега после выбора персонажа
 	function startGame() {
-		Game.tutorialDone = false;
 		restart();
+		Game.tutorialDone = false; // после restart: обучение показываем заново
 		Game.screen = "playing";
 		UI.showTutorial();
+		UI.showPauseBtn(pauseByButton);
+	}
+
+	// Пауза по кнопке: меню с продолжением и выходом в меню
+	function pauseByButton() {
+		if (Game.over || Game.paused) return;
+		Game.paused = true;
+		Input.reset();
+		UI.showPauseMenu(resume, goMenu);
 	}
 
 	// Автоматическая пауза: ушёл с вкладки / свернул окно (ТЗ §6.5).
@@ -195,6 +205,7 @@
 	function resume() {
 		Game.paused = false;
 		UI.hidePause();
+		UI.hidePauseMenu();
 	}
 
 	document.addEventListener("visibilitychange", () => {
