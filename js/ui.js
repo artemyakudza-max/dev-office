@@ -67,7 +67,7 @@ const UI = {
 	showPause() {
 		this.pauseEl = this._overlay();
 		this.pauseEl.innerHTML = `
-			<p style="font-size: 20px; margin: 0;">Совещание без тебя не ждёт.</p>
+			<p style="font-size: 20px; margin: 0;">Все ждут только тебя, Вова.</p>
 			<p style="margin: 8px 0 0;">Коснись, чтобы вернуться</p>
 		`;
 	},
