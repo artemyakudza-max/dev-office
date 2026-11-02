@@ -158,6 +158,20 @@ html, body {
 	font-size: 10px;
 }
 
+/* CRT-эффекты для главного меню: сканлайны и виньетка по краям */
+.crt-scanlines {
+	position: absolute; inset: 0; pointer-events: none;
+	background: repeating-linear-gradient(0deg,
+		rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px,
+		transparent 1px, transparent 4px);
+}
+
+.crt-vignette {
+	position: absolute; inset: 0; pointer-events: none;
+	background: radial-gradient(ellipse at center,
+		transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
 /* Пульс обучающей плашки — привлекает внимание, пока игрок не нажмёт */
 @keyframes tutorialPulse {
 	0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 20px rgba(201, 162, 39, 0.2); }

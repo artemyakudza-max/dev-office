@@ -93,45 +93,61 @@ const UI = {
 		el.innerHTML = `
 			<div id="select-scale" style="position: absolute; left: 50%; top: 50%;
 				width: 360px; height: 640px; transform-origin: center;
-				display: flex; flex-direction: column; align-items: center;
-				justify-content: center;">
-				<p style="font-size: 30px; color: #fff; margin: 0;
-					font-family: var(--pixel-font); text-shadow: 3px 3px 0 #2f5fd0;">one <3 офис</p>
-				<div style="width: 120px; height: 4px; background: #2f5fd0; margin: 14px 0;"></div>
-				<p style="font-size: 11px; letter-spacing: 2px; color: #4a7ae0;
-					margin: 0; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
-				<p style="font-size: 13px; color: #8a8a9a; margin: 8px 0 30px;
+				display: flex; flex-direction: column; align-items: center;">
+				<!-- Зона логотипа: визуально отделена, доминирует -->
+				<div style="margin-top: 64px; text-align: center;">
+					<p style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
+						font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">one <3 офис</p>
+					<p style="font-size: 8px; letter-spacing: 3px; color: #8a92a8;
+						margin: 14px 0 0; font-family: var(--pixel-font);">СИМУЛЯТОР ОФИСНОГО ВЫЖИВАНИЯ</p>
+				</div>
+				<!-- Пиксельные звёзды-разделитель -->
+				<div style="display: flex; gap: 10px; margin: 26px 0 0;">
+					<div style="width: 4px; height: 4px; background: #3a4150;"></div>
+					<div style="width: 4px; height: 4px; background: #f0c040;"></div>
+					<div style="width: 4px; height: 4px; background: #3a4150;"></div>
+				</div>
+				<!-- Зона выбора: метка придвинута к карточкам -->
+				<p style="font-size: 10px; letter-spacing: 2px; color: #4a7ae0;
+					margin: 34px 0 6px; font-family: var(--pixel-font);">ВЫБОР ПЕРСОНАЖА</p>
+				<p style="font-size: 12px; color: #8a8a9a; margin: 0 0 14px;
 					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
-				<div style="display: flex; gap: 14px; align-items: stretch; height: 300px;">
-					<div id="vova-card" style="width: 132px; cursor: pointer;
+				<div style="display: flex; gap: 12px; align-items: stretch; height: 264px;">
+					<div id="vova-card" style="width: 128px; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
-						border: 3px solid #2f5fd0; border-radius: 10px; padding: 8px;
+						border: 3px solid #f0c040; border-radius: 0; padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;
-						box-shadow: inset 0 0 0 3px #1d1d30, 0 0 18px rgba(47, 95, 208, 0.45);">
+						box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);">
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
-								border-radius: 6px; image-rendering: pixelated; display: block;">
-						<p style="color: #fff; font-size: 11px; margin: 10px 0 0;
+								image-rendering: pixelated; display: block;">
+						<p style="color: #f0c040; font-size: 10px; margin: 9px 0 0;
 							font-family: var(--pixel-font);">ВОВА</p>
 						<p style="color: #8a8a9a; font-size: 10px; margin: 4px 0 0;
 							font-family: var(--body-font);">Успеть за 60 секунд</p>
 					</div>
-					<div style="width: 96px; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 10px; padding: 8px; display: flex; flex-direction: column;
+					<div style="width: 92px; background: #1a1a26; border: 3px dashed #3a3a4a;
+						border-radius: 0; padding: 7px; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 26px; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 10px; margin: 8px 0 0;
+						<p style="color: #3a3a4a; font-size: 22px; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 9px; margin: 8px 0 0;
 							font-family: var(--body-font);">Скоро</p>
 					</div>
-					<div style="width: 96px; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 10px; padding: 8px; display: flex; flex-direction: column;
+					<div style="width: 92px; background: #1a1a26; border: 3px dashed #3a3a4a;
+						border-radius: 0; padding: 7px; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 26px; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 10px; margin: 8px 0 0;
+						<p style="color: #3a3a4a; font-size: 22px; margin: 0; font-family: var(--pixel-font);">?</p>
+						<p style="color: #3a3a4a; font-size: 9px; margin: 8px 0 0;
 							font-family: var(--body-font);">Скоро</p>
 					</div>
 				</div>
+				<!-- Футер-строка в духе аркадных экранов -->
+				<p style="font-size: 7px; letter-spacing: 2px; color: #4a4a5a;
+					margin: auto 0 18px; font-family: var(--pixel-font);">ТАПНИ ПО КАРТОЧКЕ • ОСТОРОЖНО, БОСС</p>
 			</div>
+			<!-- CRT-эффекты поверх: сканлайны и виньетка -->
+			<div class="crt-scanlines"></div>
+			<div class="crt-vignette"></div>
 		`;
 		this.fitSelect(el);
 		this._selectFitHandler = () => this.fitSelect(el);
