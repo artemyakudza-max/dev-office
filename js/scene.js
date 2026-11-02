@@ -53,41 +53,17 @@ const Scene = {
 		const offX = (this.canvas.width - this.W * scale) / 2;
 		const offY = (this.canvas.height - this.H * scale) / 2;
 
-		// Фон вне сцены и стена переговорной
-		ctx.fillStyle = "#101018";
+		// Фон вне сцены
+		ctx.fillStyle = "#12151c";
 		ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 		ctx.save();
 		ctx.translate(offX, offY);
 		ctx.scale(scale, scale);
 
-		// Стена
-		ctx.fillStyle = "#2a2a3e";
-		ctx.fillRect(0, 0, this.W, this.H);
-		// Окно
-		ctx.fillStyle = "#3a4a6a";
-		ctx.fillRect(230, 60, 100, 120);
-		// Пол
-		ctx.fillStyle = "#3e3e52";
-		ctx.fillRect(0, 480, this.W, this.H - 480);
-
-		// Флипчарт (справа) с листами-«графиками», смена по номеру цикла босса
-		ctx.fillStyle = "#d8d8d8";
-		ctx.fillRect(250, 300, 80, 100);
-		this.drawChart(ctx, 258, 308, 64, 84, Boss.cycleCount % 4);
-		ctx.fillStyle = "#555";
-		ctx.fillRect(288, 400, 6, 80);
-		// Телеграф: маркер на полке флипчарта — сигнал скорого поворота
-		if (this.bossTelegraph) {
-			ctx.fillStyle = "#d04040";
-			ctx.fillRect(246, 396, 10, 6);
-		}
-
-		// Стол (слева, перед Вовой)
-		ctx.fillStyle = "#7a5a3a";
-		ctx.fillRect(20, 420, 180, 16);
-		ctx.fillStyle = "#5a4028";
-		ctx.fillRect(30, 436, 10, 60);
-		ctx.fillRect(180, 436, 10, 60);
+		this.drawRoom(ctx);
+		this.drawWindow(ctx);
+		this.drawFlipchart(ctx);
+		this.drawTable(ctx);
 
 		// Вова — заглушка (сидит за столом, вид сбоку). Листает — ярче, слушает — тусклее
 		ctx.fillStyle = this.vovaPhoneUp ? "#4a8a4a" : "#3a6a3a";
@@ -123,6 +99,113 @@ const Scene = {
 		}
 
 		ctx.restore();
+	},
+
+	// Комната: стена, плинтус, пол — палитра тёмного референса
+	drawRoom(ctx) {
+		// Стена
+		ctx.fillStyle = "#262b33";
+		ctx.fillRect(0, 0, this.W, 480);
+		// Панельные швы на стене
+		ctx.fillStyle = "#21252d";
+		for (let x = 0; x < this.W; x += 60) {
+			ctx.fillRect(x, 0, 4, 480);
+		}
+		// Тёмная полоса сверху (потолок в тени)
+		ctx.fillStyle = "#1c2028";
+		ctx.fillRect(0, 0, this.W, 24);
+		// Плинтус
+		ctx.fillStyle = "#3a3f4a";
+		ctx.fillRect(0, 468, this.W, 12);
+		// Пол — ковролин
+		ctx.fillStyle = "#1e222b";
+		ctx.fillRect(0, 480, this.W, this.H - 480);
+		// Швы плиток пола
+		ctx.fillStyle = "#181b22";
+		for (let y = 480; y < this.H; y += 32) {
+			ctx.fillRect(0, y, this.W, 4);
+		}
+	},
+
+	// Окно с ночным городом (в духе тёмного референса)
+	drawWindow(ctx) {
+		const x = 216, y = 64, w = 112, h = 136;
+		// Рама
+		ctx.fillStyle = "#3a3f4a";
+		ctx.fillRect(x - 8, y - 8, w + 16, h + 16);
+		// Ночное небо
+		ctx.fillStyle = "#10141d";
+		ctx.fillRect(x, y, w, h);
+		// Луна
+		ctx.fillStyle = "#d8d8c8";
+		ctx.fillRect(x + 76, y + 16, 16, 16);
+		ctx.fillStyle = "#10141d";
+		ctx.fillRect(x + 72, y + 12, 10, 10); // серп
+		// Силуэты домов
+		ctx.fillStyle = "#171b24";
+		ctx.fillRect(x + 4, y + 72, 28, 64);
+		ctx.fillRect(x + 40, y + 56, 24, 80);
+		ctx.fillRect(x + 72, y + 84, 32, 56);
+		// Горящие окна
+		ctx.fillStyle = "#d8b860";
+		ctx.fillRect(x + 10, y + 80, 4, 4);
+		ctx.fillRect(x + 22, y + 96, 4, 4);
+		ctx.fillRect(x + 46, y + 64, 4, 4);
+		ctx.fillRect(x + 54, y + 88, 4, 4);
+		ctx.fillRect(x + 80, y + 96, 4, 4);
+		// Перемычка рамы
+		ctx.fillStyle = "#3a3f4a";
+		ctx.fillRect(x + w / 2 - 2, y, 4, h);
+		ctx.fillRect(x, y + h / 2 - 2, w, 4);
+	},
+
+	// Флипчарт (справа) с листами-«графиками», смена по номеру цикла босса
+	drawFlipchart(ctx) {
+		// Ножки-тренога
+		ctx.fillStyle = "#3a3f4a";
+		ctx.fillRect(286, 400, 8, 84);
+		ctx.fillRect(262, 400, 8, 76);
+		ctx.fillRect(310, 400, 8, 76);
+		// Полка-держатель
+		ctx.fillStyle = "#4a505c";
+		ctx.fillRect(252, 396, 76, 8);
+		// Телеграф: маркер на полке — сигнал скорого поворота
+		if (this.bossTelegraph) {
+			ctx.fillStyle = "#d04040";
+			ctx.fillRect(256, 390, 12, 6);
+		}
+		// Доска
+		ctx.fillStyle = "#4a505c";
+		ctx.fillRect(248, 296, 84, 104);
+		ctx.fillStyle = "#e4e4e0";
+		ctx.fillRect(252, 300, 76, 96);
+		// Лист с графиком
+		this.drawChart(ctx, 256, 304, 68, 88, Boss.cycleCount % 4);
+	},
+
+	// Стол (слева, перед Вовой) с кружкой кофе
+	drawTable(ctx) {
+		// Столешница
+		ctx.fillStyle = "#6b4a2f";
+		ctx.fillRect(16, 420, 188, 16);
+		// Блик на столешнице
+		ctx.fillStyle = "#8a6238";
+		ctx.fillRect(16, 420, 188, 4);
+		// Торец
+		ctx.fillStyle = "#4a3420";
+		ctx.fillRect(16, 432, 188, 4);
+		// Ножки
+		ctx.fillStyle = "#4a3420";
+		ctx.fillRect(28, 436, 12, 60);
+		ctx.fillRect(180, 436, 12, 60);
+		// Кружка кофе
+		ctx.fillStyle = "#d8d8d8";
+		ctx.fillRect(160, 404, 16, 16);
+		ctx.fillStyle = "#3a2a1a";
+		ctx.fillRect(162, 406, 12, 4);
+		// Ручка кружки
+		ctx.fillStyle = "#d8d8d8";
+		ctx.fillRect(176, 408, 4, 8);
 	},
 
 	// Пиксельный «график» на листе флипчарта — 4 варианта по номеру листа
