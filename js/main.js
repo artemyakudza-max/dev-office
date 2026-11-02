@@ -70,8 +70,8 @@
 			caught();
 		}
 
-		// Обучение: плашка до первого касания или 3 с (ТЗ §6.2)
-		if (!Game.tutorialDone && (Input.pressed || Game.time >= 3)) {
+		// Обучение: плашка исчезает только после первого касания (решение автора)
+		if (!Game.tutorialDone && Input.pressed) {
 			Game.tutorialDone = true;
 			UI.hideTutorial();
 		}

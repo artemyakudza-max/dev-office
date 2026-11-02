@@ -96,7 +96,7 @@ const UI = {
 				display: flex; flex-direction: column; align-items: center;">
 				<!-- Зона логотипа: визуально отделена, доминирует -->
 				<div style="margin-top: 64px; text-align: center;">
-					<p style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
+					<p class="game-logo" style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
 						font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">one <3 офис</p>
 					<p style="font-size: 8px; letter-spacing: 3px; color: #8a92a8;
 						margin: 14px 0 0; font-family: var(--pixel-font);">ПРОВЕРЬ, НА ЧТО ТЫ СПОСОБЕН</p>
@@ -113,9 +113,9 @@ const UI = {
 				<p style="font-size: 12px; color: #8a8a9a; margin: 0 0 14px;
 					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
 				<div style="display: flex; gap: 12px; align-items: stretch; height: 264px;">
-					<div id="vova-card" class="vova-card-glow" style="width: 128px; cursor: pointer;
+					<div id="vova-card" class="vova-card" style="width: 128px; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
-						border: 3px solid #f0c040; border-radius: 0; padding: 7px;
+						padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;">
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
