@@ -270,6 +270,11 @@ const UI = {
 		el.style.top = p.y + "px";
 		el.style.animationDuration = CONFIG.ui.bubbleSec + "s";
 		this.root.appendChild(el);
+		// Плашка центрирована на точке — у края экрана половина улетает.
+		// Сдвигаем центр так, чтобы плашка оставалась на экране
+		const half = el.offsetWidth / 2, m = 8;
+		const cx = Math.min(Math.max(p.x, half + m), window.innerWidth - half - m);
+		if (cx !== p.x) el.style.left = cx + "px";
 		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
 	},
 

@@ -1,42 +1,75 @@
-# Превью сцены: фон + флипчарт + босс в игровых позициях (логика 360x640, масштаб x3)
-# Проверка подключения спрайта флипчарта без запуска игры
-param([int]$Frame = 0, [switch]$Telegraph)
+# Превью сцены в математике игры: фон cover-fit + anchorRect + персонажи.
+# Проверка позиций на разных экранах без запуска игры.
+# -Mode phone   — портретный телефон 390x844
+# -Mode desktop — десктоп 1280x720
+param([int]$Frame = 0, [string]$Mode = "phone")
 Add-Type -AssemblyName System.Drawing
 
-$S = 3; $W = 360 * $S; $H = 640 * $S
-$bmp = New-Object System.Drawing.Bitmap($W, $H)
+if ($Mode -eq "desktop") { $CW = 1280; $CH = 720 } else { $CW = 390; $CH = 844 }
+$W = 360.0; $H = 640.0
+
+$bmp = New-Object System.Drawing.Bitmap($CW, $CH)
 $g = [System.Drawing.Graphics]::FromImage($bmp)
 
-# Фон: растягивается на весь экран (как в scene.draw)
+# Логика сцены (как в scene.draw): letterbox 360x640, видимая область x0..x1/y0..y1
+$scale = [Math]::Min($CW / $W, $CH / $H)
+$offX = ($CW - $W * $scale) / 2
+$offY = ($CH - $H * $scale) / 2
+$x0 = -$offX / $scale; $x1 = ($CW - $offX) / $scale
+$y0 = -$offY / $scale; $y1 = ($CH - $offY) / $scale
+$vw = $x1 - $x0; $vh = $y1 - $y0
+
+# Фон cover-fit (как в scene.draw)
 $bg = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\bg_office.png").Path)
+$s = [Math]::Max($vw / $bg.Width, $vh / $bg.Height)
+$dw = $bg.Width * $s; $dh = $bg.Height * $s
+$dx = $x0 + ($vw - $dw) / 2; $dy = $y0 + ($vh - $dh) / 2
 $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
-$g.DrawImage($bg, 0, 0, $W, $H)
+$g.DrawImage($bg, [System.Drawing.RectangleF]::new(
+    ($offX + $dx * $scale), ($offY + $dy * $scale), $dw * $scale, $dh * $scale),
+    [System.Drawing.RectangleF]::new(0, 0, $bg.Width, $bg.Height), [System.Drawing.GraphicsUnit]::Pixel)
 $bg.Dispose()
 
-# Флипчарт: h = dh*hFrac, w = h*frame.w/frame.h, центр fx, низ fy (как drawFlipchart)
-$fc = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\flipchart.png").Path)
-$fh = 640 * 0.30 * $S
-$fw = $fh * (639.0 / 1042)
-$fx = 360 * 0.68 * $S - $fw / 2
-$fy = 640 * 0.845 * $S - $fh
-$srcW = 639; $srcH = 1042
-$g.DrawImage($fc, [System.Drawing.RectangleF]::new($fx, $fy, $fw, $fh),
-    [System.Drawing.RectangleF]::new($Frame * $srcW, 0, $srcW, $srcH),
-    [System.Drawing.GraphicsUnit]::Pixel)
-$fc.Dispose()
+# anchorRect: пересечение фона с видимой областью (как в scene.draw)
+$ax0 = [Math]::Max($dx, $x0); $ay0 = [Math]::Max($dy, $y0)
+$ax1 = [Math]::Min($dx + $dw, $x1); $ay1 = [Math]::Min($dy + $dh, $y1)
+$adw = $ax1 - $ax0; $adh = $ay1 - $ay0
 
-# Босс поверх: кадр 0 (у флипчарта), fx 0.62, fy 0.855, hFrac 0.26
+# Функция перевода логических координат в пиксели канваса
+function L2P([double]$lx, [double]$ly) {
+    return @{ X = $script:offX + $lx * $script:scale; Y = $script:offY + $ly * $scale }
+}
+
+# Флипчарт: hFrac 0.30, fx 0.68, fy 0.845 (из config.js)
+$fc = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\flipchart.png").Path)
+$fh = $adh * 0.30; $fw = $fh * (639.0 / 1042)
+$fcx = $ax0 + $adw * 0.68 - $fw / 2; $fcy = $ay0 + $adh * 0.845 - $fh
+$p = L2P $fcx $fcy
+$g.DrawImage($fc, [System.Drawing.RectangleF]::new($p.X, $p.Y, $fw * $scale, $fh * $scale),
+    [System.Drawing.RectangleF]::new($Frame * 639, 0, 639, 1042), [System.Drawing.GraphicsUnit]::Pixel)
+$fc.Dispose()
+Write-Host ("flipchart: logical x={0:F0}..{1:F0} (экран 0..{2:F0})" -f $fcx, ($fcx + $fw), $x1)
+
+# Босс: hFrac 0.26, fx 0.62, fy 0.855, кадр 0
 $boss = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\boss_states.png").Path)
-$bh = 640 * 0.26 * $S
-$bw = $bh * (256.0 / 573)
-$bx = 360 * 0.62 * $S - $bw / 2
-$by = 640 * 0.855 * $S - $bh
-$g.DrawImage($boss, [System.Drawing.RectangleF]::new($bx, $by, $bw, $bh),
+$bh = $adh * 0.26; $bw = $bh * (256.0 / 573)
+$bx = $ax0 + $adw * 0.62 - $bw / 2; $by = $ay0 + $adh * 0.855 - $bh
+$p = L2P $bx $by
+$g.DrawImage($boss, [System.Drawing.RectangleF]::new($p.X, $p.Y, $bw * $scale, $bh * $scale),
     [System.Drawing.RectangleF]::new(0, 0, 256, 573), [System.Drawing.GraphicsUnit]::Pixel)
 $boss.Dispose()
+
+# Точки голов (headPoint) — маркеры, где появляются плашки
+foreach ($who in @(@("boss", 0.62, 0.26), @("vova", 0.40, 0.30))) {
+    $hh = $adh * $who[2]
+    $hx = $ax0 + $adw * $who[1]; $hy = $ay0 + $adh * 0.845 - $hh
+    $p = L2P $hx $hy
+    $g.FillEllipse([System.Drawing.Brushes]::Lime, $p.X - 4, $p.Y - 4, 8, 8)
+    Write-Host ("head {0}: logical x={1:F0} y={2:F0}" -f $who[0], $hx, $hy)
+}
 
 $g.Dispose()
 $out = "tools\preview_flip.png"
 $bmp.Save((Join-Path $PWD $out), [System.Drawing.Imaging.ImageFormat]::Png)
 $bmp.Dispose()
-Write-Host "Saved $out (${W}x${H}, frame $Frame, telegraph=$Telegraph)"
+Write-Host "Saved $out (${CW}x${CH}, mode=$Mode, frame=$Frame)"

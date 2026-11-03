@@ -49,13 +49,24 @@ const Scene = {
 	// при любом размере экрана (якорные доли fx/fy/hFrac из конфига)
 	bgRect: null,
 
+	// Прямоугольник для привязки персонажей: пересечение фона с видимой
+	// областью экрана. На портретном телефоне альбомный фон сильно шире
+	// экрана — без этого персонажи уезжают за края
+	anchorRect: null,
+
+	// Прямоугольник привязки: anchorRect, иначе bgRect, иначе весь экран
+	anchor() {
+		return this.anchorRect || this.bgRect ||
+			{ dx: 0, dy: 0, dw: this.W, dh: this.H };
+	},
+
 	// Рисует кадр frameIndex спрайт-листа, привязанный к фону.
 	// fx — центр персонажа (доля ширины фона), fy — линия ног (доля высоты),
 	// hFrac — высота персонажа (доля высоты фона). fallback — доли для
 	// код-арт комнаты, если фон не загрузился
 	drawSpriteOnBg(ctx, img, cfg, frameIndex, fallback) {
 		if (!img || !cfg) return false;
-		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		const r = this.anchor();
 		const fx = cfg.fx ?? fallback.fx;
 		const fy = cfg.fy ?? fallback.fy;
 		const hFrac = cfg.hFrac ?? fallback.hFrac;
@@ -90,7 +101,7 @@ const Scene = {
 	headPoint(who) {
 		const cfg = CONFIG.sprites[who];
 		if (!cfg) return { x: this.W / 2, y: this.H / 2 };
-		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		const r = this.anchor();
 		const h = r.dh * cfg.hFrac;
 		return {
 			x: r.dx + r.dw * cfg.fx,
@@ -151,8 +162,12 @@ const Scene = {
 			const dx = x0 + (vw - dw) / 2, dy = y0 + (vh - dh) / 2;
 			ctx.drawImage(img, dx, dy, dw, dh);
 			this.bgRect = { dx, dy, dw, dh };
+			const ax0 = Math.max(dx, x0), ay0 = Math.max(dy, y0);
+			const ax1 = Math.min(dx + dw, x1), ay1 = Math.min(dy + dh, y1);
+			this.anchorRect = { dx: ax0, dy: ay0, dw: ax1 - ax0, dh: ay1 - ay0 };
 		} else {
 			this.bgRect = null;
+			this.anchorRect = { dx: x0, dy: y0, dw: x1 - x0, dh: y1 - y0 };
 			this.drawRoom(ctx, x0, x1, y0, y1);
 			this.drawPoster(ctx);
 			this.drawClock(ctx);
@@ -375,7 +390,7 @@ const Scene = {
 	drawFlipchart(ctx) {
 		const cfg = CONFIG.sprites.flipchart;
 		if (!cfg) return;
-		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		const r = this.anchor();
 		const h = r.dh * cfg.hFrac;
 		const spr = this.sprites.flipchart && cfg.frame;
 		const w = h * (spr ? cfg.frame.w / cfg.frame.h : 0.78);
