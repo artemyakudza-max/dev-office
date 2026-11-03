@@ -113,7 +113,7 @@ const UI = {
 						font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;"><span class="logo-text">one</span> <svg class="logo-heart"
 						viewBox="-1 -1 10 9" shape-rendering="crispEdges" aria-label="сердце"
 						style="width: 50px; height: 45px; vertical-align: -12px; margin: 0;">
-						<path fill="#e04040" stroke="#e04040" stroke-width="0.12" d="M1 0H3V1H5V0H7V4H6V5H5V6H4V7H3V6H2V5H1V4H0V1H1Z"/></svg> <span class="logo-text">офис</span></p>
+						<path fill="#e04040" stroke="#e04040" stroke-width="0.12" d="M1 0H3V1H5V0H7V1H8V4H7V5H6V6H5V7H3V6H2V5H1V4H0V1H1Z"/></svg> <span class="logo-text">офис</span></p>
 					<p style="font-size: 8px; letter-spacing: 3px; color: #8a92a8;
 						margin: 14px 0 0; font-family: var(--pixel-font);">ПРОВЕРЬ, НА ЧТО ТЫ СПОСОБЕН</p>
 				</div>
