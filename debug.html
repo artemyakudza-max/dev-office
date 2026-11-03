@@ -27,9 +27,13 @@
 <body>
 	<div id="dbg-panel">
 		<span id="dbg-status">...</span>
-		<button id="b-frame0">Кадр 0: слушает</button>
-		<button id="b-frame1">Кадр 1: телефон</button>
-		<button id="b-frame2">Кадр 2: пойман</button>
+		<button id="b-frame0">Вова 0: слушает</button>
+		<button id="b-frame1">Вова 1: телефон</button>
+		<button id="b-frame2">Вова 2: пойман</button>
+		<button id="b-boss0">Босс 0: флипчарт</button>
+		<button id="b-boss1">Босс 1: поворот</button>
+		<button id="b-boss2">Босс 2: смотрит</button>
+		<button id="b-boss3">Босс 3: фальстарт</button>
 		<button id="b-grid">Сетка/маркеры: вкл</button>
 	</div>
 	<div id="game">
@@ -55,17 +59,23 @@
 			const s = Scene.sprites;
 			const parts = [];
 			parts.push("vova: " + (s.vova ? "OK " + s.vova.width + "x" + s.vova.height : "НЕ ЗАГРУЖЕН"));
-			parts.push("boss: " + (s.boss ? "OK" : "нет файла (ожидаемо)"));
+			parts.push("boss: " + (s.boss ? "OK " + s.boss.width + "x" + s.boss.height : "нет файла (ожидаемо)"));
 			parts.push("bg: " + (s.bg ? "OK" : "нет файла (ожидаемо)"));
 			status.textContent = parts.join(" | ");
 		}, 1500);
 
 		let forcedFrame = null;
+		let forcedBoss = null;
 		let grid = true;
 
 		document.getElementById("b-frame0").onclick = () => { forcedFrame = 0; };
 		document.getElementById("b-frame1").onclick = () => { forcedFrame = 1; };
 		document.getElementById("b-frame2").onclick = () => { forcedFrame = 2; };
+		const bossStates = ["AT_FLIPCHART", "TURNING", "WATCHING", "FAKEOUT"];
+		document.getElementById("b-boss0").onclick = () => { forcedBoss = 0; };
+		document.getElementById("b-boss1").onclick = () => { forcedBoss = 1; };
+		document.getElementById("b-boss2").onclick = () => { forcedBoss = 2; };
+		document.getElementById("b-boss3").onclick = () => { forcedBoss = 3; };
 		document.getElementById("b-grid").onclick = function () {
 			grid = !grid;
 			this.classList.toggle("active", grid);
@@ -75,7 +85,7 @@
 		function render() {
 			Scene.vovaPhoneUp = forcedFrame === 1;
 			Scene.vovaCaught = forcedFrame === 2;
-			Scene.bossState = "AT_FLIPCHART";
+			Scene.bossState = forcedBoss === null ? "AT_FLIPCHART" : bossStates[forcedBoss];
 			Scene.animTime = 0;
 			Scene.draw();
 
@@ -105,6 +115,12 @@
 				ctx.fillText("table y=420", 4, 418);
 				ctx.fillStyle = "#f0c040";
 				ctx.fillText("vova frame", c.pos.x + 2, c.pos.y + 10);
+				// Рамка кадра спрайта босса
+				const b = CONFIG.sprites.boss;
+				ctx.strokeStyle = "#ff6060"; ctx.lineWidth = 1;
+				ctx.strokeRect(b.pos.x, b.pos.y, b.size.w, b.size.h);
+				ctx.fillStyle = "#ff6060";
+				ctx.fillText("boss frame", b.pos.x + 2, b.pos.y + 10);
 				ctx.restore();
 			}
 			requestAnimationFrame(render);
