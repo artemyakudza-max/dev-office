@@ -43,15 +43,28 @@ const Scene = {
 		if (cfg.boss && cfg.boss.sheet) load(cfg.boss.sheet, "boss");
 	},
 
-	// Рисует кадр frameIndex из спрайт-листа (кадры в ряд, ширина = frame.w)
-	// в прямоугольник pos/size на сцене. Возвращает true, если нарисовано
-	drawSpriteFrame(ctx, img, cfg, frameIndex) {
+	// Прямоугольник фона в логических координатах (заполняется в draw()).
+	// Персонажи позиционируются относительно него — стоят на полу комнаты
+	// при любом размере экрана (якорные доли fx/fy/hFrac из конфига)
+	bgRect: null,
+
+	// Рисует кадр frameIndex спрайт-листа, привязанный к фону.
+	// fx — центр персонажа (доля ширины фона), fy — линия ног (доля высоты),
+	// hFrac — высота персонажа (доля высоты фона). fallback — доли для
+	// код-арт комнаты, если фон не загрузился
+	drawSpriteOnBg(ctx, img, cfg, frameIndex, fallback) {
 		if (!img || !cfg) return false;
+		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		const fx = cfg.fx ?? fallback.fx;
+		const fy = cfg.fy ?? fallback.fy;
+		const hFrac = cfg.hFrac ?? fallback.hFrac;
+		const h = r.dh * hFrac;
+		const w = h * (cfg.frame.w / cfg.frame.h);
+		const x = r.dx + r.dw * fx - w / 2;
+		const y = r.dy + r.dh * fy - h;
 		const fw = cfg.frame.w, fh = cfg.frame.h;
-		const sx = frameIndex * fw;
 		ctx.imageSmoothingEnabled = false;
-		ctx.drawImage(img, sx, 0, fw, fh,
-			cfg.pos.x, cfg.pos.y, cfg.size.w, cfg.size.h);
+		ctx.drawImage(img, frameIndex * fw, 0, fw, fh, x, y, w, h);
 		return true;
 	},
 
@@ -120,8 +133,11 @@ const Scene = {
 			const vw = x1 - x0, vh = y1 - y0;
 			const s = Math.max(vw / img.width, vh / img.height);
 			const dw = img.width * s, dh = img.height * s;
-			ctx.drawImage(img, x0 + (vw - dw) / 2, y0 + (vh - dh) / 2, dw, dh);
+			const dx = x0 + (vw - dw) / 2, dy = y0 + (vh - dh) / 2;
+			ctx.drawImage(img, dx, dy, dw, dh);
+			this.bgRect = { dx, dy, dw, dh };
 		} else {
+			this.bgRect = null;
 			this.drawRoom(ctx, x0, x1, y0, y1);
 			this.drawPoster(ctx);
 			this.drawClock(ctx);
@@ -392,7 +408,9 @@ const Scene = {
 		// Кадр спрайта: 0 слушает, 1 телефон наверху, 2 пойман
 		if (this.sprites.vova) {
 			const fi = this.vovaCaught ? 2 : (this.vovaPhoneUp ? 1 : 0);
-			this.drawSpriteFrame(ctx, this.sprites.vova, CONFIG.sprites.vova, fi);
+			// Фолбэк-доли для код-арт комнаты (без фона): где Вова сидел в код-арте
+			this.drawSpriteOnBg(ctx, this.sprites.vova, CONFIG.sprites.vova, fi,
+				{ fx: 0.19, fy: 0.747, hFrac: 0.253 });
 			return;
 		}
 		const P = {
@@ -535,7 +553,9 @@ const Scene = {
 		// Кадр спрайта по состоянию автомата босса
 		if (this.sprites.boss) {
 			const map = { AT_FLIPCHART: 0, TURNING: 1, WATCHING: 2, FAKEOUT: 3 };
-			this.drawSpriteFrame(ctx, this.sprites.boss, CONFIG.sprites.boss, map[this.bossState] || 0);
+			// Фолбэк-доли для код-арт комнаты (без фона): где стоял босс в код-арте
+			this.drawSpriteOnBg(ctx, this.sprites.boss, CONFIG.sprites.boss, map[this.bossState] || 0,
+				{ fx: 0.77, fy: 0.747, hFrac: 0.231 });
 			return;
 		}
 		const P = {

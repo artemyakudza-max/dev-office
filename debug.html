@@ -99,29 +99,27 @@
 				ctx.save();
 				ctx.translate(offX, offY);
 				ctx.scale(scale, scale);
-				// Линия пола y=478
-				ctx.strokeStyle = "#40ff60"; ctx.lineWidth = 1;
-				ctx.beginPath(); ctx.moveTo(0, 478); ctx.lineTo(360, 478); ctx.stroke();
-				// Столешница y=420
-				ctx.strokeStyle = "#40a0ff";
-				ctx.beginPath(); ctx.moveTo(0, 420); ctx.lineTo(360, 420); ctx.stroke();
+				// Прямоугольник фона — персонажи привязаны к нему (fx/fy/hFrac)
+				const r = Scene.bgRect || { dx: 0, dy: 0, dw: Scene.W, dh: Scene.H };
+				const markerRect = (cfg) => {
+					const h = r.dh * cfg.hFrac;
+					const w = h * (cfg.frame.w / cfg.frame.h);
+					return { x: r.dx + r.dw * cfg.fx - w / 2, y: r.dy + r.dh * cfg.fy - h, w, h };
+				};
 				// Рамка кадра спрайта Вовы
 				const c = CONFIG.sprites.vova;
+				const cr = markerRect(c);
 				ctx.strokeStyle = "#f0c040"; ctx.lineWidth = 1;
-				ctx.strokeRect(c.pos.x, c.pos.y, c.size.w, c.size.h);
-				// Подписи
-				ctx.fillStyle = "#40ff60"; ctx.font = "8px monospace";
-				ctx.fillText("floor y=478", 4, 476);
-				ctx.fillStyle = "#40a0ff";
-				ctx.fillText("table y=420", 4, 418);
-				ctx.fillStyle = "#f0c040";
-				ctx.fillText("vova frame", c.pos.x + 2, c.pos.y + 10);
+				ctx.strokeRect(cr.x, cr.y, cr.w, cr.h);
+				ctx.fillStyle = "#f0c040"; ctx.font = "8px monospace";
+				ctx.fillText("vova frame", cr.x + 2, cr.y + 10);
 				// Рамка кадра спрайта босса
 				const b = CONFIG.sprites.boss;
+				const br = markerRect(b);
 				ctx.strokeStyle = "#ff6060"; ctx.lineWidth = 1;
-				ctx.strokeRect(b.pos.x, b.pos.y, b.size.w, b.size.h);
+				ctx.strokeRect(br.x, br.y, br.w, br.h);
 				ctx.fillStyle = "#ff6060";
-				ctx.fillText("boss frame", b.pos.x + 2, b.pos.y + 10);
+				ctx.fillText("boss frame", br.x + 2, br.y + 10);
 				ctx.restore();
 			}
 			requestAnimationFrame(render);

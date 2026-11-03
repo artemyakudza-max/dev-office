@@ -1,9 +1,8 @@
 // Самопроверка спрайтов против конфига: читает PNG-заголовки и сверяет
-// с CONFIG.sprites (размеры кадра, пропорции, границы сцены). Без зависимостей.
+// с CONFIG.sprites (размеры кадров, якорные доли fx/fy/hFrac). Без зависимостей.
 // Запуск: node tools/selfcheck.js
 "use strict";
 const fs = require("fs");
-const path = require("path");
 
 // Минимальный парсер PNG-заголовка (IHDR): width, height
 function pngSize(file) {
@@ -25,20 +24,18 @@ function readConfig() {
 			frames: 3,
 			fw: grab(/vova:\s*\{[^}]*frame:\s*\{\s*w:\s*(\d+)/),
 			fh: grab(/vova:[\s\S]*?frame:\s*\{[^}]*h:\s*(\d+)/),
-			x: grab(/vova:[\s\S]*?pos:\s*\{\s*x:\s*(-?\d+)/),
-			y: grab(/vova:[\s\S]*?pos:\s*\{[^}]*y:\s*(-?\d+)/),
-			sw: grab(/vova:[\s\S]*?size:\s*\{\s*w:\s*(\d+)/),
-			sh: grab(/vova:[\s\S]*?size:\s*\{[^}]*h:\s*(\d+)/),
+			fx: grab(/vova:[\s\S]*?fx:\s*([\d.]+)/),
+			fy: grab(/vova:[\s\S]*?fy:\s*([\d.]+)/),
+			hFrac: grab(/vova:[\s\S]*?hFrac:\s*([\d.]+)/),
 		},
 		boss: {
 			sheet: "assets/sprites/boss_states.png",
 			frames: 4,
 			fw: grab(/boss:\s*\{[^}]*frame:\s*\{\s*w:\s*(\d+)/),
 			fh: grab(/boss:[\s\S]*?frame:\s*\{[^}]*h:\s*(\d+)/),
-			x: grab(/boss:[\s\S]*?pos:\s*\{\s*x:\s*(-?\d+)/),
-			y: grab(/boss:[\s\S]*?pos:\s*\{[^}]*y:\s*(-?\d+)/),
-			sw: grab(/boss:[\s\S]*?size:\s*\{\s*w:\s*(\d+)/),
-			sh: grab(/boss:[\s\S]*?size:\s*\{[^}]*h:\s*(\d+)/),
+			fx: grab(/boss:[\s\S]*?fx:\s*([\d.]+)/),
+			fy: grab(/boss:[\s\S]*?fy:\s*([\d.]+)/),
+			hFrac: grab(/boss:[\s\S]*?hFrac:\s*([\d.]+)/),
 		},
 	};
 }
@@ -54,7 +51,7 @@ const check = (name, cond, detail) => {
 };
 
 const cfg = readConfig();
-console.log("Самопроверка спрайтов v" + fs.readFileSync("js/config.js", "utf8").match(/version:\s*"([^"]+)"/)[1]);
+console.log("Самопроверка спрайтов " + fs.readFileSync("js/config.js", "utf8").match(/version:\s*"([^"]+)"/)[1]);
 
 for (const key of ["vova", "boss"]) {
 	const c = cfg[key];
@@ -67,20 +64,19 @@ for (const key of ["vova", "boss"]) {
 		"ожидалось " + (c.fw * c.frames) + ", факт " + size.w);
 	check(key + " высота листа = frame.h", size.h === c.fh,
 		"ожидалось " + c.fh + ", факт " + size.h);
-	// Пропорции: size на сцене должно сохранять пропорцию кадра (допуск 2%)
-	const frameRatio = c.fw / c.fh;
-	const sceneRatio = c.sw / c.sh;
-	check(key + " пропорции кадра/сцены совпадают", Math.abs(frameRatio - sceneRatio) / frameRatio < 0.02,
-		"кадр " + frameRatio.toFixed(3) + ", сцена " + sceneRatio.toFixed(3));
-	// Границы сцены 360×640
-	check(key + " внутри сцены по X", c.x >= 0 && c.x + c.sw <= 360, "x=" + c.x + " w=" + c.sw);
-	check(key + " низ на полу y=478", c.y + c.sh === 478, "y=" + c.y + " h=" + c.sh + " низ=" + (c.y + c.sh));
+	// Якорные доли в диапазоне (0..1)
+	check(key + " fx в (0..1)", c.fx > 0 && c.fx < 1, "fx=" + c.fx);
+	check(key + " fy в (0..1)", c.fy > 0 && c.fy < 1, "fy=" + c.fy);
+	check(key + " hFrac в (0..1)", c.hFrac > 0 && c.hFrac < 1, "hFrac=" + c.hFrac);
+	// Размер файла: веб-лимиты
+	const kb = Math.round(fs.statSync(c.sheet).size / 1024);
+	check(key + " размер файла < 1200 KB", kb < 1200, kb + " KB");
 }
 
-// Размер файла: веб-лимиты
-for (const key of ["vova", "boss"]) {
-	const kb = Math.round(fs.statSync(cfg[key].sheet).size / 1024);
-	check(key + " размер файла < 1200 KB", kb < 1200, kb + " KB");
+// Фон: существует и не слишком тяжёлый
+{
+	const kb = Math.round(fs.statSync("assets/sprites/bg_office.png").size / 1024);
+	check("bg размер файла < 900 KB", kb < 900, kb + " KB");
 }
 
 if (errors) {
