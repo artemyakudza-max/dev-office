@@ -6,3 +6,4 @@ Library/
 *.log
 Thumbs.db
 .DS_Store
+tools/preview_flip.png

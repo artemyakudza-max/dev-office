@@ -18,7 +18,7 @@ const Scene = {
 
 	// Загруженные спрайты (вариант B). Если файл не загрузился — null,
 	// и рисуется код-арт (фолбэк, игра не ломается)
-	sprites: { vova: null, boss: null, bg: null },
+	sprites: { vova: null, boss: null, bg: null, flipchart: null },
 
 	init(canvas) {
 		this.canvas = canvas;
@@ -41,6 +41,7 @@ const Scene = {
 		if (cfg.bg) load(cfg.bg, "bg");
 		if (cfg.vova && cfg.vova.sheet) load(cfg.vova.sheet, "vova");
 		if (cfg.boss && cfg.boss.sheet) load(cfg.boss.sheet, "boss");
+		if (cfg.flipchart && cfg.flipchart.sheet) load(cfg.flipchart.sheet, "flipchart");
 	},
 
 	// Прямоугольник фона в логических координатах (заполняется в draw()).
@@ -81,6 +82,20 @@ const Scene = {
 		const w = this.canvas.width;
 		const h = this.canvas.height;
 		return Math.min(w / this.W, h / this.H);
+	},
+
+	// Точка над головой персонажа в логических координатах (для плашек).
+	// Считается из тех же якорных долей конфига, что и отрисовка спрайта:
+	// сдвинешь персонажа в config.js — плашка переедет вместе с ним
+	headPoint(who) {
+		const cfg = CONFIG.sprites[who];
+		if (!cfg) return { x: this.W / 2, y: this.H / 2 };
+		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		const h = r.dh * cfg.hFrac;
+		return {
+			x: r.dx + r.dw * cfg.fx,
+			y: r.dy + r.dh * cfg.fy - h, // верх головы
+		};
 	},
 
 	// Преобразование логических координат в CSS-пиксели экрана
@@ -352,29 +367,47 @@ const Scene = {
 		}
 	},
 
-	// Флипчарт (справа) с листами-«графиками», смена по номеру цикла босса
+	// Флипчарт: позади босса, чуть правее и крупнее него (доли из конфига,
+	// привязка к фону — как у персонажей). Рисуется до босса, чтобы босс
+	// перекрывал его — флипчарт «за спиной».
+	// Спрайт: 4 листа «доклада», меняются по номеру цикла босса.
+	// Нет спрайта — код-арт (фолбэк, игра не ломается)
 	drawFlipchart(ctx) {
-		ctx.fillStyle = "#3a3f4a";
-		ctx.fillRect(286, 400, 8, 84);
-		ctx.fillRect(262, 400, 8, 76);
-		ctx.fillRect(310, 400, 8, 76);
-		ctx.fillStyle = "#4a505c";
-		ctx.fillRect(252, 396, 76, 8);
-		// Маркеры на полке
-		ctx.fillStyle = "#c05050";
-		ctx.fillRect(258, 392, 10, 4);
-		ctx.fillStyle = "#4a7a9a";
-		ctx.fillRect(272, 392, 10, 4);
-		// Телеграф: маркер в руке босса — сигнал скорого поворота
-		if (this.bossTelegraph) {
-			ctx.fillStyle = "#d04040";
-			ctx.fillRect(246, 388, 8, 8);
+		const cfg = CONFIG.sprites.flipchart;
+		if (!cfg) return;
+		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		const h = r.dh * cfg.hFrac;
+		const spr = this.sprites.flipchart && cfg.frame;
+		const w = h * (spr ? cfg.frame.w / cfg.frame.h : 0.78);
+		const x = r.dx + r.dw * cfg.fx - w / 2;
+		const y = r.dy + r.dh * cfg.fy - h;
+		const s = h / 200;                // масштаб деталей (исходник ~200 высотой)
+		if (spr) {
+			const frame = Boss.cycleCount % 4;
+			ctx.imageSmoothingEnabled = false;
+			ctx.drawImage(this.sprites.flipchart,
+				frame * cfg.frame.w, 0, cfg.frame.w, cfg.frame.h, x, y, w, h);
+		} else {
+			// Ножки-тренога
+			ctx.fillStyle = "#3a3f4a";
+			ctx.fillRect(x + w * 0.62, y + h * 0.52, 8 * s, h * 0.42);
+			ctx.fillRect(x + w * 0.12, y + h * 0.52, 8 * s, h * 0.38);
+			ctx.fillRect(x + w * 0.86, y + h * 0.52, 8 * s, h * 0.38);
+			// Полка под листом
+			ctx.fillStyle = "#4a505c";
+			ctx.fillRect(x + w * 0.05, y + h * 0.50, w * 0.9, 8 * s);
+			// Маркеры на полке
+			ctx.fillStyle = "#c05050";
+			ctx.fillRect(x + w * 0.12, y + h * 0.48, 10 * s, 4 * s);
+			ctx.fillStyle = "#4a7a9a";
+			ctx.fillRect(x + w * 0.30, y + h * 0.48, 10 * s, 4 * s);
+			// Доска с белым листом
+			ctx.fillStyle = "#3f4552";
+			ctx.fillRect(x, y, w, h * 0.52);
+			ctx.fillStyle = "#e8e8e4";
+			ctx.fillRect(x + 4 * s, y + 4 * s, w - 8 * s, h * 0.52 - 8 * s);
+			this.drawChart(ctx, x + 8 * s, y + 8 * s, w - 16 * s, h * 0.52 - 16 * s, Boss.cycleCount % 4);
 		}
-		ctx.fillStyle = "#3f4552";
-		ctx.fillRect(248, 296, 84, 104);
-		ctx.fillStyle = "#e8e8e4";
-		ctx.fillRect(252, 300, 76, 96);
-		this.drawChart(ctx, 256, 304, 68, 88, Boss.cycleCount % 4);
 	},
 
 	// Офисное кресло Вовы (вид сбоку): спинка, сиденье, газлифт, крестовина с колёсами
