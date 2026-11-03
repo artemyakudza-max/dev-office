@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>DEBUG — проверка спрайтов</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="css/style.css">
+	<style>
+		/* Панель отладки поверх сцены */
+		#dbg-panel {
+			position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+			background: rgba(10, 12, 18, 0.92); color: #fff;
+			font-family: system-ui, sans-serif; font-size: 13px;
+			padding: 8px 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+		}
+		#dbg-panel button {
+			background: #2f5fd0; color: #fff; border: 0; padding: 6px 10px;
+			font-family: inherit; font-size: 13px; cursor: pointer; border-radius: 4px;
+		}
+		#dbg-panel button.active { background: #c05050; }
+		#dbg-status { color: #f0c040; font-weight: bold; }
+	</style>
+</head>
+<body>
+	<div id="dbg-panel">
+		<span id="dbg-status">...</span>
+		<button id="b-frame0">Кадр 0: слушает</button>
+		<button id="b-frame1">Кадр 1: телефон</button>
+		<button id="b-frame2">Кадр 2: пойман</button>
+		<button id="b-grid">Сетка/маркеры: вкл</button>
+	</div>
+	<div id="game">
+		<canvas id="scene"></canvas>
+		<div id="ui"></div>
+	</div>
+	<script src="js/config.js"></script>
+	<script src="js/input.js"></script>
+	<script src="js/boss.js"></script>
+	<script src="js/vova.js"></script>
+	<script src="js/ui.js"></script>
+	<script src="js/scene.js"></script>
+	<script>
+	// Отладочная страница: сцена без игрового цикла, кадры Вовы переключаются кнопками.
+	// Маркеры: рамка кадра спрайта (жёлтая), линия пола y=478 (зелёная), столешница y=420 (синяя).
+	(function () {
+		const status = document.getElementById("dbg-status");
+		Scene.init(document.getElementById("scene"));
+		UI.init();
+
+		// Проверка загрузки спрайтов
+		setTimeout(() => {
+			const s = Scene.sprites;
+			const parts = [];
+			parts.push("vova: " + (s.vova ? "OK " + s.vova.width + "x" + s.vova.height : "НЕ ЗАГРУЖЕН"));
+			parts.push("boss: " + (s.boss ? "OK" : "нет файла (ожидаемо)"));
+			parts.push("bg: " + (s.bg ? "OK" : "нет файла (ожидаемо)"));
+			status.textContent = parts.join(" | ");
+		}, 1500);
+
+		let forcedFrame = null;
+		let grid = true;
+
+		document.getElementById("b-frame0").onclick = () => { forcedFrame = 0; };
+		document.getElementById("b-frame1").onclick = () => { forcedFrame = 1; };
+		document.getElementById("b-frame2").onclick = () => { forcedFrame = 2; };
+		document.getElementById("b-grid").onclick = function () {
+			grid = !grid;
+			this.classList.toggle("active", grid);
+		};
+
+		// Рисуем сцену вручную: подменяем состояния Вовы
+		function render() {
+			Scene.vovaPhoneUp = forcedFrame === 1;
+			Scene.vovaCaught = forcedFrame === 2;
+			Scene.bossState = "AT_FLIPCHART";
+			Scene.animTime = 0;
+			Scene.draw();
+
+			if (grid) {
+				const ctx = Scene.ctx;
+				const scale = Scene.getScale();
+				const dpr = window.devicePixelRatio || 1;
+				const offX = (Scene.canvas.width - Scene.W * scale) / 2;
+				const offY = (Scene.canvas.height - Scene.H * scale) / 2;
+				ctx.save();
+				ctx.translate(offX, offY);
+				ctx.scale(scale, scale);
+				// Линия пола y=478
+				ctx.strokeStyle = "#40ff60"; ctx.lineWidth = 1;
+				ctx.beginPath(); ctx.moveTo(0, 478); ctx.lineTo(360, 478); ctx.stroke();
+				// Столешница y=420
+				ctx.strokeStyle = "#40a0ff";
+				ctx.beginPath(); ctx.moveTo(0, 420); ctx.lineTo(360, 420); ctx.stroke();
+				// Рамка кадра спрайта Вовы
+				const c = CONFIG.sprites.vova;
+				ctx.strokeStyle = "#f0c040"; ctx.lineWidth = 1;
+				ctx.strokeRect(c.pos.x, c.pos.y, c.size.w, c.size.h);
+				// Подписи
+				ctx.fillStyle = "#40ff60"; ctx.font = "8px monospace";
+				ctx.fillText("floor y=478", 4, 476);
+				ctx.fillStyle = "#40a0ff";
+				ctx.fillText("table y=420", 4, 418);
+				ctx.fillStyle = "#f0c040";
+				ctx.fillText("vova frame", c.pos.x + 2, c.pos.y + 10);
+				ctx.restore();
+			}
+			requestAnimationFrame(render);
+		}
+		render();
+	})();
+	</script>
+</body>
+</html>
