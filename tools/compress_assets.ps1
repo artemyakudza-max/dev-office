@@ -1,19 +1,20 @@
-# Сжатие игровых ассетов: уменьшение до 512px по ширине, метод NearestNeighbor
-# сохраняет резкость пиксель-арта. Оригиналы в design/ не трогаются.
+# Asset compression: downscale to per-file max width, NearestNeighbor keeps
+# pixel art sharp. Originals in design/ are not touched.
 Add-Type -AssemblyName System.Drawing
 
-$files = @(
-    "assets\characters\vova.png",
-    "assets\characters\vova_character_select.png",
-    "assets\sprites\bg_office.png",
-    "assets\sprites\vova_poses.png",
-    "assets\sprites\boss_states.png"
+# file -> max width (sprite sheets keep extra detail)
+$pairs = @(
+    @("assets\characters\vova.png", 512),
+    @("assets\characters\vova_character_select.png", 512),
+    @("assets\sprites\bg_office.png", 720),
+    @("assets\sprites\vova_poses.png", 768),
+    @("assets\sprites\boss_states.png", 1024)
 )
-$maxW = 512
 
-foreach ($f in $files) {
+foreach ($p in $pairs) {
+    $f = $p[0]; $maxW = $p[1]
     if (-not (Test-Path $f)) {
-        Write-Host "$f — нет файла, пропускаю"
+        Write-Host "$f - no file, skip"
         continue
     }
     $path = (Resolve-Path $f).Path

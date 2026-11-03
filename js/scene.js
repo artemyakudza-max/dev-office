@@ -123,9 +123,14 @@ const Scene = {
 			this.drawLamps(ctx);
 		}
 		this.drawFlipchart(ctx);
-		this.drawChair(ctx);
-		this.drawVova(ctx);
-		this.drawTable(ctx);
+		// Кресло и стол уже нарисованы в спрайте Вовы — код-арт не дублируем
+		if (!this.sprites.vova) {
+			this.drawChair(ctx);
+			this.drawVova(ctx);
+			this.drawTable(ctx);
+		} else {
+			this.drawVova(ctx);
+		}
 		this.drawPlant(ctx);
 
 		this.drawBoss(ctx);
