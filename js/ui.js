@@ -255,7 +255,9 @@ const UI = {
 		const url = location.href;
 		if (navigator.share) {
 			try {
-				await navigator.share({ text, url });
+				// iOS выбрасывает поле url при отправке в мессенджеры —
+				// вкладываем ссылку прямо в текст, иначе доходит только она
+				await navigator.share({ text: text + " " + url });
 			} catch (e) {
 				// игрок отменил шеринг — не ошибка
 			}
