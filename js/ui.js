@@ -426,8 +426,8 @@ const UI = {
 		}
 	},
 
-	// Обучение: плашка первые 3 с или до первого касания (ТЗ §6.2).
-	// Пиксельный заголовок + читаемый текст, панель в стиле финальных карточек
+	// Обучение: то же содержимое, что в окне «Правила» (CONFIG.rules).
+	// Исчезает при первом касании — сворачивается в кнопку «ПРАВИЛА»
 	showTutorial() {
 		this.tutorialEl = document.createElement("div");
 		this.tutorialEl.style.cssText = `
@@ -439,23 +439,37 @@ const UI = {
 			text-align: center;
 			animation: tutorialPulse 1s ease-in-out infinite;
 		`;
+		const lines = CONFIG.rules.map((t) => `<p class="rules-line">${t}</p>`).join("");
 		this.tutorialEl.innerHTML = `
-			<p style="font-family: var(--pixel-font); font-size: 16px; color: #f0c040;
-				margin: 0 0 12px;">КАК ИГРАТЬ</p>
-			<p style="font-family: var(--body-font); font-size: 16px; line-height: 1.55;
-				color: #fff; margin: 0;">
-				<b>Нажми на экран</b> — Вова достанет телефон.<br>
-				<b>Отпусти</b>, когда на тебя смотрят.
-			</p>
+			<p style="font-family: var(--pixel-font); font-size: 14px; color: #f0c040;
+				margin: 0 0 12px;">ПРАВИЛА</p>
+			${lines}
 		`;
 		this.root.appendChild(this.tutorialEl);
 	},
 
 	hideTutorial() {
-		if (this.tutorialEl) {
-			this.tutorialEl.remove();
-			this.tutorialEl = null;
+		if (!this.tutorialEl) return;
+		const el = this.tutorialEl;
+		this.tutorialEl = null;
+		// Куда сворачиваем: центр кнопки «ПРАВИЛА» (если её нет — правый верхний угол)
+		const r = el.getBoundingClientRect();
+		const cx = r.left + r.width / 2;
+		const cy = r.top + r.height / 2;
+		let tx = window.innerWidth - 40 - cx;
+		let ty = 78 - cy;
+		if (this.rulesBtn) {
+			const b = this.rulesBtn.getBoundingClientRect();
+			tx = b.left + b.width / 2 - cx;
+			ty = b.top + b.height / 2 - cy;
 		}
+		// Пульс держит transform — выключаем его, иначе сворачивание не сработает
+		el.style.animation = "none";
+		el.style.transition = "transform 0.4s ease-in, opacity 0.4s ease-in";
+		// translateX(-50%) — базовое центрирование, поверх него сдвиг к кнопке
+		el.style.transform = `translateX(-50%) translate(${tx}px, ${ty}px) scale(0.05)`;
+		el.style.opacity = "0";
+		setTimeout(() => el.remove(), 450);
 	},
 
 	// Небольшая плашка-уведомление внизу экрана
