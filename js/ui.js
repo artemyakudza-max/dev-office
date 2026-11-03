@@ -362,7 +362,8 @@ const UI = {
 		}
 	},
 
-	// Окно правил: игра на паузе, кнопка «Играть» возвращает в забег
+	// Окно правил: игра на паузе. Закрытие — кнопка «Играть» или тап
+	// вне карточки (как в меню паузы)
 	showRules(onClose) {
 		this.rulesEl = this._overlay();
 		const lines = CONFIG.rules.map((t) => `<p class="rules-line">${t}</p>`).join("");
@@ -374,7 +375,23 @@ const UI = {
 				<button id="rules-close" class="final-btn final-btn-again" style="margin-top: 16px;">Играть</button>
 			</div>
 		`;
-		this.rulesEl.querySelector("#rules-close").addEventListener("click", onClose);
+		const close = () => {
+			this.hideRules();
+			onClose();
+		};
+		this.rulesEl.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			if (e.target.closest("button")) return; // кнопка закрывает себя сама
+			close();
+		});
+		this.rulesEl.querySelector("#rules-close").addEventListener("click", close);
+	},
+
+	hideRules() {
+		if (this.rulesEl) {
+			this.rulesEl.remove();
+			this.rulesEl = null;
+		}
 	},
 
 	// Меню паузы: продолжить или выйти в главное меню.
