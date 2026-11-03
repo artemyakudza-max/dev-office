@@ -9,7 +9,8 @@ param(
     [string]$InPath = "design\assets\characters\vova_poses.png",
     [string]$OutPath = "assets\sprites\vova_poses.png",
     [int]$Frames = 3,
-    [int]$Tol = 8
+    [int]$Tol = 8,
+    [string]$Mode = "local"   # local — допуск к соседу; global — нейтрально-серый фон (R~G~B, яркий)
 )
 Add-Type -AssemblyName System.Drawing
 
@@ -104,6 +105,36 @@ public static class SpritePrep {
         return count;
     }
 
+    // Chroma mode: background is green (G dominates R and B by margin).
+    // Marks ALL green-dominant pixels globally — no flood fill needed,
+    // enclosed green pockets (under table, between chair legs) are covered too.
+    public static int MarkAllChroma(byte[] bytes, int stride, int W, int H, int margin, bool[] visited) {
+        int count = 0;
+        for (int y = 0; y < H; y++) {
+            int row = y * stride;
+            for (int x = 0; x < W; x++) {
+                int o = row + x * 4;
+                byte r = bytes[o + 2], g = bytes[o + 1], b = bytes[o];
+                if (g >= r + margin && g >= b + margin) {
+                    visited[y * W + x] = true;
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private static bool IsChroma(int i, int margin) {
+        int o = (i / _W) * _stride + (i % _W) * 4;
+        byte r = _bytes[o + 2], g = _bytes[o + 1], b = _bytes[o];
+        return g >= r + margin && g >= b + margin;
+    }
+
+    private static void TrySeedC(int x, int y, int margin) {
+        int i = y * _W + x;
+        if (!_visited[i] && IsChroma(i, margin)) { _visited[i] = true; _queue.Enqueue(i); }
+    }
+
     // BBox of opaque pixels per vertical segment. Returns "x,y,w,h;x,y,w,h;..."
     public static string BBoxes(byte[] bytes, int stride, int W, int H, int frames) {
         var result = new List<string>();
@@ -141,11 +172,17 @@ $bytes = New-Object byte[] ($stride * $H)
 [System.Runtime.InteropServices.Marshal]::Copy($data.Scan0, $bytes, 0, $bytes.Length)
 $img.UnlockBits($data)
 
-# Flood fill (C#, fast)
+# Mode dispatch
 $visited = New-Object bool[] ($W * $H)
-$bgCount = [SpritePrep]::Run($bytes, $stride, $W, $H, $Tol, $visited)
+if ($Mode -eq "chroma") {
+    # Хромакей: помечаем ВСЕ зелёные пиксели глобально (в т.ч. замкнутые области
+    # под столом/стулом, куда flood fill от краёв не добирается)
+    $bgCount = [SpritePrep]::MarkAllChroma($bytes, $stride, $W, $H, $Tol, $visited)
+} else {
+    $bgCount = [SpritePrep]::Run($bytes, $stride, $W, $H, $Tol, $visited)
+}
 $pct = [Math]::Round(100.0 * $bgCount / ($W * $H), 1)
-Write-Host "Background pixels: $bgCount of $($W * $H) ($pct%)"
+Write-Host "Background pixels: $bgCount of $($W * $H) ($pct%) [mode=$Mode]"
 
 # Apply transparency
 for ($i = 0; $i -lt $visited.Length; $i++) {
