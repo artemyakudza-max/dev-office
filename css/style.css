@@ -189,14 +189,23 @@ html, body {
 	margin: 0 0 14px;
 }
 
-/* Логотип игры: мягко пульсирует свечением */
-.game-logo {
+/* Логотип: текст пульсирует оранжевым свечением, сердце — красным */
+.logo-text {
 	animation: logoPulse 1.6s ease-in-out infinite;
+}
+
+.logo-heart {
+	animation: heartPulse 1.6s ease-in-out infinite;
 }
 
 @keyframes logoPulse {
 	0%, 100% { filter: drop-shadow(0 0 2px rgba(240, 192, 64, 0.3)); }
 	50% { filter: drop-shadow(0 0 9px rgba(240, 192, 64, 0.75)); }
+}
+
+@keyframes heartPulse {
+	0%, 100% { filter: drop-shadow(0 0 2px rgba(224, 64, 64, 0.35)); }
+	50% { filter: drop-shadow(0 0 9px rgba(224, 64, 64, 0.8)); }
 }
 
 /* Карточка персонажа: оранжевая рамка, подсветка при наведении/тапе */
