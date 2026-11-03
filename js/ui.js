@@ -272,18 +272,20 @@ const UI = {
 		el.style.top = p.y + "px";
 		el.style.animationDuration = CONFIG.ui.bubbleSec + "s";
 		this.root.appendChild(el);
+		// ВАЖНО: CSS-анимация плашки держит её центрированной на координате
+		// (translate(-50%)), поэтому задаём ЦЕНТР плашки, а не её край
 		const w = el.offsetWidth, m = 8;
+		let cx;
 		if (align === "left") {
-			el.style.left = m + "px";
+			cx = m + w / 2;                             // прижата к левому краю
 		} else if (align === "right") {
-			el.style.left = (window.innerWidth - m - w) + "px";
+			cx = window.innerWidth - m - w / 2;         // прижата к правому краю
 		} else {
-			// Плашка центрирована на точке — у края экрана половина улетает.
-			// Сдвигаем центр так, чтобы плашка оставалась на экране
-			const half = w / 2;
-			const cx = Math.min(Math.max(p.x, half + m), window.innerWidth - half - m);
-			if (cx !== p.x) el.style.left = cx + "px";
+			cx = p.x;                                   // центр над головой
 		}
+		// Страховка: даже в центре плашка не выезжает за края экрана
+		cx = Math.min(Math.max(cx, m + w / 2), window.innerWidth - m - w / 2);
+		el.style.left = cx + "px";
 		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
 	},
 
