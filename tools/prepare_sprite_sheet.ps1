@@ -135,6 +135,69 @@ public static class SpritePrep {
         if (!_visited[i] && IsChroma(i, margin)) { _visited[i] = true; _queue.Enqueue(i); }
     }
 
+    // Edge cleanup + feathering (Photoshop-like soft brush edge):
+    // 1) Fringe removal: opaque pixels adjacent to transparency that are dark
+    //    (maxC < fringeMax) become transparent — kills black outline strips.
+    // 2) Feather: opaque pixels within `feather` px of transparency get
+    //    reduced alpha (linear ramp), so edges look smooth, not aliased.
+    public static void SoftenEdges(byte[] bytes, int stride, int W, int H, int fringeMax, int feather) {
+        // Snapshot alpha channel (we modify in place but read original alpha)
+        var alpha = new byte[W * H];
+        for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++)
+                alpha[y * W + x] = bytes[y * stride + x * 4 + 3];
+
+        // Pass 1: remove dark fringe (1px ring around transparency)
+        var toClear = new List<int>();
+        for (int y = 0; y < H; y++) {
+            for (int x = 0; x < W; x++) {
+                int i = y * W + x;
+                if (alpha[i] == 0) continue;
+                bool nearTransparent = false;
+                if (x > 0 && alpha[i - 1] == 0) nearTransparent = true;
+                if (x < W - 1 && alpha[i + 1] == 0) nearTransparent = true;
+                if (y > 0 && alpha[i - W] == 0) nearTransparent = true;
+                if (y < H - 1 && alpha[i + W] == 0) nearTransparent = true;
+                if (!nearTransparent) continue;
+                int o = y * stride + x * 4;
+                int maxC = Math.Max(bytes[o + 2], Math.Max(bytes[o + 1], bytes[o]));
+                if (maxC < fringeMax) toClear.Add(i);
+            }
+        }
+        foreach (int i in toClear) {
+            int x = i % W, y = i / W;
+            bytes[y * stride + x * 4 + 3] = 0;
+            alpha[i] = 0;
+        }
+
+        // Pass 2: feather — alpha ramp for pixels near transparency
+        for (int y = 0; y < H; y++) {
+            for (int x = 0; x < W; x++) {
+                int i = y * W + x;
+                if (alpha[i] == 0) continue;
+                // distance to nearest transparent pixel (BFS-lite: check ring 1..feather)
+                int dist = feather + 1;
+                for (int d = 1; d <= feather && dist > feather; d++) {
+                    for (int dy = -d; dy <= d && dist > feather; dy++) {
+                        for (int dx = -d; dx <= d; dx++) {
+                            if (Math.Max(Math.Abs(dx), Math.Abs(dy)) != d) continue; // ring only
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+                            if (alpha[ny * W + nx] == 0) { dist = d; break; }
+                        }
+                    }
+                }
+                if (dist <= feather) {
+                    int o = y * stride + x * 4;
+                    // linear ramp: dist=1 -> 40% alpha, dist=feather -> ~85%
+                    float t = (float)(dist - 1) / Math.Max(1, feather - 1);
+                    int a = (int)(255 * (0.40f + 0.45f * t));
+                    if (a < bytes[o + 3]) bytes[o + 3] = (byte)a;
+                }
+            }
+        }
+    }
+
     // BBox of opaque pixels per vertical segment. Returns "x,y,w,h;x,y,w,h;..."
     public static string BBoxes(byte[] bytes, int stride, int W, int H, int frames) {
         var result = new List<string>();
@@ -203,6 +266,10 @@ $odata = $outImg.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::WriteOn
     [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 [System.Runtime.InteropServices.Marshal]::Copy($bytes, 0, $odata.Scan0, $bytes.Length)
 $outImg.UnlockBits($odata)
+
+# Edge cleanup + feathering (fringe removal + soft edges)
+[SpritePrep]::SoftenEdges($bytes, $stride, $W, $H, 60, 2)
+Write-Host "Edges softened: fringe removed (maxC<60), feather 2px"
 
 # BBoxes (C#, fast)
 $bboxesStr = [SpritePrep]::BBoxes($bytes, $stride, $W, $H, $Frames)
