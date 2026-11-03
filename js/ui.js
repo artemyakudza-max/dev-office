@@ -111,9 +111,9 @@ const UI = {
 				<div style="margin-top: 64px; text-align: center;">
 					<p class="game-logo" style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
 						font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">one <svg class="logo-heart"
-						viewBox="0 0 7 6" shape-rendering="crispEdges" aria-label="сердце"
-						style="width: 27px; height: 23px; vertical-align: -3px; margin: 0 2px;">
-						<path fill="#e04040" d="M1 0H3V1H4V0H6V3H5V4H4V5H3V6H2V5H1V4H0V1H1Z"/></svg> офис</p>
+						viewBox="0 0 8 7" shape-rendering="crispEdges" aria-label="сердце"
+						style="width: 40px; height: 35px; vertical-align: -7px; margin: 0 2px;">
+						<path fill="#e04040" d="M1 0H3V1H5V0H7V4H6V5H5V6H4V7H3V6H2V5H1V4H0V1H1Z"/></svg> офис</p>
 					<p style="font-size: 8px; letter-spacing: 3px; color: #8a92a8;
 						margin: 14px 0 0; font-family: var(--pixel-font);">ПРОВЕРЬ, НА ЧТО ТЫ СПОСОБЕН</p>
 				</div>
