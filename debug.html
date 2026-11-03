@@ -58,9 +58,10 @@
 		setTimeout(() => {
 			const s = Scene.sprites;
 			const parts = [];
+			parts.push(CONFIG.version);
 			parts.push("vova: " + (s.vova ? "OK " + s.vova.width + "x" + s.vova.height : "НЕ ЗАГРУЖЕН"));
-			parts.push("boss: " + (s.boss ? "OK " + s.boss.width + "x" + s.boss.height : "нет файла (ожидаемо)"));
-			parts.push("bg: " + (s.bg ? "OK" : "нет файла (ожидаемо)"));
+			parts.push("boss: " + (s.boss ? "OK " + s.boss.width + "x" + s.boss.height : "НЕ ЗАГРУЖЕН"));
+			parts.push("bg: " + (s.bg ? "OK " + s.bg.width + "x" + s.bg.height : "НЕ ЗАГРУЖЕН"));
 			status.textContent = parts.join(" | ");
 		}, 1500);
 

@@ -111,10 +111,16 @@ const Scene = {
 		const y1 = (this.canvas.height - offY) / scale;
 
 		// Фон-спрайт (вариант B): комната+окно+плакаты одним изображением.
+		// Cover-fit: масштаб без искажений пропорций, центр по видимой области —
+		// на портретном экране края альбомного фона обрезаются, окно остаётся в центре.
 		// Если не загружен — код-арт комнаты по слоям (фолбэк)
 		if (this.sprites.bg) {
 			ctx.imageSmoothingEnabled = false;
-			ctx.drawImage(this.sprites.bg, x0, y0, x1 - x0, y1 - y0);
+			const img = this.sprites.bg;
+			const vw = x1 - x0, vh = y1 - y0;
+			const s = Math.max(vw / img.width, vh / img.height);
+			const dw = img.width * s, dh = img.height * s;
+			ctx.drawImage(img, x0 + (vw - dw) / 2, y0 + (vh - dh) / 2, dw, dh);
 		} else {
 			this.drawRoom(ctx, x0, x1, y0, y1);
 			this.drawPoster(ctx);

@@ -136,28 +136,35 @@ public static class SpritePrep {
     }
 
     // Edge cleanup + feathering (Photoshop-like soft brush edge):
-    // 1) Fringe removal: opaque pixels adjacent to transparency that are dark
-    //    (maxC < fringeMax) become transparent — kills black outline strips.
+    // 1) Fringe removal: opaque pixels within `fringeRing` px of transparency
+    //    that are dark (maxC < fringeMax) become transparent — kills black
+    //    outline strips left after chroma removal.
     // 2) Feather: opaque pixels within `feather` px of transparency get
     //    reduced alpha (linear ramp), so edges look smooth, not aliased.
-    public static void SoftenEdges(byte[] bytes, int stride, int W, int H, int fringeMax, int feather) {
+    public static void SoftenEdges(byte[] bytes, int stride, int W, int H, int fringeMax, int feather, int fringeRing) {
         // Snapshot alpha channel (we modify in place but read original alpha)
         var alpha = new byte[W * H];
         for (int y = 0; y < H; y++)
             for (int x = 0; x < W; x++)
                 alpha[y * W + x] = bytes[y * stride + x * 4 + 3];
 
-        // Pass 1: remove dark fringe (1px ring around transparency)
+        // Pass 1: remove dark fringe (ring around transparency)
         var toClear = new List<int>();
         for (int y = 0; y < H; y++) {
             for (int x = 0; x < W; x++) {
                 int i = y * W + x;
                 if (alpha[i] == 0) continue;
                 bool nearTransparent = false;
-                if (x > 0 && alpha[i - 1] == 0) nearTransparent = true;
-                if (x < W - 1 && alpha[i + 1] == 0) nearTransparent = true;
-                if (y > 0 && alpha[i - W] == 0) nearTransparent = true;
-                if (y < H - 1 && alpha[i + W] == 0) nearTransparent = true;
+                for (int d = 1; d <= fringeRing && !nearTransparent; d++) {
+                    for (int dy = -d; dy <= d && !nearTransparent; dy++) {
+                        for (int dx = -d; dx <= d; dx++) {
+                            if (Math.Max(Math.Abs(dx), Math.Abs(dy)) != d) continue;
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+                            if (alpha[ny * W + nx] == 0) { nearTransparent = true; break; }
+                        }
+                    }
+                }
                 if (!nearTransparent) continue;
                 int o = y * stride + x * 4;
                 int maxC = Math.Max(bytes[o + 2], Math.Max(bytes[o + 1], bytes[o]));
@@ -247,12 +254,7 @@ if ($Mode -eq "chroma") {
 $pct = [Math]::Round(100.0 * $bgCount / ($W * $H), 1)
 Write-Host "Background pixels: $bgCount of $($W * $H) ($pct%) [mode=$Mode]"
 
-# Apply transparency
-for ($i = 0; $i -lt $visited.Length; $i++) {
-    if ($visited[$i]) { $bytes[$i * 4 + 3] = 0 }
-}
-# NOTE: index i corresponds to pixel (i % W, i / W); byte offset = y*stride + x*4
-# (recompute properly below to avoid stride padding issues)
+# Apply transparency (correct indexing: byte offset = y*stride + x*4)
 for ($y = 0; $y -lt $H; $y++) {
     $row = $y * $stride
     for ($x = 0; $x -lt $W; $x++) {
@@ -260,16 +262,18 @@ for ($y = 0; $y -lt $H; $y++) {
     }
 }
 
+# Edge cleanup + feathering (fringe removal + soft edges).
+# ВАЖНО: вызывать ДО создания $outImg — иначе смягчение не попадает
+# в итоговый лист (именно из-за этого оставалась чёрная кайма по краям).
+[SpritePrep]::SoftenEdges($bytes, $stride, $W, $H, 80, 4, 2)
+Write-Host "Edges softened: fringe removed (maxC<80, ring 2px), feather 4px"
+
 # Write alpha back
 $outImg = [System.Drawing.Bitmap]::new($W, $H, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 $odata = $outImg.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::WriteOnly,
     [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 [System.Runtime.InteropServices.Marshal]::Copy($bytes, 0, $odata.Scan0, $bytes.Length)
 $outImg.UnlockBits($odata)
-
-# Edge cleanup + feathering (fringe removal + soft edges)
-[SpritePrep]::SoftenEdges($bytes, $stride, $W, $H, 60, 2)
-Write-Host "Edges softened: fringe removed (maxC<60), feather 2px"
 
 # BBoxes (C#, fast)
 $bboxesStr = [SpritePrep]::BBoxes($bytes, $stride, $W, $H, $Frames)
