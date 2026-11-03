@@ -183,7 +183,6 @@ const Scene = {
 		} else {
 			this.drawVova(ctx);
 		}
-		this.drawPlant(ctx);
 
 		this.drawBoss(ctx);
 
@@ -746,20 +745,6 @@ const Scene = {
 		ctx.fillStyle = "rgba(220, 220, 220, 0.25)";
 		ctx.fillRect(174, 396, 3, 6);
 		ctx.fillRect(180, 392, 3, 8);
-	},
-
-	// Растение в углу справа (в agile-офисах ВТБ много зелени)
-	drawPlant(ctx) {
-		ctx.fillStyle = "#6b4a2f";
-		ctx.fillRect(334, 440, 22, 28);
-		ctx.fillStyle = "#55381f";
-		ctx.fillRect(334, 440, 22, 6);
-		ctx.fillStyle = "#3f6b3f";
-		ctx.fillRect(338, 414, 6, 28);
-		ctx.fillRect(346, 408, 6, 34);
-		ctx.fillRect(330, 422, 6, 20);
-		ctx.fillStyle = "#4f7f4a";
-		ctx.fillRect(342, 418, 4, 24);
 	},
 
 	// Листы флипчарта — 4 разных «доклада» по номеру цикла босса
