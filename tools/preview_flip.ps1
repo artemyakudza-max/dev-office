@@ -34,16 +34,20 @@ $bg.Dispose()
 $ax0 = [Math]::Max($dx, $x0); $ay0 = [Math]::Max($dy, $y0)
 $ax1 = [Math]::Min($dx + $dw, $x1); $ay1 = [Math]::Min($dy + $dh, $y1)
 $adw = $ax1 - $ax0; $adh = $ay1 - $ay0
+# Опорная высота персонажей (как scene.unitH): ограничение по ширине экрана
+$auh = [Math]::Min($adh, $adw * 1.5)
 
 # Функция перевода логических координат в пиксели канваса
 function L2P([double]$lx, [double]$ly) {
     return @{ X = $script:offX + $lx * $script:scale; Y = $script:offY + $ly * $scale }
 }
 
-# Флипчарт: hFrac 0.30, fx 0.68, fy 0.845 (из config.js)
+# Флипчарт: привязан к боссу (bossGap 0.9), hFrac 0.27, fy 0.845 (из config.js)
 $fc = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\flipchart.png").Path)
-$fh = $adh * 0.30; $fw = $fh * (639.0 / 1042)
-$fcx = $ax0 + $adw * 0.68 - $fw / 2; $fcy = $ay0 + $adh * 0.845 - $fh
+$bossH = $auh * 0.26; $bossW = $bossH * (256.0 / 573)
+$bossCx = $ax0 + $adw * 0.62
+$fh = $auh * 0.27; $fw = $fh * (639.0 / 1042)
+$fcx = $bossCx + $bossW * 0.9 - $fw / 2; $fcy = $ay0 + $adh * 0.845 - $fh
 $p = L2P $fcx $fcy
 $g.DrawImage($fc, [System.Drawing.RectangleF]::new($p.X, $p.Y, $fw * $scale, $fh * $scale),
     [System.Drawing.RectangleF]::new($Frame * 639, 0, 639, 1042), [System.Drawing.GraphicsUnit]::Pixel)
@@ -52,7 +56,7 @@ Write-Host ("flipchart: logical x={0:F0}..{1:F0} (экран 0..{2:F0})" -f $fcx
 
 # Босс: hFrac 0.26, fx 0.62, fy 0.855, кадр 0
 $boss = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\boss_states.png").Path)
-$bh = $adh * 0.26; $bw = $bh * (256.0 / 573)
+$bh = $auh * 0.26; $bw = $bh * (256.0 / 573)
 $bx = $ax0 + $adw * 0.62 - $bw / 2; $by = $ay0 + $adh * 0.855 - $bh
 $p = L2P $bx $by
 $g.DrawImage($boss, [System.Drawing.RectangleF]::new($p.X, $p.Y, $bw * $scale, $bh * $scale),
@@ -61,7 +65,7 @@ $boss.Dispose()
 
 # Точки голов (headPoint) — маркеры, где появляются плашки
 foreach ($who in @(@("boss", 0.62, 0.26), @("vova", 0.40, 0.30))) {
-    $hh = $adh * $who[2]
+    $hh = $auh * $who[2]
     $hx = $ax0 + $adw * $who[1]; $hy = $ay0 + $adh * 0.845 - $hh
     $p = L2P $hx $hy
     $g.FillEllipse([System.Drawing.Brushes]::Lime, $p.X - 4, $p.Y - 4, 8, 8)

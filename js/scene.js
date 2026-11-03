@@ -60,6 +60,13 @@ const Scene = {
 			{ dx: 0, dy: 0, dw: this.W, dh: this.H };
 	},
 
+	// Опорная высота для размеров персонажей. На портретном телефоне фон
+	// вытягивается по высоте (dh велико) — без ограничения по ширине
+	// персонажи становятся огромными и налезают друг на друга
+	unitH(r) {
+		return Math.min(r.dh, r.dw * 1.5);
+	},
+
 	// Рисует кадр frameIndex спрайт-листа, привязанный к фону.
 	// fx — центр персонажа (доля ширины фона), fy — линия ног (доля высоты),
 	// hFrac — высота персонажа (доля высоты фона). fallback — доли для
@@ -70,7 +77,7 @@ const Scene = {
 		const fx = cfg.fx ?? fallback.fx;
 		const fy = cfg.fy ?? fallback.fy;
 		const hFrac = cfg.hFrac ?? fallback.hFrac;
-		const h = r.dh * hFrac;
+		const h = this.unitH(r) * hFrac;
 		const w = h * (cfg.frame.w / cfg.frame.h);
 		const x = r.dx + r.dw * fx - w / 2;
 		const y = r.dy + r.dh * fy - h;
@@ -102,7 +109,7 @@ const Scene = {
 		const cfg = CONFIG.sprites[who];
 		if (!cfg) return { x: this.W / 2, y: this.H / 2 };
 		const r = this.anchor();
-		const h = r.dh * cfg.hFrac;
+		const h = this.unitH(r) * cfg.hFrac;
 		return {
 			x: r.dx + r.dw * cfg.fx,
 			y: r.dy + r.dh * cfg.fy - h, // верх головы
@@ -388,12 +395,18 @@ const Scene = {
 	// Нет спрайта — код-арт (фолбэк, игра не ломается)
 	drawFlipchart(ctx) {
 		const cfg = CONFIG.sprites.flipchart;
-		if (!cfg) return;
+		const bossCfg = CONFIG.sprites.boss;
+		if (!cfg || !bossCfg) return;
 		const r = this.anchor();
-		const h = r.dh * cfg.hFrac;
+		const uh = this.unitH(r);
+		// Флипчарт привязан к боссу: стоит справа за его спиной на том же полу
+		const bossH = uh * bossCfg.hFrac;
+		const bossW = bossH * (bossCfg.frame.w / bossCfg.frame.h);
+		const bossCx = r.dx + r.dw * bossCfg.fx;
+		const h = uh * cfg.hFrac;
 		const spr = this.sprites.flipchart && cfg.frame;
 		const w = h * (spr ? cfg.frame.w / cfg.frame.h : 0.78);
-		const x = r.dx + r.dw * cfg.fx - w / 2;
+		const x = bossCx + bossW * (cfg.bossGap ?? 0.9) - w / 2;
 		const y = r.dy + r.dh * cfg.fy - h;
 		const s = h / 200;                // масштаб деталей (исходник ~200 высотой)
 		if (spr) {
