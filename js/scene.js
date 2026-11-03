@@ -67,11 +67,41 @@ const Scene = {
 		return Math.min(r.dh, r.dw * 1.5);
 	},
 
+	// Раскладка персонажей по видимой области (считается в draw(), кэш —
+	// layoutCache). Узкий экран (мобайл): Вова у левого края, флипчарт у
+	// правого, босс вплотную к флипчарту. Широкий (десктоп): позиции по
+	// долям ширины (fx из конфига)
+	layout() {
+		const r = this.anchor();
+		const uh = this.unitH(r);
+		const vovaCfg = CONFIG.sprites.vova;
+		const bossCfg = CONFIG.sprites.boss;
+		const flipCfg = CONFIG.sprites.flipchart;
+		const vovaW = uh * vovaCfg.hFrac * (vovaCfg.frame.w / vovaCfg.frame.h);
+		const bossW = uh * bossCfg.hFrac * (bossCfg.frame.w / bossCfg.frame.h);
+		const flipW = uh * flipCfg.hFrac * (flipCfg.frame.w / flipCfg.frame.h);
+		const gap = bossW * (flipCfg.bossGap ?? 0.75); // босс↔доска
+		const m = 10;                                  // поле от края экрана
+		let vovaX, bossX, flipX;
+		if (r.dw < 500) {
+			flipX = r.dx + r.dw - m - flipW / 2;       // правый край экрана
+			bossX = flipX - gap;                       // босс вплотную к доске
+			vovaX = r.dx + m + vovaW / 2;              // левый край экрана
+		} else {
+			vovaX = r.dx + r.dw * vovaCfg.fx;
+			bossX = r.dx + r.dw * bossCfg.fx;
+			flipX = bossX + gap;
+		}
+		return { r, uh, vovaX, bossX, flipX };
+	},
+
+	layoutCache: null,
+
 	// Рисует кадр frameIndex спрайт-листа, привязанный к фону.
-	// fx — центр персонажа (доля ширины фона), fy — линия ног (доля высоты),
-	// hFrac — высота персонажа (доля высоты фона). fallback — доли для
-	// код-арт комнаты, если фон не загрузился
-	drawSpriteOnBg(ctx, img, cfg, frameIndex, fallback) {
+	// fy — линия ног (доля высоты), hFrac — высота (доля опорной высоты).
+	// xOverride — готовый центр из раскладки (layout); без него — по доле fx.
+	// fallback — доли для код-арт комнаты, если фон не загрузился
+	drawSpriteOnBg(ctx, img, cfg, frameIndex, fallback, xOverride) {
 		if (!img || !cfg) return false;
 		const r = this.anchor();
 		const fx = cfg.fx ?? fallback.fx;
@@ -79,7 +109,7 @@ const Scene = {
 		const hFrac = cfg.hFrac ?? fallback.hFrac;
 		const h = this.unitH(r) * hFrac;
 		const w = h * (cfg.frame.w / cfg.frame.h);
-		const x = r.dx + r.dw * fx - w / 2;
+		const x = (xOverride != null) ? xOverride : r.dx + r.dw * fx - w / 2;
 		const y = r.dy + r.dh * fy - h;
 		const fw = cfg.frame.w, fh = cfg.frame.h;
 		ctx.imageSmoothingEnabled = false;
@@ -108,11 +138,11 @@ const Scene = {
 	headPoint(who) {
 		const cfg = CONFIG.sprites[who];
 		if (!cfg) return { x: this.W / 2, y: this.H / 2 };
-		const r = this.anchor();
-		const h = this.unitH(r) * cfg.hFrac;
+		const L = this.layoutCache || (this.layoutCache = this.layout());
+		const h = L.uh * cfg.hFrac;
 		return {
-			x: r.dx + r.dw * cfg.fx,
-			y: r.dy + r.dh * cfg.fy - h, // верх головы
+			x: (who === "vova") ? L.vovaX : L.bossX,
+			y: L.r.dy + L.r.dh * cfg.fy - h, // верх головы
 		};
 	},
 
@@ -181,6 +211,7 @@ const Scene = {
 			this.drawWindow(ctx);
 			this.drawLamps(ctx);
 		}
+		this.layoutCache = this.layout(); // раскладка на этот кадр
 		this.drawFlipchart(ctx);
 		// Кресло и стол уже нарисованы в спрайте Вовы — код-арт не дублируем
 		if (!this.sprites.vova) {
@@ -395,19 +426,13 @@ const Scene = {
 	// Нет спрайта — код-арт (фолбэк, игра не ломается)
 	drawFlipchart(ctx) {
 		const cfg = CONFIG.sprites.flipchart;
-		const bossCfg = CONFIG.sprites.boss;
-		if (!cfg || !bossCfg) return;
-		const r = this.anchor();
-		const uh = this.unitH(r);
-		// Флипчарт привязан к боссу: стоит справа за его спиной на том же полу
-		const bossH = uh * bossCfg.hFrac;
-		const bossW = bossH * (bossCfg.frame.w / bossCfg.frame.h);
-		const bossCx = r.dx + r.dw * bossCfg.fx;
-		const h = uh * cfg.hFrac;
+		if (!cfg) return;
+		const L = this.layoutCache || (this.layoutCache = this.layout());
+		const h = L.uh * cfg.hFrac;
 		const spr = this.sprites.flipchart && cfg.frame;
 		const w = h * (spr ? cfg.frame.w / cfg.frame.h : 0.78);
-		const x = bossCx + bossW * (cfg.bossGap ?? 0.9) - w / 2;
-		const y = r.dy + r.dh * cfg.fy - h;
+		const x = L.flipX - w / 2;
+		const y = L.r.dy + L.r.dh * cfg.fy - h;
 		const s = h / 200;                // масштаб деталей (исходник ~200 высотой)
 		if (spr) {
 			const frame = Boss.cycleCount % 4;
@@ -468,9 +493,10 @@ const Scene = {
 		// Кадр спрайта: 0 слушает, 1 телефон наверху, 2 пойман
 		if (this.sprites.vova) {
 			const fi = this.vovaCaught ? 2 : (this.vovaPhoneUp ? 1 : 0);
+			const L = this.layoutCache || (this.layoutCache = this.layout());
 			// Фолбэк-доли для код-арт комнаты (без фона): где Вова сидел в код-арте
 			this.drawSpriteOnBg(ctx, this.sprites.vova, CONFIG.sprites.vova, fi,
-				{ fx: 0.19, fy: 0.747, hFrac: 0.253 });
+				{ fx: 0.19, fy: 0.747, hFrac: 0.253 }, L.vovaX);
 			return;
 		}
 		const P = {
@@ -613,9 +639,10 @@ const Scene = {
 		// Кадр спрайта по состоянию автомата босса
 		if (this.sprites.boss) {
 			const map = { AT_FLIPCHART: 0, TURNING: 1, WATCHING: 2, FAKEOUT: 3 };
+			const L = this.layoutCache || (this.layoutCache = this.layout());
 			// Фолбэк-доли для код-арт комнаты (без фона): где стоял босс в код-арте
 			this.drawSpriteOnBg(ctx, this.sprites.boss, CONFIG.sprites.boss, map[this.bossState] || 0,
-				{ fx: 0.77, fy: 0.747, hFrac: 0.231 });
+				{ fx: 0.77, fy: 0.747, hFrac: 0.231 }, L.bossX);
 			return;
 		}
 		const P = {

@@ -42,31 +42,43 @@ function L2P([double]$lx, [double]$ly) {
     return @{ X = $script:offX + $lx * $script:scale; Y = $script:offY + $ly * $scale }
 }
 
-# Флипчарт: привязан к боссу (bossGap 0.9), hFrac 0.27, fy 0.845 (из config.js)
+# Раскладка (как scene.layout): узкий экран — края, широкий — доли fx
+$vovaW = $auh * 0.30 * (256.0 / 434)
+$bossW = $auh * 0.26 * (256.0 / 573)
+$flipW = $auh * 0.27 * (639.0 / 1042)
+$gap = $bossW * 0.75
+$m = 10
+if ($adw -lt 500) {
+    $flipCx = $ax0 + $adw - $m - $flipW / 2
+    $bossCx = $flipCx - $gap
+    $vovaCx = $ax0 + $m + $vovaW / 2
+} else {
+    $vovaCx = $ax0 + $adw * 0.40
+    $bossCx = $ax0 + $adw * 0.62
+    $flipCx = $bossCx + $gap
+}
 $fc = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\flipchart.png").Path)
-$bossH = $auh * 0.26; $bossW = $bossH * (256.0 / 573)
-$bossCx = $ax0 + $adw * 0.62
-$fh = $auh * 0.27; $fw = $fh * (639.0 / 1042)
-$fcx = $bossCx + $bossW * 0.9 - $fw / 2; $fcy = $ay0 + $adh * 0.845 - $fh
+$fh = $auh * 0.27; $fw = $flipW
+$fcx = $flipCx - $fw / 2; $fcy = $ay0 + $adh * 0.845 - $fh
 $p = L2P $fcx $fcy
 $g.DrawImage($fc, [System.Drawing.RectangleF]::new($p.X, $p.Y, $fw * $scale, $fh * $scale),
     [System.Drawing.RectangleF]::new($Frame * 639, 0, 639, 1042), [System.Drawing.GraphicsUnit]::Pixel)
 $fc.Dispose()
 Write-Host ("flipchart: logical x={0:F0}..{1:F0} (экран 0..{2:F0})" -f $fcx, ($fcx + $fw), $x1)
 
-# Босс: hFrac 0.26, fx 0.62, fy 0.855, кадр 0
+# Босс: hFrac 0.26, fy 0.855, кадр 0 — позиция из раскладки
 $boss = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\boss_states.png").Path)
-$bh = $auh * 0.26; $bw = $bh * (256.0 / 573)
-$bx = $ax0 + $adw * 0.62 - $bw / 2; $by = $ay0 + $adh * 0.855 - $bh
+$bh = $auh * 0.26; $bw = $bossW
+$bx = $bossCx - $bw / 2; $by = $ay0 + $adh * 0.855 - $bh
 $p = L2P $bx $by
 $g.DrawImage($boss, [System.Drawing.RectangleF]::new($p.X, $p.Y, $bw * $scale, $bh * $scale),
     [System.Drawing.RectangleF]::new(0, 0, 256, 573), [System.Drawing.GraphicsUnit]::Pixel)
 $boss.Dispose()
 
 # Точки голов (headPoint) — маркеры, где появляются плашки
-foreach ($who in @(@("boss", 0.62, 0.26), @("vova", 0.40, 0.30))) {
+foreach ($who in @(@("boss", $bossCx, 0.26, 0.855), @("vova", $vovaCx, 0.30, 0.91))) {
     $hh = $auh * $who[2]
-    $hx = $ax0 + $adw * $who[1]; $hy = $ay0 + $adh * 0.845 - $hh
+    $hx = $who[1]; $hy = $ay0 + $adh * $who[3] - $hh
     $p = L2P $hx $hy
     $g.FillEllipse([System.Drawing.Brushes]::Lime, $p.X - 4, $p.Y - 4, 8, 8)
     Write-Host ("head {0}: logical x={1:F0} y={2:F0}" -f $who[0], $hx, $hy)
