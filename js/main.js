@@ -83,8 +83,8 @@
 				i = Math.floor(Math.random() * CONFIG.bossLines.length);
 			} while (i === Game.lastBossLine);
 			Game.lastBossLine = i;
-			const hp = Scene.headPoint("boss");
-			UI.bubble(CONFIG.bossLines[i], hp.x, hp.y);
+			const hp = Scene.bubbleAnchor("boss");
+			UI.bubble(CONFIG.bossLines[i], hp.x, hp.y, hp.align);
 		}
 
 		// Разблокировка телефона: босс отвернулся от аудитории
@@ -103,8 +103,8 @@
 					i = Math.floor(Math.random() * CONFIG.memes.length);
 				} while (i === Game.lastMeme);
 				Game.lastMeme = i;
-				const mp = Scene.headPoint("vova");
-				UI.bubble(CONFIG.memes[i], mp.x, mp.y);
+				const mp = Scene.bubbleAnchor("vova");
+				UI.bubble(CONFIG.memes[i], mp.x, mp.y, mp.align);
 			}
 		}
 

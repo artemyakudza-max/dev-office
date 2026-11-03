@@ -109,7 +109,8 @@ const Scene = {
 		const hFrac = cfg.hFrac ?? fallback.hFrac;
 		const h = this.unitH(r) * hFrac;
 		const w = h * (cfg.frame.w / cfg.frame.h);
-		const x = (xOverride != null) ? xOverride : r.dx + r.dw * fx - w / 2;
+		// xOverride — ЦЕНТР персонажа из раскладки (layout)
+		const x = (xOverride != null) ? xOverride - w / 2 : r.dx + r.dw * fx - w / 2;
 		const y = r.dy + r.dh * fy - h;
 		const fw = cfg.frame.w, fh = cfg.frame.h;
 		ctx.imageSmoothingEnabled = false;
@@ -143,6 +144,19 @@ const Scene = {
 		return {
 			x: (who === "vova") ? L.vovaX : L.bossX,
 			y: L.r.dy + L.r.dh * cfg.fy - h, // верх головы
+		};
+	},
+
+	// Точка и выравнивание плашки над персонажем.
+	// Мобайл (узкий экран): плашка прижимается к краю экрана независимо от
+	// позиции спрайта, на высоте головы. Десктоп: по центру головы
+	bubbleAnchor(who) {
+		const head = this.headPoint(who);
+		const narrow = this.anchor().dw < 500;
+		return {
+			x: head.x,
+			y: head.y,
+			align: narrow ? (who === "vova" ? "left" : "right") : "center",
 		};
 	},
 

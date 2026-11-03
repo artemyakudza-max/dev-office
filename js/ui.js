@@ -261,7 +261,9 @@ const UI = {
 
 	// Плашка над объектом сцены (координаты — логические, 360×640).
 	// Всплывает и тает, длительность из конфига
-	bubble(text, lx, ly) {
+	// align: "center" — по центру точки (десктоп), "left"/"right" — прижата
+	// к краю экрана (мобайл), независимо от позиции спрайта
+	bubble(text, lx, ly, align) {
 		const p = Scene.toScreen(lx, ly);
 		const el = document.createElement("div");
 		el.className = "bubble";
@@ -270,11 +272,18 @@ const UI = {
 		el.style.top = p.y + "px";
 		el.style.animationDuration = CONFIG.ui.bubbleSec + "s";
 		this.root.appendChild(el);
-		// Плашка центрирована на точке — у края экрана половина улетает.
-		// Сдвигаем центр так, чтобы плашка оставалась на экране
-		const half = el.offsetWidth / 2, m = 8;
-		const cx = Math.min(Math.max(p.x, half + m), window.innerWidth - half - m);
-		if (cx !== p.x) el.style.left = cx + "px";
+		const w = el.offsetWidth, m = 8;
+		if (align === "left") {
+			el.style.left = m + "px";
+		} else if (align === "right") {
+			el.style.left = (window.innerWidth - m - w) + "px";
+		} else {
+			// Плашка центрирована на точке — у края экрана половина улетает.
+			// Сдвигаем центр так, чтобы плашка оставалась на экране
+			const half = w / 2;
+			const cx = Math.min(Math.max(p.x, half + m), window.innerWidth - half - m);
+			if (cx !== p.x) el.style.left = cx + "px";
+		}
 		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
 	},
 

@@ -66,6 +66,16 @@ $g.DrawImage($fc, [System.Drawing.RectangleF]::new($p.X, $p.Y, $fw * $scale, $fh
 $fc.Dispose()
 Write-Host ("flipchart: logical x={0:F0}..{1:F0} (экран 0..{2:F0})" -f $fcx, ($fcx + $fw), $x1)
 
+# Вова: hFrac 0.30, fy 0.91, кадр 0 — позиция из раскладки (левый край на мобиле)
+$vova = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\vova_poses.png").Path)
+$vh2 = $auh * 0.30; $vw2 = $vh2 * (256.0 / 434)
+$vx = $vovaCx - $vw2 / 2; $vy = $ay0 + $adh * 0.91 - $vh2
+$p = L2P $vx $vy
+$g.DrawImage($vova, [System.Drawing.RectangleF]::new($p.X, $p.Y, $vw2 * $scale, $vh2 * $scale),
+    [System.Drawing.RectangleF]::new(0, 0, 256, 434), [System.Drawing.GraphicsUnit]::Pixel)
+$vova.Dispose()
+Write-Host ("vova: logical x={0:F0}..{1:F0}" -f $vx, ($vx + $vw2))
+
 # Босс: hFrac 0.26, fy 0.855, кадр 0 — позиция из раскладки
 $boss = [System.Drawing.Image]::FromFile((Resolve-Path "assets\sprites\boss_states.png").Path)
 $bh = $auh * 0.26; $bw = $bossW
