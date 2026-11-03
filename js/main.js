@@ -43,6 +43,16 @@
 		if (Game.screen !== "playing") return; // экран выбора: сцена живёт фоном
 		if (Game.over) return; // после финала сцена замирает
 		if (Game.paused) return; // пауза: таймеры замирают
+		// Обучение: игра стоит на паузе, пока игрок не коснётся экрана.
+		// Касание закрытия не поднимает телефон — игрок стартует осознанно
+		if (!Game.tutorialDone) {
+			if (Input.pressed) {
+				Game.tutorialDone = true;
+				Input.reset();
+				UI.hideTutorial();
+			}
+			return;
+		}
 		if (Game.frozen > 0) {
 			// Окно гнева босса: игра стоит — штраф «-2,5 сек игрового времени»
 			Game.frozen -= dt;
@@ -68,12 +78,6 @@
 		// Поимка: только когда босс смотрит на аудиторию
 		if (Boss.state === "WATCHING" && Vova.checkCaught(Boss.stateTime, Game.time)) {
 			caught();
-		}
-
-		// Обучение: плашка исчезает только после первого касания (решение автора)
-		if (!Game.tutorialDone && Input.pressed) {
-			Game.tutorialDone = true;
-			UI.hideTutorial();
 		}
 
 		// Реплика босса при переходе в «Смотрит», не подряд одна и та же (ТЗ §5.5)
