@@ -136,6 +136,50 @@ html, body {
 	box-shadow: 0 0 30px rgba(201, 162, 39, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.4);
 }
 
+/* Цветовой акцент исхода: победа — золото, провал — красный, пасхалка — синий */
+.final-card-fail {
+	border-color: #c05050;
+	box-shadow: 0 0 30px rgba(192, 80, 80, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.final-card-easter {
+	border-color: #4a7ae0;
+	box-shadow: 0 0 30px rgba(74, 122, 224, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.final-card-fail .final-header {
+	color: #e07070;
+}
+
+/* Портрет исхода: «вспышка» вверху карточки, выпрыгивает со ступенчатым
+   пиксель-эффектом (референсы: эмоция персонажа читается раньше текста) */
+.final-portrait {
+	width: 132px;
+	height: 132px;
+	margin: -58px auto 14px;   /* наполовину выходит за верх карточки */
+	display: block;
+	object-fit: cover;
+	image-rendering: pixelated;
+	border: 3px solid #c9a227;
+	border-radius: 10px;
+	background: #12141c;
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+	animation: finalPop 0.45s steps(5) both;
+}
+
+.final-portrait-fail {
+	border-color: #c05050;
+}
+
+.final-portrait-easter {
+	border-color: #4a7ae0;
+}
+
+@keyframes finalPop {
+	0%   { opacity: 0; transform: scale(0.5) translateY(14px); }
+	100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .final-header {
 	font-family: var(--pixel-font);
 	font-size: 11px;

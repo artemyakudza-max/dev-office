@@ -190,9 +190,15 @@ const UI = {
 
 	// Финальный экран: один шаблон-карточка, три исхода (ТЗ §9)
 	// kind: "win" | "fail" | "easter"
+	// Портрет-«вспышка исхода» сверху карточки + цветовой акцент рамки
+	// (приём из референсов: эмоция персонажа читается раньше текста)
 	showFinal(kind, data, onRestart, onMenu) {
 		let body = "";
 		let shareText = "";
+		const portrait = `
+			<img class="final-portrait final-portrait-${kind}"
+				src="${CONFIG.finalPortraits[kind]}" alt="">
+		`;
 
 		if (kind === "win") {
 			body = `
@@ -222,7 +228,8 @@ const UI = {
 
 		const el = this._overlay();
 		el.innerHTML = `
-			<div class="final-card">
+			<div class="final-card final-card-${kind}">
+				${portrait}
 				${body}
 				<button id="share-btn" class="final-btn final-btn-share">Поделиться</button>
 				<button id="again-btn" class="final-btn final-btn-again">Ещё раз</button>
