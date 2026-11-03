@@ -332,6 +332,51 @@ const UI = {
 		}
 	},
 
+	// Кнопка «Правила» под кнопкой паузы: тот же стиль панели,
+	// золотой текст — заметная, но в общем стиле игры
+	showRulesBtn(onRules) {
+		if (this.rulesBtn) return;
+		this.rulesBtn = document.createElement("div");
+		this.rulesBtn.textContent = "ПРАВИЛА";
+		this.rulesBtn.style.cssText = `
+			position: absolute; top: 58px; right: 10px;
+			display: flex; align-items: center; justify-content: center;
+			height: 40px; padding: 0 10px; box-sizing: border-box;
+			background: rgba(38, 38, 58, 0.85);
+			border: 2px solid #4a5064; border-radius: 6px;
+			color: #f0c040; font-family: var(--pixel-font); font-size: 8px;
+			cursor: pointer; pointer-events: auto; z-index: 10;
+		`;
+		this.rulesBtn.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			e.stopPropagation(); // касание кнопки не поднимает телефон
+			onRules();
+		});
+		this.root.appendChild(this.rulesBtn);
+	},
+
+	hideRulesBtn() {
+		if (this.rulesBtn) {
+			this.rulesBtn.remove();
+			this.rulesBtn = null;
+		}
+	},
+
+	// Окно правил: игра на паузе, кнопка «Играть» возвращает в забег
+	showRules(onClose) {
+		this.rulesEl = this._overlay();
+		const lines = CONFIG.rules.map((t) => `<p class="rules-line">${t}</p>`).join("");
+		this.rulesEl.innerHTML = `
+			<div class="final-card" style="max-width: 320px;">
+				<p style="font-family: var(--pixel-font); font-size: 14px; color: #f0c040;
+					margin: 0 0 16px; text-align: center;">ПРАВИЛА</p>
+				${lines}
+				<button id="rules-close" class="final-btn final-btn-again" style="margin-top: 16px;">Играть</button>
+			</div>
+		`;
+		this.rulesEl.querySelector("#rules-close").addEventListener("click", onClose);
+	},
+
 	// Меню паузы: продолжить или выйти в главное меню.
 	// Клик в любую точку экрана (кроме кнопок) тоже продолжает игру
 	showPauseMenu(onResume, onMenu) {

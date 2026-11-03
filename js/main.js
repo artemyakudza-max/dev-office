@@ -157,6 +157,7 @@
 	function goMenu() {
 		restart();
 		UI.hidePauseBtn();
+		UI.hideRulesBtn();
 		Game.screen = "select";
 		UI.showSelect(startGame);
 	}
@@ -185,6 +186,15 @@
 		Game.screen = "playing";
 		UI.showTutorial();
 		UI.showPauseBtn(pauseByButton);
+		UI.showRulesBtn(rulesByButton);
+	}
+
+	// Правила по кнопке: пауза + окно, «Играть» продолжает забег
+	function rulesByButton() {
+		if (Game.over || Game.paused) return;
+		Game.paused = true;
+		Input.reset(); // закрытие окна не должно поднимать телефон
+		UI.showRules(resume);
 	}
 
 	// Пауза по кнопке: меню с продолжением и выходом в меню

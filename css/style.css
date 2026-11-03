@@ -261,6 +261,16 @@ html, body {
 	color: #ffffff;
 }
 
+/* Строка правил в окне «Правила»: читаемый текст с эмодзи */
+.rules-line {
+	font-family: var(--body-font);
+	font-size: 15px;
+	line-height: 1.5;
+	color: #fff;
+	text-align: left;
+	margin: 0 0 10px;
+}
+
 /* Пиксельные кнопки: единая рамка с «гравировкой», тень-сдвиг */
 .final-btn {
 	display: block;
