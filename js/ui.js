@@ -34,7 +34,9 @@ const UI = {
 
 	// HUD-элементы Вовы (счётчик «Свои дела», полоска таймера) в «Цицеридисе»
 	// не используются — прячу их (решение автора)
+	mode: "vova",
 	setMode(mode) {
+		this.mode = mode;
 		const isVova = mode === "vova";
 		this.percentLabel.style.display = isVova ? "" : "none";
 		this.timerBar.parentElement.style.display = isVova ? "" : "none";
@@ -87,8 +89,9 @@ const UI = {
 	// Пауза: оверлей возврата. Возврат — касание самого оверлея
 	showPause(onResume) {
 		this.pauseEl = this._overlay();
+		const who = this.mode === "ciceridis" ? "Чекеридис" : "Вова";
 		this.pauseEl.innerHTML = `
-			<p style="font-size: 20px; margin: 0;">Все ждут только тебя, Вова.</p>
+			<p style="font-size: 20px; margin: 0;">Все ждут только тебя, ${who}.</p>
 			<p style="margin: 8px 0 0;">Коснись, чтобы вернуться</p>
 		`;
 		this.pauseEl.addEventListener("pointerdown", (e) => {
