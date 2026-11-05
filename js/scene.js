@@ -10,6 +10,7 @@ const Scene = {
 	ctx: null,
 
 	// Состояния для отрисовки (меняет main.js)
+	mode: "vova",        // какая мини-игра на экране: "vova" | "ciceridis"
 	vovaPhoneUp: false,
 	vovaCaught: false,   // Вова пойман — телефон заблокирован
 	animTime: 0,         // игровое время для анимаций
@@ -226,6 +227,12 @@ const Scene = {
 			this.drawLamps(ctx);
 		}
 		this.layoutCache = this.layout(); // раскладка на этот кадр
+		if (this.mode === "ciceridis") {
+			// Мини-игра «Цицеридис»: своя сцена, персонажи Вовы не рисуются
+			this.drawCiceridis(ctx);
+			ctx.restore();
+			return;
+		}
 		this.drawFlipchart(ctx);
 		// Кресло и стол уже нарисованы в спрайте Вовы — код-арт не дублируем
 		if (!this.sprites.vova) {
@@ -497,6 +504,69 @@ const Scene = {
 		ctx.fillStyle = "#1c1f26";
 		ctx.fillRect(50, 472, 8, 6);
 		ctx.fillRect(88, 472, 8, 6);
+	},
+
+	// Сцена мини-игры «Цицеридис» (этап 3): заглушка — Чекеридис стоит на стуле.
+	// Код-арт: стул + пиксельный человечек с бокалом. Настоящий спрайт
+	// и анимации добавим на следующих этапах
+	drawCiceridis(ctx) {
+		const cx = this.W / 2;   // центр сцены
+		const floorY = 478;      // линия пола (как в комнате Вовы)
+
+		// Стул: сиденье, спинка, ножки
+		ctx.fillStyle = "#7a5433";
+		ctx.fillRect(cx - 26, floorY - 96, 52, 10);   // сиденье
+		ctx.fillRect(cx - 24, floorY - 150, 8, 54);   // спинка
+		ctx.fillRect(cx + 16, floorY - 150, 8, 54);
+		ctx.fillRect(cx - 22, floorY - 86, 6, 86);    // ножки
+		ctx.fillRect(cx + 16, floorY - 86, 6, 86);
+		ctx.fillStyle = "#5c3d24";
+		ctx.fillRect(cx - 26, floorY - 88, 52, 3);    // тень на сиденье
+
+		// Чекеридис (заглушка): стоит на сиденье, чёрная кожанка, бокал в руке
+		const P = {
+			hair: "#3a2e26",
+			skin: "#e8b48c",
+			jacket: "#1c1c22",
+			jacketLight: "#2a2a34",
+			jeans: "#3a4a6a",
+			glass: "#c8a038",
+			beer: "#e8a830",
+			foam: "#f5f0e0",
+		};
+		const bx = cx - 14, by = floorY - 96; // базовая точка: сиденье стула
+		// Ноги (стоя на сиденье)
+		ctx.fillStyle = P.jeans;
+		ctx.fillRect(bx + 4, by - 34, 9, 34);
+		ctx.fillRect(bx + 15, by - 34, 9, 34);
+		ctx.fillStyle = "#1a1a20";
+		ctx.fillRect(bx + 2, by - 4, 12, 4);   // ботинки
+		ctx.fillRect(bx + 14, by - 4, 12, 4);
+		// Торс — кожаная куртка
+		ctx.fillStyle = P.jacket;
+		ctx.fillRect(bx, by - 74, 28, 42);
+		ctx.fillStyle = P.jacketLight;
+		ctx.fillRect(bx + 12, by - 74, 4, 42); // молния
+		// Голова
+		ctx.fillStyle = P.skin;
+		ctx.fillRect(bx + 6, by - 96, 18, 22);
+		ctx.fillStyle = P.hair;
+		ctx.fillRect(bx + 4, by - 100, 22, 8);
+		ctx.fillStyle = "#26262a";
+		ctx.fillRect(bx + 10, by - 88, 3, 3);  // глаза
+		ctx.fillRect(bx + 18, by - 88, 3, 3);
+		// Рука с бокалом (справа)
+		ctx.fillStyle = P.jacket;
+		ctx.fillRect(bx + 26, by - 68, 8, 20);
+		ctx.fillStyle = P.skin;
+		ctx.fillRect(bx + 28, by - 50, 6, 6);
+		// Бокал: пиво с пенкой
+		ctx.fillStyle = P.glass;
+		ctx.fillRect(bx + 26, by - 66, 10, 16);
+		ctx.fillStyle = P.beer;
+		ctx.fillRect(bx + 27, by - 58, 8, 7);
+		ctx.fillStyle = P.foam;
+		ctx.fillRect(bx + 27, by - 66, 8, 4);
 	},
 
 	// Вова: сидит за столом, вид сбоку, лицом вправо.

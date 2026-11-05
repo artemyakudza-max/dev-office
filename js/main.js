@@ -7,6 +7,7 @@
 		over: false,
 		paused: false,
 		screen: "select", // select | playing
+		mode: "vova",     // какая мини-игра: "vova" | "ciceridis"
 		frozen: 0,        // заморозка игры (окно гнева босса), в секундах
 		memeTimer: 0,     // через сколько секунд показать следующую мем-плашку
 		lastMeme: -1,     // индекс последнего мема (не повторять подряд)
@@ -19,8 +20,9 @@
 	Scene.init(document.getElementById("scene"));
 	Boss.reset();
 	Vova.reset();
+	Ciceridis.reset();
 	// Экран выбора персонажа (ТЗ §1.3)
-	UI.showSelect(startGame);
+	UI.showSelect(startGame, startCiceridis);
 
 	let lastTime = performance.now();
 
@@ -33,6 +35,7 @@
 		if (Game.screen === "select") {
 			Scene.clearToBackground(); // экран выбора: просто тёмный фон
 		} else {
+			Scene.mode = Game.mode; // сцена рисует ту мини-игру, что запущена
 			Scene.draw();
 		}
 
@@ -43,6 +46,11 @@
 		if (Game.screen !== "playing") return; // экран выбора: сцена живёт фоном
 		if (Game.over) return; // после финала сцена замирает
 		if (Game.paused) return; // пауза: таймеры замирают
+		// Мини-игра «Цицеридис»: свой игровой цикл (этап 3 — пока пустой)
+		if (Game.mode === "ciceridis") {
+			Ciceridis.update(dt);
+			return;
+		}
 		// Обучение: игра стоит на паузе, пока игрок не коснётся экрана.
 		// Касание закрытия не поднимает телефон — игрок стартует осознанно
 		if (!Game.tutorialDone) {
@@ -163,7 +171,7 @@
 		UI.hidePauseBtn();
 		UI.hideRulesBtn();
 		Game.screen = "select";
-		UI.showSelect(startGame);
+		UI.showSelect(startGame, startCiceridis);
 	}
 
 	// Полный сброс состояния забега (ТЗ §10)
@@ -186,9 +194,21 @@
 	// Старт забега после выбора персонажа
 	function startGame() {
 		restart();
+		Game.mode = "vova";
 		Game.tutorialDone = false; // после restart: обучение показываем заново
 		Game.screen = "playing";
-		UI.showTutorial();
+		UI.showTutorial(CONFIG.rules);
+		UI.showPauseBtn(pauseByButton);
+		UI.showRulesBtn(rulesByButton);
+	}
+
+	// Старт мини-игры «Цицеридис» (этап 3: сцена + интерфейс, геймплей позже)
+	function startCiceridis() {
+		restart();
+		Game.mode = "ciceridis";
+		Game.tutorialDone = false;
+		Game.screen = "playing";
+		UI.showTutorial(CONFIG.ciceridis.rules);
 		UI.showPauseBtn(pauseByButton);
 		UI.showRulesBtn(rulesByButton);
 	}
@@ -198,7 +218,7 @@
 		if (Game.over || Game.paused) return;
 		Game.paused = true;
 		Input.reset(); // закрытие окна не должно поднимать телефон
-		UI.showRules(resume);
+		UI.showRules(Game.mode === "ciceridis" ? CONFIG.ciceridis.rules : CONFIG.rules, resume);
 	}
 
 	// Пауза по кнопке: меню с продолжением и выходом в меню
