@@ -198,6 +198,7 @@
 		Game.mode = "vova";
 		Game.tutorialDone = false; // после restart: обучение показываем заново
 		Game.screen = "playing";
+		UI.setMode("vova"); // HUD Вовы: счётчик «Свои дела» + таймер
 		UI.showTutorial(CONFIG.rules);
 		UI.showPauseBtn(pauseByButton);
 		UI.showRulesBtn(rulesByButton);
@@ -209,6 +210,7 @@
 		Game.mode = "ciceridis";
 		Game.tutorialDone = false;
 		Game.screen = "playing";
+		UI.setMode("ciceridis"); // HUD Вовы скрыт: счётчик не используется
 		UI.showTutorial(CONFIG.ciceridis.rules);
 		UI.showPauseBtn(pauseByButton);
 		UI.showRulesBtn(rulesByButton);

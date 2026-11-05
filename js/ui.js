@@ -32,6 +32,14 @@ const UI = {
 		hud.querySelector("#version").textContent = CONFIG.version;
 	},
 
+	// HUD-элементы Вовы (счётчик «Свои дела», полоска таймера) в «Цицеридисе»
+	// не используются — прячу их (решение автора)
+	setMode(mode) {
+		const isVova = mode === "vova";
+		this.percentLabel.style.display = isVova ? "" : "none";
+		this.timerBar.parentElement.style.display = isVova ? "" : "none";
+	},
+
 	// Обновление HUD каждый кадр
 	updateHUD(roundTime, percent) {
 		const left = Math.max(0, CONFIG.round.durationSec - roundTime);

@@ -523,7 +523,7 @@ const Scene = {
 		ctx.fillStyle = "#5c3d24";
 		ctx.fillRect(cx - 26, floorY - 88, 52, 3);    // тень на сиденье
 
-		// Чекеридис (заглушка): стоит на сиденье, чёрная кожанка, бокал в руке
+		// Чекеридис (заглушка): залезает на стул (этап 4), бокал в руке с самого начала
 		const P = {
 			hair: "#3a2e26",
 			skin: "#e8b48c",
@@ -534,7 +534,11 @@ const Scene = {
 			beer: "#e8a830",
 			foam: "#f5f0e0",
 		};
-		const bx = cx - 14, by = floorY - 96; // базовая точка: сиденье стула
+		// Прогресс залезания 0..1: от пола (y=floorY) до сиденья (floorY-96)
+		const p = Ciceridis.climbProgress();
+		const ease = p * p * (3 - 2 * p); // плавный ease-in-out
+		const bx = cx - 14;
+		const by = floorY - 96 * ease; // базовая точка: от пола к сиденью
 		// Ноги (стоя на сиденье)
 		ctx.fillStyle = P.jeans;
 		ctx.fillRect(bx + 4, by - 34, 9, 34);
