@@ -663,6 +663,11 @@ const UI = {
 	// Обучение: содержимое из переданного списка правил (у каждой мини-игры свои).
 	// Исчезает при первом касании — сворачивается в кнопку «ПРАВИЛА»
 	showTutorial(rules) {
+		// Защита: если старое окно ещё висит (вышли в меню, не закрыв обучение) — убрать
+		if (this.tutorialEl) {
+			this.tutorialEl.remove();
+			this.tutorialEl = null;
+		}
 		this.tutorialEl = document.createElement("div");
 		this.tutorialEl.style.cssText = `
 			position: absolute; top: 10%; left: 50%; transform: translateX(-50%);

@@ -186,6 +186,7 @@
 		Game.lastMeme = -1;
 		Game.lastBossLine = -1;
 		Game.tutorialDone = true; // обучение показываем только в первом забеге
+		UI.hideTutorial(); // если вышли в меню с открытым окном — убрать его
 		Boss.reset();
 		Vova.reset();
 		Input.reset();
