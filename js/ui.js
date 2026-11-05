@@ -141,12 +141,20 @@ const UI = {
 						<p style="color: #8a8a9a; font-size: 10px; margin: 4px 0 0;
 							font-family: var(--body-font);">Успеть за 60 секунд</p>
 					</div>
-					<div style="width: 92px; background: #1a1a26; border: 3px dashed #3a3a4a;
-						border-radius: 0; padding: 7px; display: flex; flex-direction: column;
-						align-items: center; justify-content: center; box-sizing: border-box;">
-						<p style="color: #3a3a4a; font-size: 22px; margin: 0; font-family: var(--pixel-font);">?</p>
-						<p style="color: #3a3a4a; font-size: 9px; margin: 8px 0 0;
-							font-family: var(--body-font);">Скоро</p>
+					<!-- Карточка Чекеридиса (мини-игра «Цицеридис»); клик появится на следующем шаге -->
+					<div id="chekeridis-card" style="width: 92px;
+						background: linear-gradient(180deg, #2c2c44, #1d1d30);
+						padding: 7px; display: flex; flex-direction: column; box-sizing: border-box;">
+						<div style="flex: 1; min-height: 0; display: flex; align-items: center;
+							justify-content: center; background: #12141c; overflow: hidden;">
+							<img id="chekeridis-img" src="assets/characters/chekeridis_character_select.png"
+								alt="Чекеридис" style="width: 100%; height: 100%; object-fit: cover;
+									image-rendering: pixelated; display: block;">
+							<span id="chekeridis-fallback" style="color: #3a3a4a; font-size: 22px;
+								font-family: var(--pixel-font); display: none;">?</span>
+						</div>
+						<p style="color: #f0c040; font-size: 8px; margin: 9px 0 0; text-align: center;
+							font-family: var(--pixel-font);">ЦИЦЕРИДИС</p>
 					</div>
 					<div style="width: 92px; background: #1a1a26; border: 3px dashed #3a3a4a;
 						border-radius: 0; padding: 7px; display: flex; flex-direction: column;
@@ -172,6 +180,12 @@ const UI = {
 			window.removeEventListener("resize", this._selectFitHandler);
 			el.remove();
 			onStart();
+		});
+		// Если спрайт Чекеридиса ещё не добавлен — показываем «?», игра не ломается
+		const chImg = el.querySelector("#chekeridis-img");
+		chImg.addEventListener("error", () => {
+			chImg.style.display = "none";
+			el.querySelector("#chekeridis-fallback").style.display = "block";
 		});
 	},
 
