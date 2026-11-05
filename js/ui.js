@@ -144,8 +144,8 @@ const UI = {
 								font-family: var(--body-font);">Успеть за 60 секунд</p>
 						</div>
 					</div>
-					<!-- Карточка Чекеридиса (мини-игра «Цицеридис») — стиль карточки Вовы; клик появится на следующем шаге -->
-					<div id="chekeridis-card" class="char-card" style="width: 112px;
+					<!-- Карточка Чекеридиса (мини-игра «Цицеридис») — стиль карточки Вовы -->
+					<div id="chekeridis-card" class="char-card" style="width: 112px; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
 						padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;">
@@ -187,6 +187,13 @@ const UI = {
 			el.remove();
 			onStart();
 		});
+		// Карточка Чекеридиса: пока открывает экран-заглушку мини-игры
+		el.querySelector("#chekeridis-card").addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			window.removeEventListener("resize", this._selectFitHandler);
+			el.remove();
+			this.showCiceridisStub(() => this.showSelect(onStart));
+		});
 		// Если спрайт Чекеридиса ещё не добавлен — показываем «?», игра не ломается
 		const chImg = el.querySelector("#chekeridis-img");
 		chImg.addEventListener("error", () => {
@@ -201,6 +208,39 @@ const UI = {
 		if (!inner) return;
 		const s = Math.min(window.innerWidth / 380, window.innerHeight / 660);
 		inner.style.transform = `translate(-50%, -50%) scale(${s})`;
+	},
+
+	// Экран-заглушка мини-игры «Цицеридис» (этап 2): фон + название + кнопка «НАЗАД».
+	// Настоящая сцена появится на следующих этапах
+	showCiceridisStub(onBack) {
+		const el = this._overlay();
+		el.style.background = "#12141c";
+		el.innerHTML = `
+			<div id="select-scale" style="position: absolute; left: 50%; top: 50%;
+				width: 360px; height: 640px; transform-origin: center;
+				display: flex; flex-direction: column; align-items: center; justify-content: center;">
+				<p style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
+					font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">ЦИЦЕРИДИС</p>
+				<p style="font-size: 10px; letter-spacing: 2px; color: #8a92a8;
+					margin: 14px 0 0; font-family: var(--pixel-font);">МИНИ-ИГРА В РАЗРАБОТКЕ</p>
+				<div id="ciceridis-back" class="char-card" style="margin-top: 40px; padding: 10px 26px;
+					cursor: pointer; background: linear-gradient(180deg, #2c2c44, #1d1d30);">
+					<p style="color: #f0c040; font-size: 12px; margin: 0;
+						font-family: var(--pixel-font);">НАЗАД</p>
+				</div>
+			</div>
+			<div class="crt-scanlines"></div>
+			<div class="crt-vignette"></div>
+		`;
+		this.fitSelect(el);
+		this._selectFitHandler = () => this.fitSelect(el);
+		window.addEventListener("resize", this._selectFitHandler);
+		el.querySelector("#ciceridis-back").addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			window.removeEventListener("resize", this._selectFitHandler);
+			el.remove();
+			onBack();
+		});
 	},
 
 	// Звание по проценту (ТЗ §9.3)
