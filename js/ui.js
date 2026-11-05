@@ -139,7 +139,7 @@ const UI = {
 						<!-- Футер фиксированной высоты: имя и название игры на одном уровне во всех карточках -->
 						<div style="flex-shrink: 0; height: 52px;">
 							<p style="color: #f0c040; font-size: 10px; line-height: 12px; margin: 9px 0 0;
-								font-family: var(--pixel-font);">ВОВА</p>
+								font-family: var(--pixel-font);">ВОВАН</p>
 							<p style="color: #8a8a9a; font-size: 10px; line-height: 13px; margin: 4px 0 0;
 								font-family: var(--body-font);">Успеть за 60 секунд</p>
 						</div>
