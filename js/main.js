@@ -46,11 +46,6 @@
 		if (Game.screen !== "playing") return; // экран выбора: сцена живёт фоном
 		if (Game.over) return; // после финала сцена замирает
 		if (Game.paused) return; // пауза: таймеры замирают
-		// Мини-игра «Цицеридис»: свой игровой цикл (этап 3 — пока пустой)
-		if (Game.mode === "ciceridis") {
-			Ciceridis.update(dt);
-			return;
-		}
 		// Обучение: игра стоит на паузе, пока игрок не коснётся экрана.
 		// Касание закрытия не поднимает телефон — игрок стартует осознанно
 		if (!Game.tutorialDone) {
@@ -59,6 +54,11 @@
 				Input.reset();
 				UI.hideTutorial();
 			}
+			return;
+		}
+		// Мини-игра «Цицеридис»: свой игровой цикл (этап 3 — пока пустой)
+		if (Game.mode === "ciceridis") {
+			Ciceridis.update(dt);
 			return;
 		}
 		if (Game.frozen > 0) {
