@@ -129,7 +129,7 @@ const UI = {
 				<p style="font-size: 12px; color: #8a8a9a; margin: 0 0 14px;
 					font-family: var(--body-font);">Кто ты сегодня в офисе?</p>
 				<div style="display: flex; gap: 12px; align-items: stretch; height: 264px;">
-					<div id="vova-card" class="vova-card" style="width: 128px; cursor: pointer;
+					<div id="vova-card" class="char-card" style="width: 112px; cursor: pointer;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
 						padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;">
@@ -142,7 +142,7 @@ const UI = {
 							font-family: var(--body-font);">Успеть за 60 секунд</p>
 					</div>
 					<!-- Карточка Чекеридиса (мини-игра «Цицеридис») — стиль карточки Вовы; клик появится на следующем шаге -->
-					<div id="chekeridis-card" style="width: 128px;
+					<div id="chekeridis-card" class="char-card" style="width: 112px;
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
 						padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;">
@@ -157,7 +157,7 @@ const UI = {
 						<p style="color: #8a8a9a; font-size: 10px; margin: 4px 0 0;
 							font-family: var(--body-font);">Цицеридис</p>
 					</div>
-					<div style="width: 80px; background: #1a1a26; border: 3px dashed #3a3a4a;
+					<div style="width: 112px; background: #1a1a26; border: 3px dashed #3a3a4a;
 						border-radius: 0; padding: 7px; display: flex; flex-direction: column;
 						align-items: center; justify-content: center; box-sizing: border-box;">
 						<p style="color: #3a3a4a; font-size: 22px; margin: 0; font-family: var(--pixel-font);">?</p>
