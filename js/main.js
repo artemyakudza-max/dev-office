@@ -204,16 +204,9 @@
 		UI.showRulesBtn(rulesByButton);
 	}
 
-	// Старт мини-игры «Цицеридис» (этап 3: сцена + интерфейс, геймплей позже)
+	// Заглушка «Цицеридис» для прода: сцена вернётся в следующей версии
 	function startCiceridis() {
-		restart();
-		Game.mode = "ciceridis";
-		Game.tutorialDone = false;
-		Game.screen = "playing";
-		UI.setMode("ciceridis"); // HUD Вовы скрыт: счётчик не используется
-		UI.showTutorial(CONFIG.ciceridis.rules);
-		UI.showPauseBtn(pauseByButton);
-		UI.showRulesBtn(rulesByButton);
+		UI.showCiceridisStub(goMenu);
 	}
 
 	// Правила по кнопке: пауза + окно, «Играть» продолжает забег

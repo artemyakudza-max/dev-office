@@ -213,6 +213,23 @@ const UI = {
 		});
 	},
 
+	// Заглушка «Цицеридис» (прод): «мини-игра в разработке» + кнопка «НАЗАД»
+	showCiceridisStub(onBack) {
+		const el = this._overlay();
+		el.innerHTML = `
+			<div class="final-card" style="max-width: 300px;">
+				<p style="font-family: var(--pixel-font); font-size: 14px; color: #f0c040;
+					margin: 0 0 14px;">ЦИЦЕРИДИС</p>
+				<p style="margin: 0 0 20px; font-size: 14px;">Мини-игра в разработке</p>
+				<button id="stub-back" class="final-btn final-btn-again">НАЗАД</button>
+			</div>
+		`;
+		el.querySelector("#stub-back").addEventListener("click", () => {
+			el.remove();
+			onBack();
+		});
+	},
+
 	// Масштаб макета 360×640 под вьюпорт с сохранением пропорций
 	fitSelect(el) {
 		const inner = el.querySelector("#select-scale");
