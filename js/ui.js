@@ -213,18 +213,34 @@ const UI = {
 		});
 	},
 
-	// Заглушка «Цицеридис» (прод): «мини-игра в разработке» + кнопка «НАЗАД»
+	// Заглушка «Цицеридис»: «мини-игра в разработке» + кнопка «НАЗАД»
+	// (стиль экрана выбора: тёмный фон, CRT-эффекты, пиксельный шрифт)
 	showCiceridisStub(onBack) {
 		const el = this._overlay();
+		el.style.background = "#12141c";
 		el.innerHTML = `
-			<div class="final-card" style="max-width: 300px;">
-				<p style="font-family: var(--pixel-font); font-size: 14px; color: #f0c040;
-					margin: 0 0 14px;">ЦИЦЕРИДИС</p>
-				<p style="margin: 0 0 20px; font-size: 14px;">Мини-игра в разработке</p>
-				<button id="stub-back" class="final-btn final-btn-again">НАЗАД</button>
+			<div id="select-scale" style="position: absolute; left: 50%; top: 50%;
+				width: 360px; height: 640px; transform-origin: center;
+				display: flex; flex-direction: column; align-items: center; justify-content: center;">
+				<p style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
+					font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">ЦИЦЕРИДИС</p>
+				<p style="font-size: 10px; letter-spacing: 2px; color: #8a92a8;
+					margin: 14px 0 0; font-family: var(--pixel-font);">МИНИ-ИГРА В РАЗРАБОТКЕ</p>
+				<div id="ciceridis-back" class="char-card" style="margin-top: 40px; padding: 10px 26px;
+					cursor: pointer; background: linear-gradient(180deg, #2c2c44, #1d1d30);">
+					<p style="color: #f0c040; font-size: 12px; margin: 0;
+						font-family: var(--pixel-font);">НАЗАД</p>
+				</div>
 			</div>
+			<div class="crt-scanlines"></div>
+			<div class="crt-vignette"></div>
 		`;
-		el.querySelector("#stub-back").addEventListener("click", () => {
+		this.fitSelect(el);
+		this._selectFitHandler = () => this.fitSelect(el);
+		window.addEventListener("resize", this._selectFitHandler);
+		el.querySelector("#ciceridis-back").addEventListener("pointerdown", (e) => {
+			if (e.button !== 0) return;
+			window.removeEventListener("resize", this._selectFitHandler);
 			el.remove();
 			onBack();
 		});
