@@ -6,6 +6,7 @@ Add-Type -AssemblyName System.Drawing
 $pairs = @(
     @("assets\characters\vova.png", 512),
     @("assets\characters\vova_character_select.png", 512),
+    @("assets\characters\chekeridis_character_select.png", 512),
     @("assets\sprites\bg_office.png", 720),
     @("assets\sprites\vova_poses.png", 768),
     @("assets\sprites\boss_states.png", 1024)
