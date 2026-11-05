@@ -234,12 +234,14 @@ const UI = {
 			<div class="final-card final-card-${kind}">
 				${portrait}
 				${body}
-				<button id="share-btn" class="final-btn final-btn-share">Поделиться</button>
+				<button id="share-btn" class="final-btn final-btn-share" disabled>Подготовка…</button>
 				<button id="again-btn" class="final-btn final-btn-again">Ещё раз</button>
 				<button id="menu-btn" class="final-btn final-btn-menu">Главное меню</button>
 			</div>
 		`;
-		el.querySelector("#share-btn").addEventListener("click", () => this.share(shareText));
+		// Кнопка «Поделиться» неактивна, пока не готова PNG-картинка (обычно мгновенно)
+		this.shareBtn = el.querySelector("#share-btn");
+		this.shareBtn.addEventListener("click", () => this.share(shareText));
 		el.querySelector("#again-btn").addEventListener("click", () => {
 			el.remove();
 			onRestart();
@@ -248,27 +250,178 @@ const UI = {
 			el.remove();
 			onMenu();
 		});
+		// PNG-картинку для шеринга готовим в фоне, пока игрок читает результат
+		this._prepareShareCard(kind, data);
 	},
 
-	// Шеринг: системное меню на мобиле, буфер обмена на десктопе (ТЗ §9.2)
+	// Шеринг: картинка + текст на мобилках с поддержкой файлов,
+	// иначе системное меню с текстом, на десктопе — буфер обмена (ТЗ §9.2)
 	async share(text) {
 		const url = location.href;
+		const full = text + " " + url;
+		// картинку вкладываем файлом; canShare — проверка поддержки файлов
+		if (this.shareFile && navigator.canShare &&
+			navigator.canShare({ files: [this.shareFile] })) {
+			try {
+				await navigator.share({ text: full, files: [this.shareFile] });
+				return;
+			} catch (e) {
+				// отмена игроком — не ошибка; прочие сбои → текстовый шеринг ниже
+			}
+		}
 		if (navigator.share) {
 			try {
 				// iOS выбрасывает поле url при отправке в мессенджеры —
 				// вкладываем ссылку прямо в текст, иначе доходит только она
-				await navigator.share({ text: text + " " + url });
+				await navigator.share({ text: full });
 			} catch (e) {
 				// игрок отменил шеринг — не ошибка
 			}
 		} else {
 			try {
-				await navigator.clipboard.writeText(text + " " + url);
+				await navigator.clipboard.writeText(full);
 				this.toast("Ссылка скопирована");
 			} catch (e) {
 				this.toast("Не удалось скопировать");
 			}
 		}
+	},
+
+	// Подготовка PNG-картинки финального экрана для шеринга.
+	// Любая ошибка (медленная сеть, file://) — картинки нет, шарим текстом
+	async _prepareShareCard(kind, data) {
+		this.shareFile = null;
+		const unlock = () => {
+			if (this.shareBtn) {
+				this.shareBtn.disabled = false;
+				this.shareBtn.textContent = "Поделиться";
+			}
+		};
+		try {
+			// ждём пиксельный шрифт, иначе текст на картинке будет системным
+			await document.fonts.load('11px "Press Start 2P"');
+			const img = await new Promise((resolve, reject) => {
+				const im = new Image();
+				im.onload = () => resolve(im);
+				im.onerror = () => reject(new Error("portrait"));
+				im.src = CONFIG.finalPortraits[kind];
+			});
+
+			// макет финального экрана 360×640 с ×2 масштабом — чётко на ретине
+			const W = 360, H = 640, S = 2;
+			const c = document.createElement("canvas");
+			c.width = W * S;
+			c.height = H * S;
+			const ctx = c.getContext("2d");
+			ctx.scale(S, S);
+			ctx.fillStyle = "#0d0e16";
+			ctx.fillRect(0, 0, W, H);
+
+			// карточка с рамкой-акцентом исхода (как на экране финала)
+			const accent = kind === "fail" ? "#c05050" :
+				kind === "easter" ? "#4a7ae0" : "#c9a227";
+			const cw = 300, cx = (W - cw) / 2, cy = 150;
+			const ch = kind === "win" ? 390 : 250;
+			const grad = ctx.createLinearGradient(0, cy, 0, cy + ch);
+			grad.addColorStop(0, "#2c2c44");
+			grad.addColorStop(1, "#1d1d30");
+			ctx.beginPath();
+			ctx.roundRect(cx, cy, cw, ch, 14);
+			ctx.fillStyle = grad;
+			ctx.fill();
+			ctx.strokeStyle = accent;
+			ctx.lineWidth = 2;
+			ctx.stroke();
+
+			// портрет 132×132, наполовину выходит за верх карточки;
+			// картинка вписана «обрезкой», как object-fit: cover
+			const ps = 132, px = (W - ps) / 2, py = cy - 32;
+			ctx.fillStyle = "#12141c";
+			ctx.beginPath();
+			ctx.roundRect(px, py, ps, ps, 10);
+			ctx.fill();
+			ctx.save();
+			ctx.beginPath();
+			ctx.roundRect(px + 3, py + 3, ps - 6, ps - 6, 8);
+			ctx.clip();
+			const k = Math.max((ps - 6) / img.width, (ps - 6) / img.height);
+			const dw = img.width * k, dh = img.height * k;
+			ctx.drawImage(img, px + (ps - dw) / 2, py + (ps - dh) / 2, dw, dh);
+			ctx.restore();
+			ctx.strokeStyle = accent;
+			ctx.lineWidth = 3;
+			ctx.beginPath();
+			ctx.roundRect(px, py, ps, ps, 10);
+			ctx.stroke();
+
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			const pix = (size) => size + 'px "Press Start 2P", monospace';
+
+			// заголовок
+			ctx.font = pix(11);
+			ctx.fillStyle = kind === "fail" ? "#e07070" : "#f0c040";
+			const header = kind === "win" || kind === "easter"
+				? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
+			ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
+
+			if (kind === "win") {
+				ctx.font = "800 54px system-ui, sans-serif";
+				ctx.fillStyle = "#fff";
+				ctx.fillText(data.percent + "%", W / 2, cy + 156);
+				ctx.font = "14px system-ui, sans-serif";
+				ctx.fillStyle = "#b0b0c0";
+				this._wrapText(ctx, CONFIG.winStat, W / 2, cy + 195, cw - 60, 20);
+				ctx.fillStyle = "rgba(201, 162, 39, 0.4)";
+				ctx.fillRect(cx + 40, cy + 236, cw - 80, 1);
+				ctx.font = pix(9);
+				ctx.fillStyle = "#9a9ab0";
+				ctx.fillText(CONFIG.rankLabel.toUpperCase(), W / 2, cy + 254);
+				ctx.font = "700 22px system-ui, sans-serif";
+				ctx.fillStyle = "#f0c040";
+				this._wrapText(ctx, "«" + this.rankFor(data.percent) + "»",
+					W / 2, cy + 276, cw - 30, 26);
+				ctx.font = "14px system-ui, sans-serif";
+				ctx.fillStyle = "#b0b0c0";
+				ctx.fillText("Замечаний: " + data.warnings, W / 2, cy + 322);
+			} else {
+				ctx.font = "19px system-ui, sans-serif";
+				ctx.fillStyle = "#fff";
+				const txt = kind === "fail"
+					? CONFIG.failText.replace("{N}", data.second)
+					: CONFIG.easterText;
+				this._wrapText(ctx, txt, W / 2, cy + 158, cw - 50, 27);
+			}
+
+			// ссылка на игру внизу карточки
+			ctx.font = "12px system-ui, sans-serif";
+			ctx.fillStyle = "#8a92a8";
+			ctx.fillText(location.href, W / 2, cy + ch - 18);
+
+			const blob = await new Promise((resolve, reject) =>
+				c.toBlob((b) => b ? resolve(b) : reject(new Error("toBlob")), "image/png"));
+			this.shareFile = new File([blob], "vova-result.png", { type: "image/png" });
+		} catch (e) {
+			this.shareFile = null; // без картинки — шарим текстом
+		} finally {
+			unlock();
+		}
+	},
+
+	// Перенос текста по словам на canvas (fillText не переносит сам)
+	_wrapText(ctx, text, x, y, maxW, lineH) {
+		let line = "";
+		for (const w of text.split(" ")) {
+			const test = line ? line + " " + w : w;
+			if (ctx.measureText(test).width > maxW && line) {
+				ctx.fillText(line, x, y);
+				y += lineH;
+				line = w;
+			} else {
+				line = test;
+			}
+		}
+		if (line) ctx.fillText(line, x, y);
 	},
 
 	// Плашка над объектом сцены (координаты — логические, 360×640).

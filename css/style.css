@@ -296,6 +296,12 @@ html, body {
 	margin-top: 20px;
 }
 
+/* Пока PNG-картинка для шеринга не готова — кнопка приглушена */
+.final-btn-share:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
 .final-btn-again {
 	background: #4a8a4a;
 }
