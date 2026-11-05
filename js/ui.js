@@ -314,14 +314,27 @@ const UI = {
 			c.height = H * S;
 			const ctx = c.getContext("2d");
 			ctx.scale(S, S);
+
+			// текст исхода считаем ЗАРАНЕЕ — от числа строк зависит высота карточки
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.font = "19px system-ui, sans-serif";
+			const cw = 300, cx = (W - cw) / 2, cy = 150;
+			const bodyText = kind === "fail"
+				? CONFIG.failText.replace("{N}", data.second)
+				: kind === "easter" ? CONFIG.easterText : null;
+			const lines = bodyText ? this._wrapLines(ctx, bodyText, cw - 50) : [];
+			// высота карточки растёт под длинный текст — ничего не наезжает
+			const ch = kind === "win" ? 390
+				: Math.max(250, 158 + lines.length * 27 + 64);
+
+			// фон
 			ctx.fillStyle = "#0d0e16";
 			ctx.fillRect(0, 0, W, H);
 
 			// карточка с рамкой-акцентом исхода (как на экране финала)
 			const accent = kind === "fail" ? "#c05050" :
 				kind === "easter" ? "#4a7ae0" : "#c9a227";
-			const cw = 300, cx = (W - cw) / 2, cy = 150;
-			const ch = kind === "win" ? 390 : 250;
 			const grad = ctx.createLinearGradient(0, cy, 0, cy + ch);
 			grad.addColorStop(0, "#2c2c44");
 			grad.addColorStop(1, "#1d1d30");
@@ -354,11 +367,8 @@ const UI = {
 			ctx.roundRect(px, py, ps, ps, 10);
 			ctx.stroke();
 
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
-			const pix = (size) => size + 'px "Press Start 2P", monospace';
-
 			// заголовок
+			const pix = (size) => size + 'px "Press Start 2P", monospace';
 			ctx.font = pix(11);
 			ctx.fillStyle = kind === "fail" ? "#e07070" : "#f0c040";
 			const header = kind === "win" || kind === "easter"
@@ -371,7 +381,7 @@ const UI = {
 				ctx.fillText(data.percent + "%", W / 2, cy + 156);
 				ctx.font = "14px system-ui, sans-serif";
 				ctx.fillStyle = "#b0b0c0";
-				this._wrapText(ctx, CONFIG.winStat, W / 2, cy + 195, cw - 60, 20);
+				this._wrapDraw(ctx, CONFIG.winStat, W / 2, cy + 195, cw - 60, 20);
 				ctx.fillStyle = "rgba(201, 162, 39, 0.4)";
 				ctx.fillRect(cx + 40, cy + 236, cw - 80, 1);
 				ctx.font = pix(9);
@@ -379,7 +389,7 @@ const UI = {
 				ctx.fillText(CONFIG.rankLabel.toUpperCase(), W / 2, cy + 254);
 				ctx.font = "700 22px system-ui, sans-serif";
 				ctx.fillStyle = "#f0c040";
-				this._wrapText(ctx, "«" + this.rankFor(data.percent) + "»",
+				this._wrapDraw(ctx, "«" + this.rankFor(data.percent) + "»",
 					W / 2, cy + 276, cw - 30, 26);
 				ctx.font = "14px system-ui, sans-serif";
 				ctx.fillStyle = "#b0b0c0";
@@ -387,16 +397,15 @@ const UI = {
 			} else {
 				ctx.font = "19px system-ui, sans-serif";
 				ctx.fillStyle = "#fff";
-				const txt = kind === "fail"
-					? CONFIG.failText.replace("{N}", data.second)
-					: CONFIG.easterText;
-				this._wrapText(ctx, txt, W / 2, cy + 158, cw - 50, 27);
+				let ty = cy + 158;
+				for (const ln of lines) {
+					ctx.fillText(ln, W / 2, ty);
+					ty += 27;
+				}
 			}
 
-			// ссылка на игру внизу карточки
-			ctx.font = "12px system-ui, sans-serif";
-			ctx.fillStyle = "#8a92a8";
-			ctx.fillText(location.href, W / 2, cy + ch - 18);
+			// логотип игры внизу карточки (ссылка и так идёт текстом рядом)
+			this._drawLogo(ctx, W / 2, cy + ch - 26);
 
 			const blob = await new Promise((resolve, reject) =>
 				c.toBlob((b) => b ? resolve(b) : reject(new Error("toBlob")), "image/png"));
@@ -408,20 +417,65 @@ const UI = {
 		}
 	},
 
-	// Перенос текста по словам на canvas (fillText не переносит сам)
-	_wrapText(ctx, text, x, y, maxW, lineH) {
+	// Разбивка текста на строки по ширине (fillText не переносит сам)
+	_wrapLines(ctx, text, maxW) {
+		const out = [];
 		let line = "";
 		for (const w of text.split(" ")) {
 			const test = line ? line + " " + w : w;
 			if (ctx.measureText(test).width > maxW && line) {
-				ctx.fillText(line, x, y);
-				y += lineH;
+				out.push(line);
 				line = w;
 			} else {
 				line = test;
 			}
 		}
-		if (line) ctx.fillText(line, x, y);
+		if (line) out.push(line);
+		return out;
+	},
+
+	// Отрисовка текста построчно
+	_wrapDraw(ctx, text, x, y, maxW, lineH) {
+		const lines = this._wrapLines(ctx, text, maxW);
+		for (const ln of lines) {
+			ctx.fillText(ln, x, y);
+			y += lineH;
+		}
+	},
+
+	// Логотип «one ❤ офис» пиксель-стилем, как на стартовом экране
+	_drawLogo(ctx, x, y) {
+		ctx.textAlign = "left";
+		ctx.font = '12px "Press Start 2P", monospace';
+		ctx.textBaseline = "middle";
+		const w1 = ctx.measureText("one").width;
+		const w2 = ctx.measureText("офис").width;
+		const gap = 10, cell = 3, heartW = 7 * cell, heartH = 6 * cell;
+		const total = w1 + gap + heartW + gap + w2;
+		const lx = x - total / 2;
+		ctx.fillStyle = "#f0c040";
+		ctx.fillText("one", lx, y);
+		// пиксельное сердце из битовой карты
+		const bitmap = [
+			"0110110",
+			"1111111",
+			"1111111",
+			"0111110",
+			"0011100",
+			"0001000",
+		];
+		const hx = lx + w1 + gap, hy = y - heartH / 2;
+		ctx.fillStyle = "#e04040";
+		for (let r = 0; r < bitmap.length; r++) {
+			for (let col = 0; col < 7; col++) {
+				if (bitmap[r][col] === "1") {
+					ctx.fillRect(hx + col * cell, hy + r * cell, cell, cell);
+				}
+			}
+		}
+		ctx.fillStyle = "#f0c040";
+		ctx.fillText("офис", hx + heartW + gap, y);
+		ctx.textAlign = "center";
 	},
 
 	// Плашка над объектом сцены (координаты — логические, 360×640).
