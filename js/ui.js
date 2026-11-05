@@ -136,10 +136,13 @@ const UI = {
 						<img src="assets/characters/vova_character_select.png" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
 								image-rendering: pixelated; display: block;">
-						<p style="color: #f0c040; font-size: 10px; margin: 9px 0 0;
-							font-family: var(--pixel-font);">ВОВА</p>
-						<p style="color: #8a8a9a; font-size: 10px; margin: 4px 0 0;
-							font-family: var(--body-font);">Успеть за 60 секунд</p>
+						<!-- Футер фиксированной высоты: имя и название игры на одном уровне во всех карточках -->
+						<div style="flex-shrink: 0; height: 52px;">
+							<p style="color: #f0c040; font-size: 10px; line-height: 12px; margin: 9px 0 0;
+								font-family: var(--pixel-font);">ВОВА</p>
+							<p style="color: #8a8a9a; font-size: 10px; line-height: 13px; margin: 4px 0 0;
+								font-family: var(--body-font);">Успеть за 60 секунд</p>
+						</div>
 					</div>
 					<!-- Карточка Чекеридиса (мини-игра «Цицеридис») — стиль карточки Вовы; клик появится на следующем шаге -->
 					<div id="chekeridis-card" class="char-card" style="width: 112px;
@@ -152,10 +155,12 @@ const UI = {
 						<span id="chekeridis-fallback" style="flex: 1; min-height: 0; display: none;
 							align-items: center; justify-content: center; color: #3a3a4a;
 							font-size: 22px; font-family: var(--pixel-font);">?</span>
-						<p style="color: #f0c040; font-size: 10px; margin: 9px 0 0;
-							font-family: var(--pixel-font);">ЧЕКЕРИДИС</p>
-						<p style="color: #8a8a9a; font-size: 10px; margin: 4px 0 0;
-							font-family: var(--body-font);">Цицеридис</p>
+						<div style="flex-shrink: 0; height: 52px;">
+							<p style="color: #f0c040; font-size: 10px; line-height: 12px; margin: 9px 0 0;
+								font-family: var(--pixel-font);">ЧЕКЕРИДИС</p>
+							<p style="color: #8a8a9a; font-size: 10px; line-height: 13px; margin: 4px 0 0;
+								font-family: var(--body-font);">Цицеридис</p>
+						</div>
 					</div>
 					<div style="width: 112px; background: #1a1a26; border: 3px dashed #3a3a4a;
 						border-radius: 0; padding: 7px; display: flex; flex-direction: column;
