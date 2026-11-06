@@ -558,6 +558,48 @@ const UI = {
 		setTimeout(() => el.remove(), seconds * 1000);
 	},
 
+	// Плашка с текстом по словам (тост Чекеридиса): слова появляются
+	// постепенно за seconds секунд — как будто он говорит. Стиль тот же,
+	// что у bubble; ширина фиксируется заранее, чтобы плашка не прыгала
+	bubbleWords(text, lx, ly, align, seconds) {
+		const p = Scene.toScreen(lx, ly);
+		const el = document.createElement("div");
+		el.className = "bubble";
+		// Сначала полный текст (скрытый) — измеряем ширину для центрирования
+		el.textContent = text;
+		el.style.visibility = "hidden";
+		el.style.left = p.x + "px";
+		el.style.top = p.y + "px";
+		const total = seconds || CONFIG.ui.bubbleSec;
+		el.style.animationDuration = total + "s";
+		this.root.appendChild(el);
+		const w = el.offsetWidth, m = 8;
+		let cx;
+		if (align === "left") {
+			cx = m + w / 2;
+		} else if (align === "right") {
+			cx = window.innerWidth - m - w / 2;
+		} else {
+			cx = p.x;
+		}
+		cx = Math.min(Math.max(cx, m + w / 2), window.innerWidth - m - w / 2);
+		el.style.left = cx + "px";
+		el.style.boxSizing = "border-box";
+		el.style.width = w + "px"; // фиксируем ширину — слова не двигают плашку
+		// Показ по словам: интервал = длительность / число слов
+		const words = text.split(" ");
+		const interval = (total * 1000) / words.length;
+		let shown = 0;
+		el.textContent = "";
+		el.style.visibility = "visible";
+		const timer = setInterval(() => {
+			shown += 1;
+			el.textContent = words.slice(0, shown).join(" ");
+			if (shown >= words.length) clearInterval(timer);
+		}, interval);
+		setTimeout(() => { clearInterval(timer); el.remove(); }, total * 1000);
+	},
+
 	// Кнопка паузы (две палки) в правом верхнем углу во время игры
 	showPauseBtn(onPause) {
 		if (this.pauseBtn) return;

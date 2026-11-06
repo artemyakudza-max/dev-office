@@ -59,11 +59,11 @@
 		// Мини-игра «Цицеридис»: свой игровой цикл
 		if (Game.mode === "ciceridis") {
 			Ciceridis.update(dt);
-			// Плашка с тостом при старте тоста — висит toastSec секунд
+			// Тост при старте раунда: текст появляется по словам за toastSec секунд
 			if (Ciceridis.phase === "toast" && !Ciceridis.toastStartFired) {
 				Ciceridis.toastStartFired = true;
 				const hp = Scene.bubbleAnchorCiceridis();
-				UI.bubble(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
+				UI.bubbleWords(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
 					CONFIG.ciceridis.toastSec);
 			}
 			// Падение: сначала проигрывается анимация fallSec (Game.over не ставим —
