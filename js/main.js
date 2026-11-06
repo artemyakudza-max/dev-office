@@ -64,7 +64,7 @@
 			if (Ciceridis.phase === "toast" && !Ciceridis.toastStartFired) {
 				Ciceridis.toastStartFired = true;
 				const hp = Scene.bubbleAnchorCiceridis();
-				UI.bubbleWords(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
+				UI.bubbleWords(Ciceridis.currentToast(), hp.x, hp.y, "center",
 					CONFIG.ciceridis.toastSec, Ciceridis.speechDuration());
 			}
 			// Цикл между раундами (ТЗ §3.1.6): плашки «буль-буль-буль» и «Ещё тост!»
@@ -89,7 +89,7 @@
 					if (navigator.vibrate) navigator.vibrate(200);
 					UI.showFinal("ciceridisFail", {
 						toast: Ciceridis.toastNum,
-						toastText: CONFIG.ciceridis.toastText,
+						toastText: Ciceridis.currentToast(),
 					}, restart, goMenu);
 				}, CONFIG.ciceridis.fallSec * 1000);
 			}

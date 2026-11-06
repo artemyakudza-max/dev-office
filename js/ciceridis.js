@@ -3,7 +3,7 @@
 // Этап 5 — первый тост: текст 5 с + очень медленное качание ±10°
 // Этап 6 — управление: тап/зажатие половин экрана толкает его (ТЗ §3.2)
 const Ciceridis = {
-	phase: "climb",    // climb | toast | drink | joy | nextToast | fall
+	phase: "climb",    // climb | toast | drink | joy | nextToast | fall | win
 	climbT: 0,         // сколько секунд идёт залезание
 	toastT: 0,         // сколько секунд идёт тост
 	drinkT: 0,         // сколько секунд идёт «выпивает бокал»
@@ -15,6 +15,7 @@ const Ciceridis = {
 	drinkStartFired: false, // плашку «буль-буль-буль» показал? (ставит main.js)
 	nextToastFired: false,  // плашку «Ещё тост!» показал? (ставит main.js)
 	toastNum: 1,       // номер текущего тоста (для карточки поражения)
+	plan: [],          // тексты тостов этого забега, план[0] — тост 1-го раунда
 
 	// Физика качания (этап 6): угол игрока + самокачание
 	playerAngle: 0,    // угол от толчков игрока, градусы (минус = влево)
@@ -32,6 +33,7 @@ const Ciceridis = {
 		this.angVel = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
+		this.plan = this._buildPlan();
 	},
 
 	// Прогресс залезания 0..1 — для отрисовки (Scene читает)
@@ -42,6 +44,31 @@ const Ciceridis = {
 	// Прогресс падения 0..1 — для анимации в Scene
 	fallProgress() {
 		return Math.min(1, this.fallT / CONFIG.ciceridis.fallSec);
+	},
+
+	// План тостов на забег (ТЗ §6): раунды 1–3 — из early, 4–6 — из mid,
+	// 7–10 — из late. Пул перемешивается — повторов в забеге нет
+	_buildPlan() {
+		const pools = CONFIG.ciceridis.toastPools;
+		// Фишер-Йетс: перемешать копию пула и взять первые count
+		const take = (pool, count) => {
+			const copy = pool.slice();
+			for (let i = copy.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[copy[i], copy[j]] = [copy[j], copy[i]];
+			}
+			return copy.slice(0, count);
+		};
+		return [
+			...take(pools.early, 3),
+			...take(pools.mid, 3),
+			...take(pools.late, 4),
+		];
+	},
+
+	// Текст тоста текущего раунда (для плашки и карточки поражения)
+	currentToast() {
+		return this.plan[this.toastNum - 1] || "";
 	},
 
 	// Линейная интерполяция параметра сложности по раундам (ТЗ §5):
