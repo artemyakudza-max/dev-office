@@ -559,9 +559,10 @@ const UI = {
 	},
 
 	// Плашка с текстом по словам (тост Чекеридиса): слова появляются
-	// постепенно за seconds секунд — как будто он говорит. Стиль тот же,
+	// постепенно за speechSec секунд — как будто он говорит. Плашка висит
+	// seconds секунд (CSS-анимация растворяет её в конце). Стиль тот же,
 	// что у bubble; ширина фиксируется заранее, чтобы плашка не прыгала
-	bubbleWords(text, lx, ly, align, seconds) {
+	bubbleWords(text, lx, ly, align, seconds, speechSec) {
 		const p = Scene.toScreen(lx, ly);
 		const el = document.createElement("div");
 		el.className = "bubble";
@@ -586,9 +587,11 @@ const UI = {
 		el.style.left = cx + "px";
 		el.style.boxSizing = "border-box";
 		el.style.width = w + "px"; // фиксируем ширину — слова не двигают плашку
-		// Показ по словам: интервал = длительность / число слов
+		// Слова появляются за speechSec (меньше total — успевают показаться
+		// до растворения плашки). Интервал = время речи / число слов
 		const words = text.split(" ");
-		const interval = (total * 1000) / words.length;
+		const speak = Math.min(speechSec || total, total * 0.8);
+		const interval = (speak * 1000) / words.length;
 		let shown = 0;
 		el.textContent = "";
 		el.style.visibility = "visible";
