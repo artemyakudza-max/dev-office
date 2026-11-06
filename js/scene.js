@@ -40,6 +40,7 @@ const Scene = {
 			img.src = src;
 		};
 		if (cfg.bg) load(cfg.bg, "bg");
+		if (cfg.bgCiceridis) load(cfg.bgCiceridis, "bgCiceridis");
 		if (cfg.vova && cfg.vova.sheet) load(cfg.vova.sheet, "vova");
 		if (cfg.boss && cfg.boss.sheet) load(cfg.boss.sheet, "boss");
 		if (cfg.flipchart && cfg.flipchart.sheet) load(cfg.flipchart.sheet, "flipchart");
@@ -205,9 +206,12 @@ const Scene = {
 		// Cover-fit: масштаб без искажений пропорций, центр по видимой области —
 		// на портретном экране края альбомного фона обрезаются, окно остаётся в центре.
 		// Если не загружен — код-арт комнаты по слоям (фолбэк)
-		if (this.sprites.bg) {
+		// В «Цицеридисе» — свой фон-бар, в игре Вовы — офис
+		const bgImg = this.mode === "ciceridis" && this.sprites.bgCiceridis
+			? this.sprites.bgCiceridis : this.sprites.bg;
+		if (bgImg) {
 			ctx.imageSmoothingEnabled = false;
-			const img = this.sprites.bg;
+			const img = bgImg;
 			const vw = x1 - x0, vh = y1 - y0;
 			const s = Math.max(vw / img.width, vh / img.height);
 			const dw = img.width * s, dh = img.height * s;
