@@ -66,11 +66,12 @@
 				UI.bubble(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
 					CONFIG.ciceridis.toastSec);
 			}
-			// Падение: анимация fallSec, затем карточка поражения (ТЗ §4.1)
+			// Падение: сначала проигрывается анимация fallSec (Game.over не ставим —
+			// иначе цикл остановится и анимация замрёт), затем карточка поражения
 			if (Ciceridis.phase === "fall" && !Game.ciceridisFallShown) {
 				Game.ciceridisFallShown = true;
-				Game.over = true;
 				setTimeout(() => {
+					Game.over = true;
 					if (navigator.vibrate) navigator.vibrate(200);
 					UI.showFinal("ciceridisFail", {
 						toast: Ciceridis.toastNum,
