@@ -61,9 +61,23 @@ const Ciceridis = {
 		this.angVel += side === "left" ? -c.tapImpulseDeg : c.tapImpulseDeg;
 	},
 
+	// Нейтральные сцены (залезание, выпивание, радость, «Ещё тост!»):
+	// ввод игнорируется — иначе накопленные тапы выстреливают в новом раунде
+	ignoreInput() {
+		return this.phase !== "toast" ||
+			this.toastT < CONFIG.ciceridis.inputDelaySec;
+	},
+
+	// Сброс накопленных тапов (вызывается, когда ввод игнорируется)
+	discardTaps() {
+		Input.tapLeft = false;
+		Input.tapRight = false;
+	},
+
 	update(dt) {
 		if (this.phase === "climb") {
 			this.climbT += dt;
+			this.discardTaps(); // тапы во время нейтральных сцен не копятся
 			if (this.climbT >= CONFIG.ciceridis.climbSec) {
 				this.phase = "toast";
 				this.toastT = 0;
@@ -77,6 +91,12 @@ const Ciceridis = {
 
 		const c = CONFIG.ciceridis;
 
+		// Первые inputDelaySec тоста ввод игнорируется (решение автора:
+		// реакция на игрока начинается с задержкой после нейтральных сцен)
+		if (this.ignoreInput()) {
+			this.discardTaps();
+		}
+
 		// Тапы: потребляю флаги ввода (их ставит Input при pointerdown)
 		if (Input.tapLeft) { this.applyTap("left"); Input.tapLeft = false; }
 		if (Input.tapRight) { this.applyTap("right"); Input.tapRight = false; }
@@ -84,8 +104,8 @@ const Ciceridis = {
 		// Зажатие половины = непрерывная сила (меняется ускорение, не скорость).
 		// Обе половины сразу — силы взаимно гасятся (ТЗ §3.2)
 		let hold = 0;
-		if (Input.rightHeld) hold += 1;
-		if (Input.leftHeld) hold -= 1;
+		if (Input.rightHeld && !this.ignoreInput()) hold += 1;
+		if (Input.leftHeld && !this.ignoreInput()) hold -= 1;
 		this.angVel += hold * c.holdAccelDeg * dt;
 
 		// Гашение: без удержания качание плавно затухает (демпфирование)
@@ -112,18 +132,21 @@ const Ciceridis = {
 			}
 		} else if (this.phase === "drink") {
 			this.drinkT += dt;
+			this.discardTaps(); // тапы во время нейтральных сцен не копятся
 			if (this.drinkT >= c.drinkSec) {
 				this.phase = "joy";
 				this.joyT = 0;
 			}
 		} else if (this.phase === "joy") {
 			this.joyT += dt;
+			this.discardTaps();
 			if (this.joyT >= c.joySec) {
 				this.phase = "nextToast";
 				this.nextT = 0;
 			}
 		} else if (this.phase === "nextToast") {
 			this.nextT += dt;
+			this.discardTaps();
 			if (this.nextT >= c.nextToastSec) {
 				this.phase = "toast";
 				this.toastT = 0;
