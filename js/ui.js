@@ -223,7 +223,7 @@ const UI = {
 				width: 360px; height: 640px; transform-origin: center;
 				display: flex; flex-direction: column; align-items: center; justify-content: center;">
 				<p style="font-size: 27px; color: #f0c040; margin: 0; line-height: 1.4;
-					font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">ЦИЦЕРИДИС</p>
+					font-family: var(--pixel-font); text-shadow: 4px 4px 0 #c05050;">ТЭСТ</p>
 				<p style="font-size: 10px; letter-spacing: 2px; color: #8a92a8;
 					margin: 14px 0 0; font-family: var(--pixel-font);">МИНИ-ИГРА В РАЗРАБОТКЕ</p>
 				<div id="ciceridis-back" class="char-card" style="margin-top: 40px; padding: 10px 26px;
