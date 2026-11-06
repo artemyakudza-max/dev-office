@@ -626,30 +626,40 @@ const Scene = {
 		if (ang !== 0) ctx.restore();
 	},
 
-	// Спрайт Чекеридиса на стойке: качание и падение — как в код-арте.
-	// Этап 4: пока всегда кадр 0 «тост»; позы «баланс/пьёт/радость/падение»
-	// подключаются в следующих шагах
+	// Спрайт Чекеридиса на столе: кадр по фазе + качание/падение.
+	// Кадры листа: 0 тост, 1 балансирует, 2 пьёт, 3 радость/победа, 4 падение
 	drawCiceridisSprite(ctx) {
 		const cfg = CONFIG.sprites.ciceridis;
 		const img = this.sprites.ciceridis;
 		const feet = this.ciceridisFeet();
 		const h = this.unitH(this.anchor()) * cfg.hFrac;
 		const w = h * (cfg.frame.w / cfg.frame.h);
-		const floorY = 478;      // куда съезжает при падении — пол сцены
+		const floorY = 478;      // куда съезжает при падении — вниз, к толпе
 		const dropY = Ciceridis.phase === "fall"
 			? Ciceridis.fallProgress() * (floorY - feet.y) : 0;
 		const fy = feet.y + dropY;
-		// наклон: качание во время тоста + доворот при падении
-		let ang = Ciceridis.swayAngle() * Math.PI / 180;
-		if (Ciceridis.phase === "fall") {
+		let fi = 0;
+		if (Ciceridis.phase === "drink") fi = 2;
+		else if (Ciceridis.phase === "joy" || Ciceridis.phase === "win") fi = 3;
+		else if (Ciceridis.phase === "fall") fi = 4;
+		else if (Ciceridis.isTiltPose()) fi = 1;
+		// Наклон: в тосте — качание. В падении спрайт уже завален на ~45°,
+		// доворачиваем чуть-чуть в сторону падения; влево — зеркалим
+		let ang = 0;
+		let mirror = false;
+		if (Ciceridis.phase === "toast") {
+			ang = Ciceridis.swayAngle() * Math.PI / 180;
+		} else if (Ciceridis.phase === "fall") {
 			const f = Ciceridis.fallProgress();
-			ang += (Ciceridis.fallDir * 80 - Ciceridis.swayAngle()) * f * Math.PI / 180;
+			ang = Ciceridis.fallDir * 25 * f * Math.PI / 180;
+			mirror = Ciceridis.fallDir < 0; // спрайт нарисован падающим вправо
 		}
 		ctx.imageSmoothingEnabled = false;
 		ctx.save();
-		ctx.translate(feet.x, fy); // точка опоры — стопы на стойке
+		ctx.translate(feet.x, fy); // точка опоры — стопы
 		ctx.rotate(ang);
-		ctx.drawImage(img, 0, 0, cfg.frame.w, cfg.frame.h, -w / 2, -h, w, h);
+		if (mirror) ctx.scale(-1, 1);
+		ctx.drawImage(img, fi * cfg.frame.w, 0, cfg.frame.w, cfg.frame.h, -w / 2, -h, w, h);
 		ctx.restore();
 	},
 
@@ -667,11 +677,12 @@ const Scene = {
 	// Точка плашки над Чекеридисом в «Цицеридисе» (логические координаты)
 	bubbleAnchorCiceridis() {
 		const feet = this.ciceridisFeet();
-		// со спрайтом плашка выше — над головой спрайта
+		// со спрайтом плашка выше — над всем кадром (в новых кадрах
+		// поднятые руки доходят почти до верха)
 		const cfg = CONFIG.sprites.ciceridis;
 		if (this.sprites.ciceridis && cfg) {
 			const h = this.unitH(this.anchor()) * cfg.hFrac;
-			return { x: feet.x, y: feet.y - h * 0.87 - 8 };
+			return { x: feet.x, y: feet.y - h - 8 };
 		}
 		return { x: feet.x, y: feet.y - 110 };
 	},
