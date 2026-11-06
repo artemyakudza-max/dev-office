@@ -67,6 +67,19 @@
 				UI.bubbleWords(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
 					CONFIG.ciceridis.toastSec, CONFIG.ciceridis.speechSec);
 			}
+			// Цикл между раундами (ТЗ §3.1.6): плашки «буль-буль-буль» и «Ещё тост!»
+			if (Ciceridis.phase === "drink" && !Ciceridis.drinkStartFired) {
+				Ciceridis.drinkStartFired = true;
+				const hp = Scene.bubbleAnchorCiceridis();
+				UI.bubble(CONFIG.ciceridis.drinkText, hp.x, hp.y, "center",
+					CONFIG.ciceridis.drinkSec);
+			}
+			if (Ciceridis.phase === "nextToast" && !Ciceridis.nextToastFired) {
+				Ciceridis.nextToastFired = true;
+				const hp = Scene.bubbleAnchorCiceridis();
+				UI.bubble(CONFIG.ciceridis.nextToastText, hp.x, hp.y, "center",
+					CONFIG.ciceridis.nextToastSec);
+			}
 			// Падение: сначала проигрывается анимация fallSec (Game.over не ставим —
 			// иначе цикл остановится и анимация замрёт), затем карточка поражения
 			if (Ciceridis.phase === "fall" && !Game.ciceridisFallShown) {

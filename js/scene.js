@@ -540,6 +540,9 @@ const Scene = {
 		const bx = cx - 14;
 		// Падение: тело сползает с сиденья на пол
 		const dropY = Ciceridis.phase === "fall" ? Ciceridis.fallProgress() * 96 : 0;
+		// Выпивание: поднимает бокал ко рту (этап 8)
+		const drinkP = Ciceridis.phase === "drink"
+			? Math.sin(Math.min(1, Ciceridis.drinkT / CONFIG.ciceridis.drinkSec) * Math.PI) : 0;
 		const by = floorY - 96 * ease + dropY; // базовая точка: от пола к сиденью
 		// Этап 5: медленное качание ±10° вокруг точки опоры (стопы на сиденье)
 		let ang = Ciceridis.swayAngle() * Math.PI / 180;
@@ -579,13 +582,25 @@ const Scene = {
 		ctx.fillRect(bx + 26, by - 68, 8, 20);
 		ctx.fillStyle = P.skin;
 		ctx.fillRect(bx + 28, by - 50, 6, 6);
-		// Бокал: пиво с пенкой
+		// Бокал: пиво с пенкой; при выпивании поднимается ко рту и опустошается
+		const glassUp = drinkP * 34; // подъём бокала ко рту
+		const beerLeft = Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast"
+			? 0 : 7; // после выпивания бокал пустой
 		ctx.fillStyle = P.glass;
-		ctx.fillRect(bx + 26, by - 66, 10, 16);
-		ctx.fillStyle = P.beer;
-		ctx.fillRect(bx + 27, by - 58, 8, 7);
-		ctx.fillStyle = P.foam;
-		ctx.fillRect(bx + 27, by - 66, 8, 4);
+		ctx.fillRect(bx + 26, by - 66 - glassUp, 10, 16);
+		if (beerLeft > 0) {
+			ctx.fillStyle = P.beer;
+			ctx.fillRect(bx + 27, by - 58 - glassUp, 8, beerLeft);
+			ctx.fillStyle = P.foam;
+			ctx.fillRect(bx + 27, by - 66 - glassUp, 8, 4);
+		}
+		// Радость (этап 8): руки вверх с пустым бокалом
+		if (Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast") {
+			ctx.fillStyle = P.jacket;
+			ctx.fillRect(bx + 26, by - 84, 8, 20); // рука поднята
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 28, by - 88, 6, 6);
+		}
 		if (ang !== 0) ctx.restore();
 	},
 
