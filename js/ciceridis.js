@@ -1,10 +1,9 @@
-// Мини-игра «Цицеридис»: Чекеридис на стуле с бокалом.
-// Этап 4 — залезание на стул (1,5 с).
+// Мини-игра «Цицеридис»: Чекеридис стоит на барной стойке с бокалом.
+// Стул и залезание убраны (решение автора) — стоит на стойке с самого начала
 // Этап 5 — первый тост: текст 5 с + очень медленное качание ±10°
 // Этап 6 — управление: тап/зажатие половин экрана толкает его (ТЗ §3.2)
 const Ciceridis = {
-	phase: "climb",    // climb | toast | drink | joy | nextToast | fall | win
-	climbT: 0,         // сколько секунд идёт залезание
+	phase: "toast",    // toast | drink | joy | nextToast | fall | win
 	toastT: 0,         // сколько секунд идёт тост
 	drinkT: 0,         // сколько секунд идёт «выпивает бокал»
 	joyT: 0,           // сколько секунд идёт радость
@@ -22,8 +21,7 @@ const Ciceridis = {
 	angVel: 0,         // угловая скорость, градусы/сек
 
 	reset() {
-		this.phase = "climb";
-		this.climbT = 0;
+		this.phase = "toast"; // стоит на стойке сразу, без залезания
 		this.toastT = 0;
 		this.toastStartFired = false;
 		this.drinkStartFired = false;
@@ -34,11 +32,6 @@ const Ciceridis = {
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.plan = this._buildPlan();
-	},
-
-	// Прогресс залезания 0..1 — для отрисовки (Scene читает)
-	climbProgress() {
-		return Math.min(1, this.climbT / CONFIG.ciceridis.climbSec);
 	},
 
 	// Прогресс падения 0..1 — для анимации в Scene
@@ -120,7 +113,7 @@ const Ciceridis = {
 		this.angVel += side === "left" ? -c.tapImpulseDeg : c.tapImpulseDeg;
 	},
 
-	// Нейтральные сцены (залезание, выпивание, радость, «Ещё тост!»):
+	// Нейтральные сцены (выпивание, радость, «Ещё тост!»):
 	// ввод игнорируется — иначе накопленные тапы выстреливают в новом раунде
 	ignoreInput() {
 		return this.phase !== "toast" ||
@@ -134,15 +127,6 @@ const Ciceridis = {
 	},
 
 	update(dt) {
-		if (this.phase === "climb") {
-			this.climbT += dt;
-			this.discardTaps(); // тапы во время нейтральных сцен не копятся
-			if (this.climbT >= CONFIG.ciceridis.climbSec) {
-				this.phase = "toast";
-				this.toastT = 0;
-			}
-			return;
-		}
 		if (this.phase === "fall") { // падение: крутится анимация, физика стоит
 			this.fallT += dt;
 			return;

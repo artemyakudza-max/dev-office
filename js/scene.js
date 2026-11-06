@@ -510,24 +510,13 @@ const Scene = {
 		ctx.fillRect(88, 472, 8, 6);
 	},
 
-	// Сцена мини-игры «Цицеридис»: Чекеридис на стуле.
-	// Код-арт: стул + пиксельный человечек с бокалом. Настоящий спрайт
-	// и анимации добавим на следующих этапах
+	// Сцена мини-игры «Цицеридис»: Чекеридис стоит на барной стойке.
+	// Стул и залезание убраны (решение автора): стоит на стойке с самого
+	// начала. Код-арт: пиксельный человечек с бокалом
 	drawCiceridis(ctx) {
-		const cx = this.W / 2;   // центр сцены
-		const floorY = 478;      // линия пола (как в комнате Вовы)
+		const floorY = 478;      // куда съезжает при падении — пол сцены
 
-		// Стул: сиденье, спинка, ножки
-		ctx.fillStyle = "#7a5433";
-		ctx.fillRect(cx - 26, floorY - 96, 52, 10);   // сиденье
-		ctx.fillRect(cx - 24, floorY - 150, 8, 54);   // спинка
-		ctx.fillRect(cx + 16, floorY - 150, 8, 54);
-		ctx.fillRect(cx - 22, floorY - 86, 6, 86);    // ножки
-		ctx.fillRect(cx + 16, floorY - 86, 6, 86);
-		ctx.fillStyle = "#5c3d24";
-		ctx.fillRect(cx - 26, floorY - 88, 52, 3);    // тень на сиденье
-
-		// Чекеридис: залезает на стул (этап 4), бокал в руке с самого начала
+		// Чекеридис: стоит на стойке с бокалом с самого начала
 		const P = {
 			hair: "#3a2e26",
 			skin: "#e8b48c",
@@ -538,17 +527,16 @@ const Scene = {
 			beer: "#e8a830",
 			foam: "#f5f0e0",
 		};
-		// Прогресс залезания 0..1: от пола (y=floorY) до сиденья (floorY-96)
-		const p = Ciceridis.climbProgress();
-		const ease = p * p * (3 - 2 * p); // плавный ease-in-out
-		const bx = cx - 14;
-		// Падение: тело сползает с сиденья на пол
-		const dropY = Ciceridis.phase === "fall" ? Ciceridis.fallProgress() * 96 : 0;
+		const feet = this.ciceridisFeet(); // ноги на барной стойке фона
+		const bx = feet.x - 14;
+		// Падение: тело сползает со стойки на пол
+		const dropY = Ciceridis.phase === "fall"
+			? Ciceridis.fallProgress() * (floorY - feet.y) : 0;
 		// Выпивание: поднимает бокал ко рту (этап 8)
 		const drinkP = Ciceridis.phase === "drink"
 			? Math.sin(Math.min(1, Ciceridis.drinkT / CONFIG.ciceridis.drinkSec) * Math.PI) : 0;
-		const by = floorY - 96 * ease + dropY; // базовая точка: от пола к сиденью
-		// Этап 5: медленное качание ±10° вокруг точки опоры (стопы на сиденье)
+		const by = feet.y + dropY; // базовая точка: линия стоп
+		// Медленное качание вокруг точки опоры (стопы на стойке)
 		let ang = Ciceridis.swayAngle() * Math.PI / 180;
 		// Этап 7: падение — доворот до 80° в сторону падения, от текущего наклона
 		if (Ciceridis.phase === "fall") {
@@ -557,7 +545,7 @@ const Scene = {
 		}
 		if (ang !== 0) {
 			ctx.save();
-			ctx.translate(bx + 14, by); // точка опоры — стопы на сиденье
+			ctx.translate(bx + 14, by); // точка опоры — стопы на стойке
 			ctx.rotate(ang);
 			ctx.translate(-(bx + 14), -by);
 		}
@@ -627,9 +615,21 @@ const Scene = {
 		if (ang !== 0) ctx.restore();
 	},
 
+	// Где стоят ноги Чекеридиса: центр экрана, на барной стойке фона.
+	// standFy — доля высоты фона (правится в config.js под фон).
+	// На широких экранах стойка уходит за край — сдвигаем его вниз,
+	// чтобы он всегда был виден целиком
+	ciceridisFeet() {
+		let y = CONFIG.ciceridis.standFy * this.H;
+		if (this.bgRect) y = this.bgRect.dy + this.bgRect.dh * CONFIG.ciceridis.standFy;
+		y = Math.max(160, Math.min(y, 478));
+		return { x: this.W / 2, y };
+	},
+
 	// Точка плашки над Чекеридисом в «Цицеридисе» (логические координаты)
 	bubbleAnchorCiceridis() {
-		return { x: this.W / 2, y: 478 - 96 - 110 };
+		const feet = this.ciceridisFeet();
+		return { x: feet.x, y: feet.y - 110 };
 	},
 
 	// Вова: сидит за столом, вид сбоку, лицом вправо.
