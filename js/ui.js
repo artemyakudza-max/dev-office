@@ -279,6 +279,7 @@ const UI = {
 			// пасхалка «REAL UNLUCK»: свалился в 1-м раунде (ТЗ §4.2)
 			body = `
 				<div class="final-header">${CONFIG.ciceridis.easterHeader}</div>
+				<div class="final-text">${CONFIG.ciceridis.easterText}</div>
 			`;
 			shareText = CONFIG.ciceridis.easterShareText;
 		} else {
@@ -384,7 +385,8 @@ const UI = {
 			const bodyText = kind === "fail"
 				? CONFIG.failText.replace("{N}", data.second)
 				: kind === "ciceridisFail" ? data.toastText
-				: kind === "easter" ? CONFIG.easterText : null;
+				: kind === "easter" ? CONFIG.easterText
+				: kind === "ciceridisEaster" ? CONFIG.ciceridis.easterText : null;
 			const lines = bodyText ? this._wrapLines(ctx, bodyText, cw - 50) : [];
 			// высота карточки растёт под длинный текст — ничего не наезжает
 			const ch = kind === "win" ? 390
@@ -441,15 +443,8 @@ const UI = {
 						? CONFIG.ciceridis.easterHeader
 						: kind === "win" || kind === "easter"
 							? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
-			// длинный заголовок пасхалки Чекеридиса переносим на строки,
-			// остальные заголовки — одной строкой
-			if (kind === "ciceridisEaster") {
-				ctx.font = pix(9);
-				this._wrapDraw(ctx, header.toUpperCase(), W / 2, cy + 106, cw - 24, 14);
-			} else {
-				ctx.font = pix(11);
-				ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
-			}
+			ctx.font = pix(11);
+			ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
 
 			if (kind === "win") {
 				ctx.font = "800 54px system-ui, sans-serif";
