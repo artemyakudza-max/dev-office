@@ -546,10 +546,10 @@ const Scene = {
 		const by = floorY - 96 * ease + dropY; // базовая точка: от пола к сиденью
 		// Этап 5: медленное качание ±10° вокруг точки опоры (стопы на сиденье)
 		let ang = Ciceridis.swayAngle() * Math.PI / 180;
-		// Этап 7: падение — доворот за край + сползание на пол
+		// Этап 7: падение — доворот до 80° в сторону падения, от текущего наклона
 		if (Ciceridis.phase === "fall") {
 			const f = Ciceridis.fallProgress();
-			ang += Ciceridis.fallDir * f * 80 * Math.PI / 180;
+			ang += (Ciceridis.fallDir * 80 - Ciceridis.swayAngle()) * f * Math.PI / 180;
 		}
 		if (ang !== 0) {
 			ctx.save();

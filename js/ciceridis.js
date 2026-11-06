@@ -69,7 +69,8 @@ const Ciceridis = {
 	// Итоговый угол в градусах для отрисовки: самокачание + толчки игрока.
 	// Качается только во время тоста; между раундами стоит ровно
 	swayAngle() {
-		if (this.phase !== "toast") return 0;
+		// в падении угол заморожен: toastT и playerAngle не меняются
+		if (this.phase !== "toast" && this.phase !== "fall") return 0;
 		const c = CONFIG.ciceridis;
 		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * this.swayAmp();
 		return self + this.playerAngle;
@@ -136,11 +137,13 @@ const Ciceridis = {
 		// Интегрирование угла через delta time — скорость не зависит от FPS
 		this.playerAngle += this.angVel * dt;
 
-		// Падение: наклон превысил порог — свалился (карточку покажет main.js)
-		if (Math.abs(this.playerAngle) >= c.fallAngleDeg) {
+		// Падение: ОБЩИЙ наклон (самокачание + игрок) превысил порог — свалился.
+		// В поздних раундах самокачание само превышает порог (ТЗ §5)
+		const totalAngle = this.swayAngle();
+		if (Math.abs(totalAngle) >= c.fallAngleDeg) {
 			this.phase = "fall";
 			this.fallT = 0;
-			this.fallDir = this.playerAngle >= 0 ? 1 : -1;
+			this.fallDir = totalAngle >= 0 ? 1 : -1;
 		}
 
 		// Цикл раундов (ТЗ §3.1.6): тост → выпил → радость → «Ещё тост!» → тост
@@ -149,6 +152,7 @@ const Ciceridis = {
 			if (this.toastT >= c.toastSec) {
 				this.phase = "drink";
 				this.drinkT = 0;
+				this.drinkStartFired = false; // плашка «буль-буль-буль» — заново каждый раунд
 				this.playerAngle = 0; // между раундами стоит ровно
 				this.angVel = 0;
 			}
@@ -168,6 +172,7 @@ const Ciceridis = {
 				} else {
 					this.phase = "nextToast";
 					this.nextT = 0;
+					this.nextToastFired = false; // плашка «Ещё тост!» — заново каждый раунд
 				}
 			}
 		} else if (this.phase === "nextToast") {
