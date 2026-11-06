@@ -553,14 +553,15 @@ const UI = {
 	// Всплывает и тает, длительность из конфига
 	// align: "center" — по центру точки (десктоп), "left"/"right" — прижата
 	// к краю экрана (мобайл), независимо от позиции спрайта
-	bubble(text, lx, ly, align) {
+	bubble(text, lx, ly, align, dur) {
 		const p = Scene.toScreen(lx, ly);
 		const el = document.createElement("div");
 		el.className = "bubble";
 		el.textContent = text;
 		el.style.left = p.x + "px";
 		el.style.top = p.y + "px";
-		el.style.animationDuration = CONFIG.ui.bubbleSec + "s";
+		const seconds = dur || CONFIG.ui.bubbleSec;
+		el.style.animationDuration = seconds + "s";
 		this.root.appendChild(el);
 		// ВАЖНО: CSS-анимация плашки держит её центрированной на координате
 		// (translate(-50%)), поэтому задаём ЦЕНТР плашки, а не её край
@@ -576,7 +577,7 @@ const UI = {
 		// Страховка: даже в центре плашка не выезжает за края экрана
 		cx = Math.min(Math.max(cx, m + w / 2), window.innerWidth - m - w / 2);
 		el.style.left = cx + "px";
-		setTimeout(() => el.remove(), CONFIG.ui.bubbleSec * 1000);
+		setTimeout(() => el.remove(), seconds * 1000);
 	},
 
 	// Кнопка паузы (две палки) в правом верхнем углу во время игры

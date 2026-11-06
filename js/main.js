@@ -56,9 +56,16 @@
 			}
 			return;
 		}
-		// Мини-игра «Цицеридис»: свой игровой цикл (этап 3 — пока пустой)
+		// Мини-игра «Цицеридис»: свой игровой цикл
 		if (Game.mode === "ciceridis") {
 			Ciceridis.update(dt);
+			// Плашка с тостом при старте тоста — висит toastSec секунд
+			if (Ciceridis.phase === "toast" && !Ciceridis.toastStartFired) {
+				Ciceridis.toastStartFired = true;
+				const hp = Scene.bubbleAnchorCiceridis();
+				UI.bubble(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
+					CONFIG.ciceridis.toastSec);
+			}
 			return;
 		}
 		if (Game.frozen > 0) {

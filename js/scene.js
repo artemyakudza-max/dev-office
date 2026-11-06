@@ -539,6 +539,14 @@ const Scene = {
 		const ease = p * p * (3 - 2 * p); // плавный ease-in-out
 		const bx = cx - 14;
 		const by = floorY - 96 * ease; // базовая точка: от пола к сиденью
+		// Этап 5: медленное качание ±10° вокруг точки опоры (стопы на сиденье)
+		const ang = Ciceridis.swayAngle() * Math.PI / 180;
+		if (ang !== 0) {
+			ctx.save();
+			ctx.translate(bx + 14, by); // точка опоры — стопы на сиденье
+			ctx.rotate(ang);
+			ctx.translate(-(bx + 14), -by);
+		}
 		// Ноги (стоя на сиденье)
 		ctx.fillStyle = P.jeans;
 		ctx.fillRect(bx + 4, by - 34, 9, 34);
@@ -571,6 +579,12 @@ const Scene = {
 		ctx.fillRect(bx + 27, by - 58, 8, 7);
 		ctx.fillStyle = P.foam;
 		ctx.fillRect(bx + 27, by - 66, 8, 4);
+		if (ang !== 0) ctx.restore();
+	},
+
+	// Точка плашки над Чекеридисом в «Цицеридисе» (логические координаты)
+	bubbleAnchorCiceridis() {
+		return { x: this.W / 2, y: 478 - 96 - 110 };
 	},
 
 	// Вова: сидит за столом, вид сбоку, лицом вправо.
