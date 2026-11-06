@@ -65,7 +65,7 @@
 				Ciceridis.toastStartFired = true;
 				const hp = Scene.bubbleAnchorCiceridis();
 				UI.bubbleWords(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
-					CONFIG.ciceridis.toastSec, CONFIG.ciceridis.speechSec);
+					CONFIG.ciceridis.toastSec, Ciceridis.speechDuration());
 			}
 			// Цикл между раундами (ТЗ §3.1.6): плашки «буль-буль-буль» и «Ещё тост!»
 			if (Ciceridis.phase === "drink" && !Ciceridis.drinkStartFired) {
@@ -92,6 +92,15 @@
 						toastText: CONFIG.ciceridis.toastText,
 					}, restart, goMenu);
 				}, CONFIG.ciceridis.fallSec * 1000);
+			}
+			// Победа (ТЗ §4.3): выстоял все totalRounds — карточка «ВЫСТОЯЛ весь корпоратив»
+			if (Ciceridis.phase === "win" && !Game.ciceridisWinShown) {
+				Game.ciceridisWinShown = true;
+				Game.over = true;
+				if (navigator.vibrate) navigator.vibrate(200);
+				UI.showFinal("ciceridisWin", {
+					toast: Ciceridis.toastNum,
+				}, restart, goMenu);
 			}
 			return;
 		}
@@ -221,6 +230,7 @@
 		Game.lastBossLine = -1;
 		Game.tutorialDone = true; // обучение показываем только в первом забеге
 		Game.ciceridisFallShown = false;
+		Game.ciceridisWinShown = false;
 		UI.hideTutorial(); // если вышли в меню с открытым окном — убрать его
 		Boss.reset();
 		Vova.reset();

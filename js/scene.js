@@ -585,6 +585,7 @@ const Scene = {
 		// Бокал: пиво с пенкой; при выпивании поднимается ко рту и опустошается
 		const glassUp = drinkP * 34; // подъём бокала ко рту
 		const beerLeft = Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast"
+			|| Ciceridis.phase === "win"
 			? 0 : 7; // после выпивания бокал пустой
 		ctx.fillStyle = P.glass;
 		ctx.fillRect(bx + 26, by - 66 - glassUp, 10, 16);
@@ -595,7 +596,8 @@ const Scene = {
 			ctx.fillRect(bx + 27, by - 66 - glassUp, 8, 4);
 		}
 		// Радость (этап 8): руки вверх с пустым бокалом
-		if (Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast") {
+		if (Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast"
+			|| Ciceridis.phase === "win") { // победа: радостная поза остаётся
 			ctx.fillStyle = P.jacket;
 			ctx.fillRect(bx + 26, by - 84, 8, 20); // рука поднята
 			ctx.fillStyle = P.skin;

@@ -260,6 +260,15 @@ const UI = {
 				<div class="final-text">${data.toastText}</div>
 			`;
 			shareText = CONFIG.ciceridis.failShareText.replace("{N}", data.toast);
+		} else if (kind === "ciceridisWin") {
+			// победа Чекеридиса: выстоял все тосты (ТЗ §4.3)
+			body = `
+				<div class="final-header">${CONFIG.ciceridis.winHeader}</div>
+				<div class="final-label" style="margin-top: 14px;">${CONFIG.rankLabel}</div>
+				<div class="final-rank">«${CONFIG.ciceridis.winRank}»</div>
+				<div class="final-sub" style="margin-top: 10px;">Тостов: ${data.toast}</div>
+			`;
+			shareText = CONFIG.ciceridis.winShareText;
 		} else if (kind === "fail") {
 			body = `
 				<div class="final-header">Замечаний: ${CONFIG.warnings.max}</div>
@@ -373,6 +382,7 @@ const UI = {
 			const lines = bodyText ? this._wrapLines(ctx, bodyText, cw - 50) : [];
 			// высота карточки растёт под длинный текст — ничего не наезжает
 			const ch = kind === "win" ? 390
+				: kind === "ciceridisWin" ? 330
 				: Math.max(250, 158 + lines.length * 27 + 64);
 
 			// фон
@@ -420,8 +430,10 @@ const UI = {
 			ctx.fillStyle = kind === "fail" || kind === "ciceridisFail" ? "#e07070" : "#f0c040";
 			const header = kind === "ciceridisFail"
 				? CONFIG.ciceridis.failHeader.replace("{N}", data.toast)
-				: kind === "win" || kind === "easter"
-					? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
+				: kind === "ciceridisWin"
+					? CONFIG.ciceridis.winHeader
+					: kind === "win" || kind === "easter"
+						? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
 			ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
 
 			if (kind === "win") {
@@ -443,6 +455,17 @@ const UI = {
 				ctx.font = "14px system-ui, sans-serif";
 				ctx.fillStyle = "#b0b0c0";
 				ctx.fillText("Замечаний: " + data.warnings, W / 2, cy + 322);
+			} else if (kind === "ciceridisWin") {
+				// звание + число пройденных тостов на шеринг-картинке
+				ctx.font = "700 24px system-ui, sans-serif";
+				ctx.fillStyle = "#f0c040";
+				this._wrapDraw(ctx, "«" + CONFIG.ciceridis.winRank + "»",
+					W / 2, cy + 170, cw - 30, 30);
+				ctx.fillStyle = "rgba(201, 162, 39, 0.4)";
+				ctx.fillRect(cx + 40, cy + 215, cw - 80, 1);
+				ctx.font = "14px system-ui, sans-serif";
+				ctx.fillStyle = "#b0b0c0";
+				ctx.fillText("Тостов: " + data.toast, W / 2, cy + 245);
 			} else {
 				ctx.font = "19px system-ui, sans-serif";
 				ctx.fillStyle = "#fff";

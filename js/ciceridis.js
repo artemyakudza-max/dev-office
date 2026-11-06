@@ -44,12 +44,34 @@ const Ciceridis = {
 		return Math.min(1, this.fallT / CONFIG.ciceridis.fallSec);
 	},
 
+	// Линейная интерполяция параметра сложности по раундам (ТЗ §5):
+	// раунд 1 — значения Start, раунд 10 — значения End
+	_diff(start, end) {
+		const t = Math.min(1, (this.toastNum - 1) / (CONFIG.ciceridis.totalRounds - 1));
+		return start + (end - start) * t;
+	},
+
+	// Амплитуда качания текущего раунда
+	swayAmp() {
+		return this._diff(CONFIG.ciceridis.swayAmpDeg, CONFIG.ciceridis.swayAmpEnd);
+	},
+
+	// Период качания текущего раунда (меньше = быстрее)
+	swayPeriod() {
+		return this._diff(CONFIG.ciceridis.swayPeriodSec, CONFIG.ciceridis.swayPeriodEnd);
+	},
+
+	// Длительность речи текущего раунда (больше = медленнее говорит)
+	speechDuration() {
+		return this._diff(CONFIG.ciceridis.speechSec, CONFIG.ciceridis.speechSecEnd);
+	},
+
 	// Итоговый угол в градусах для отрисовки: самокачание + толчки игрока.
 	// Качается только во время тоста; между раундами стоит ровно
 	swayAngle() {
 		if (this.phase !== "toast") return 0;
 		const c = CONFIG.ciceridis;
-		const self = Math.sin(this.toastT / c.swayPeriodSec * Math.PI * 2) * c.swayAmpDeg;
+		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * this.swayAmp();
 		return self + this.playerAngle;
 	},
 
@@ -141,8 +163,12 @@ const Ciceridis = {
 			this.joyT += dt;
 			this.discardTaps();
 			if (this.joyT >= c.joySec) {
-				this.phase = "nextToast";
-				this.nextT = 0;
+				if (this.toastNum >= c.totalRounds) {
+					this.phase = "win"; // все 10 тостов пройдены — победа (ТЗ §4.3)
+				} else {
+					this.phase = "nextToast";
+					this.nextT = 0;
+				}
 			}
 		} else if (this.phase === "nextToast") {
 			this.nextT += dt;
@@ -153,6 +179,8 @@ const Ciceridis = {
 				this.toastNum += 1;
 				this.toastStartFired = false; // новый тост — новая плашка
 			}
+		} else if (this.phase === "win") {
+			// победа: карточку покажет main.js
 		}
 	},
 };
