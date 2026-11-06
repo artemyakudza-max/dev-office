@@ -252,6 +252,14 @@ const UI = {
 				<div class="final-sub" style="margin-top: 10px;">Замечаний: ${data.warnings}</div>
 			`;
 			shareText = CONFIG.shareText.replace("{P}", data.percent);
+		} else if (kind === "ciceridisFail") {
+			// поражение Чекеридиса: заголовок «СВАЛИЛСЯ на N-м тосте»
+			// + полный текст тоста, на котором упал (ТЗ §4.1)
+			body = `
+				<div class="final-header">${CONFIG.ciceridis.failHeader.replace("{N}", data.toast)}</div>
+				<div class="final-text">${data.toastText}</div>
+			`;
+			shareText = CONFIG.ciceridis.failShareText.replace("{N}", data.toast);
 		} else if (kind === "fail") {
 			body = `
 				<div class="final-header">Замечаний: ${CONFIG.warnings.max}</div>
@@ -360,6 +368,7 @@ const UI = {
 			const cw = 300, cx = (W - cw) / 2, cy = 150;
 			const bodyText = kind === "fail"
 				? CONFIG.failText.replace("{N}", data.second)
+				: kind === "ciceridisFail" ? data.toastText
 				: kind === "easter" ? CONFIG.easterText : null;
 			const lines = bodyText ? this._wrapLines(ctx, bodyText, cw - 50) : [];
 			// высота карточки растёт под длинный текст — ничего не наезжает
@@ -371,7 +380,7 @@ const UI = {
 			ctx.fillRect(0, 0, W, H);
 
 			// карточка с рамкой-акцентом исхода (как на экране финала)
-			const accent = kind === "fail" ? "#c05050" :
+			const accent = kind === "fail" || kind === "ciceridisFail" ? "#c05050" :
 				kind === "easter" ? "#4a7ae0" : "#c9a227";
 			const grad = ctx.createLinearGradient(0, cy, 0, cy + ch);
 			grad.addColorStop(0, "#2c2c44");
@@ -408,9 +417,11 @@ const UI = {
 			// заголовок
 			const pix = (size) => size + 'px "Press Start 2P", monospace';
 			ctx.font = pix(11);
-			ctx.fillStyle = kind === "fail" ? "#e07070" : "#f0c040";
-			const header = kind === "win" || kind === "easter"
-				? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
+			ctx.fillStyle = kind === "fail" || kind === "ciceridisFail" ? "#e07070" : "#f0c040";
+			const header = kind === "ciceridisFail"
+				? CONFIG.ciceridis.failHeader.replace("{N}", data.toast)
+				: kind === "win" || kind === "easter"
+					? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
 			ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
 
 			if (kind === "win") {

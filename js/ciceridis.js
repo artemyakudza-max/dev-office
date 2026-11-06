@@ -6,7 +6,10 @@ const Ciceridis = {
 	phase: "climb",    // climb | toast | fall
 	climbT: 0,         // сколько секунд идёт залезание
 	toastT: 0,         // сколько секунд идёт тост
+	fallT: 0,          // сколько секунд длится падение (анимация)
+	fallDir: 1,        // в какую сторону упал: 1 вправо, -1 влево
 	toastStartFired: false, // плашку с тостом показал? (ставит main.js)
+	toastNum: 1,       // номер текущего тоста (для карточки поражения)
 
 	// Физика качания (этап 6): угол игрока + самокачание
 	playerAngle: 0,    // угол от толчков игрока, градусы (минус = влево)
@@ -17,13 +20,21 @@ const Ciceridis = {
 		this.climbT = 0;
 		this.toastT = 0;
 		this.toastStartFired = false;
+		this.toastNum = 1;
 		this.playerAngle = 0;
 		this.angVel = 0;
+		this.fallT = 0;
+		this.fallDir = 1;
 	},
 
 	// Прогресс залезания 0..1 — для отрисовки (Scene читает)
 	climbProgress() {
 		return Math.min(1, this.climbT / CONFIG.ciceridis.climbSec);
+	},
+
+	// Прогресс падения 0..1 — для анимации в Scene
+	fallProgress() {
+		return Math.min(1, this.fallT / CONFIG.ciceridis.fallSec);
 	},
 
 	// Итоговый угол в градусах для отрисовки: самокачание + толчки игрока
@@ -51,7 +62,10 @@ const Ciceridis = {
 			}
 			return;
 		}
-		if (this.phase === "fall") return; // упал — физика стоит (этап 7: карточка)
+		if (this.phase === "fall") { // падение: крутится анимация, физика стоит
+			this.fallT += dt;
+			return;
+		}
 
 		const c = CONFIG.ciceridis;
 
@@ -72,11 +86,11 @@ const Ciceridis = {
 		// Интегрирование угла через delta time — скорость не зависит от FPS
 		this.playerAngle += this.angVel * dt;
 
-		// Падение: наклон превысил порог — свалился (этап 7 покажет карточку).
-		// В первом раунде сам он не падает (амплитуда 10° << порога),
-		// но игрок может столкнуть его сам — так задумано (ТЗ §3.1.4)
+		// Падение: наклон превысил порог — свалился (карточку покажет main.js)
 		if (Math.abs(this.playerAngle) >= c.fallAngleDeg) {
 			this.phase = "fall";
+			this.fallT = 0;
+			this.fallDir = this.playerAngle >= 0 ? 1 : -1;
 		}
 
 		if (this.phase === "toast") {

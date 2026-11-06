@@ -538,9 +538,16 @@ const Scene = {
 		const p = Ciceridis.climbProgress();
 		const ease = p * p * (3 - 2 * p); // плавный ease-in-out
 		const bx = cx - 14;
-		const by = floorY - 96 * ease; // базовая точка: от пола к сиденью
+		// Падение: тело сползает с сиденья на пол
+		const dropY = Ciceridis.phase === "fall" ? Ciceridis.fallProgress() * 96 : 0;
+		const by = floorY - 96 * ease + dropY; // базовая точка: от пола к сиденью
 		// Этап 5: медленное качание ±10° вокруг точки опоры (стопы на сиденье)
-		const ang = Ciceridis.swayAngle() * Math.PI / 180;
+		let ang = Ciceridis.swayAngle() * Math.PI / 180;
+		// Этап 7: падение — доворот за край + сползание на пол
+		if (Ciceridis.phase === "fall") {
+			const f = Ciceridis.fallProgress();
+			ang += Ciceridis.fallDir * f * 80 * Math.PI / 180;
+		}
 		if (ang !== 0) {
 			ctx.save();
 			ctx.translate(bx + 14, by); // точка опоры — стопы на сиденье

@@ -66,6 +66,18 @@
 				UI.bubble(CONFIG.ciceridis.toastText, hp.x, hp.y, "center",
 					CONFIG.ciceridis.toastSec);
 			}
+			// Падение: анимация fallSec, затем карточка поражения (ТЗ §4.1)
+			if (Ciceridis.phase === "fall" && !Game.ciceridisFallShown) {
+				Game.ciceridisFallShown = true;
+				Game.over = true;
+				setTimeout(() => {
+					if (navigator.vibrate) navigator.vibrate(200);
+					UI.showFinal("ciceridisFail", {
+						toast: Ciceridis.toastNum,
+						toastText: CONFIG.ciceridis.toastText,
+					}, restart, goMenu);
+				}, CONFIG.ciceridis.fallSec * 1000);
+			}
 			return;
 		}
 		if (Game.frozen > 0) {
@@ -193,9 +205,11 @@
 		Game.lastMeme = -1;
 		Game.lastBossLine = -1;
 		Game.tutorialDone = true; // обучение показываем только в первом забеге
+		Game.ciceridisFallShown = false;
 		UI.hideTutorial(); // если вышли в меню с открытым окном — убрать его
 		Boss.reset();
 		Vova.reset();
+		Ciceridis.reset();
 		Input.reset();
 	}
 
