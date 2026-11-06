@@ -37,6 +37,16 @@ function readConfig() {
 			fy: grab(/boss:[\s\S]*?fy:\s*([\d.]+)/),
 			hFrac: grab(/boss:[\s\S]*?hFrac:\s*([\d.]+)/),
 		},
+		// Чекеридис: стопы берутся из CONFIG.ciceridis.standFy — fx/fy нет
+		ciceridis: {
+			sheet: "assets/sprites/chekeridis_states.png",
+			frames: 5,
+			fw: grab(/ciceridis:\s*\{[^}]*frame:\s*\{\s*w:\s*(\d+)/),
+			fh: grab(/ciceridis:[\s\S]*?frame:\s*\{[^}]*h:\s*(\d+)/),
+			fx: null,
+			fy: null,
+			hFrac: grab(/ciceridis:[\s\S]*?hFrac:\s*([\d.]+)/),
+		},
 	};
 }
 
@@ -53,7 +63,7 @@ const check = (name, cond, detail) => {
 const cfg = readConfig();
 console.log("Самопроверка спрайтов " + fs.readFileSync("js/config.js", "utf8").match(/version:\s*"([^"]+)"/)[1]);
 
-for (const key of ["vova", "boss"]) {
+for (const key of ["vova", "boss", "ciceridis"]) {
 	const c = cfg[key];
 	console.log(key + ":");
 	let size;
@@ -64,9 +74,9 @@ for (const key of ["vova", "boss"]) {
 		"ожидалось " + (c.fw * c.frames) + ", факт " + size.w);
 	check(key + " высота листа = frame.h", size.h === c.fh,
 		"ожидалось " + c.fh + ", факт " + size.h);
-	// Якорные доли в диапазоне (0..1)
-	check(key + " fx в (0..1)", c.fx > 0 && c.fx < 1, "fx=" + c.fx);
-	check(key + " fy в (0..1)", c.fy > 0 && c.fy < 1, "fy=" + c.fy);
+	// Якорные доли в диапазоне (0..1) — у ciceridis их нет (стопы из standFy)
+	if (c.fx != null) check(key + " fx в (0..1)", c.fx > 0 && c.fx < 1, "fx=" + c.fx);
+	if (c.fy != null) check(key + " fy в (0..1)", c.fy > 0 && c.fy < 1, "fy=" + c.fy);
 	check(key + " hFrac в (0..1)", c.hFrac > 0 && c.hFrac < 1, "hFrac=" + c.hFrac);
 	// Размер файла: веб-лимиты
 	const kb = Math.round(fs.statSync(c.sheet).size / 1024);

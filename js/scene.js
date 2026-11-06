@@ -19,7 +19,7 @@ const Scene = {
 
 	// Загруженные спрайты (вариант B). Если файл не загрузился — null,
 	// и рисуется код-арт (фолбэк, игра не ломается)
-	sprites: { vova: null, boss: null, bg: null, flipchart: null },
+	sprites: { vova: null, boss: null, bg: null, flipchart: null, ciceridis: null },
 
 	init(canvas) {
 		this.canvas = canvas;
@@ -44,6 +44,7 @@ const Scene = {
 		if (cfg.vova && cfg.vova.sheet) load(cfg.vova.sheet, "vova");
 		if (cfg.boss && cfg.boss.sheet) load(cfg.boss.sheet, "boss");
 		if (cfg.flipchart && cfg.flipchart.sheet) load(cfg.flipchart.sheet, "flipchart");
+		if (cfg.ciceridis && cfg.ciceridis.sheet) load(cfg.ciceridis.sheet, "ciceridis");
 	},
 
 	// Прямоугольник фона в логических координатах (заполняется в draw()).
@@ -519,6 +520,11 @@ const Scene = {
 	// Стул и залезание убраны (решение автора): стоит на стойке с самого
 	// начала. Код-арт: пиксельный человечек с бокалом
 	drawCiceridis(ctx) {
+		// Спрайт (вариант B): 5 кадров. Нет файла — код-арт ниже (фолбэк)
+		if (this.sprites.ciceridis) {
+			this.drawCiceridisSprite(ctx);
+			return;
+		}
 		const floorY = 478;      // куда съезжает при падении — пол сцены
 
 		// Чекеридис: стоит на стойке с бокалом с самого начала
@@ -620,20 +626,53 @@ const Scene = {
 		if (ang !== 0) ctx.restore();
 	},
 
-	// Где стоят ноги Чекеридиса: центр экрана, на барной стойке фона.
-	// standFy — доля высоты фона (правится в config.js под фон).
-	// На широких экранах стойка уходит за край — сдвигаем его вниз,
-	// чтобы он всегда был виден целиком
+	// Спрайт Чекеридиса на стойке: качание и падение — как в код-арте.
+	// Этап 4: пока всегда кадр 0 «тост»; позы «баланс/пьёт/радость/падение»
+	// подключаются в следующих шагах
+	drawCiceridisSprite(ctx) {
+		const cfg = CONFIG.sprites.ciceridis;
+		const img = this.sprites.ciceridis;
+		const feet = this.ciceridisFeet();
+		const h = this.unitH(this.anchor()) * cfg.hFrac;
+		const w = h * (cfg.frame.w / cfg.frame.h);
+		const floorY = 478;      // куда съезжает при падении — пол сцены
+		const dropY = Ciceridis.phase === "fall"
+			? Ciceridis.fallProgress() * (floorY - feet.y) : 0;
+		const fy = feet.y + dropY;
+		// наклон: качание во время тоста + доворот при падении
+		let ang = Ciceridis.swayAngle() * Math.PI / 180;
+		if (Ciceridis.phase === "fall") {
+			const f = Ciceridis.fallProgress();
+			ang += (Ciceridis.fallDir * 80 - Ciceridis.swayAngle()) * f * Math.PI / 180;
+		}
+		ctx.imageSmoothingEnabled = false;
+		ctx.save();
+		ctx.translate(feet.x, fy); // точка опоры — стопы на стойке
+		ctx.rotate(ang);
+		ctx.drawImage(img, 0, 0, cfg.frame.w, cfg.frame.h, -w / 2, -h, w, h);
+		ctx.restore();
+	},
+
+	// Где стоят ноги Чекеридиса: на столе фона (standFx/standFy — доли
+	// ширины/высоты фона, правятся в config.js). На широких экранах
+	// привязываемся к прямоугольнику фона, а не к экрану
 	ciceridisFeet() {
-		let y = CONFIG.ciceridis.standFy * this.H;
-		if (this.bgRect) y = this.bgRect.dy + this.bgRect.dh * CONFIG.ciceridis.standFy;
+		const r = this.bgRect || { dx: 0, dy: 0, dw: this.W, dh: this.H };
+		let y = r.dy + r.dh * CONFIG.ciceridis.standFy;
 		y = Math.max(160, Math.min(y, 478));
-		return { x: this.W / 2, y };
+		const x = r.dx + r.dw * (CONFIG.ciceridis.standFx ?? 0.5);
+		return { x, y };
 	},
 
 	// Точка плашки над Чекеридисом в «Цицеридисе» (логические координаты)
 	bubbleAnchorCiceridis() {
 		const feet = this.ciceridisFeet();
+		// со спрайтом плашка выше — над головой спрайта
+		const cfg = CONFIG.sprites.ciceridis;
+		if (this.sprites.ciceridis && cfg) {
+			const h = this.unitH(this.anchor()) * cfg.hFrac;
+			return { x: feet.x, y: feet.y - h * 0.87 - 8 };
+		}
 		return { x: feet.x, y: feet.y - 110 };
 	},
 

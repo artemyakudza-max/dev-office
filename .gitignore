@@ -7,3 +7,4 @@ Library/
 Thumbs.db
 .DS_Store
 tools/preview_flip.png
+tmp/
