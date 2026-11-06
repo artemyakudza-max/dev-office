@@ -275,6 +275,12 @@ const UI = {
 				<div class="final-text">${CONFIG.failText.replace("{N}", data.second)}</div>
 			`;
 			shareText = CONFIG.shareTextFail.replace("{N}", data.second);
+		} else if (kind === "ciceridisEaster") {
+			// пасхалка «REAL UNLUCK»: свалился в 1-м раунде (ТЗ §4.2)
+			body = `
+				<div class="final-header">${CONFIG.ciceridis.easterHeader}</div>
+			`;
+			shareText = CONFIG.ciceridis.easterShareText;
 		} else {
 			// пасхалка: победа с 0% «своих дел»
 			body = `
@@ -391,7 +397,7 @@ const UI = {
 
 			// карточка с рамкой-акцентом исхода (как на экране финала)
 			const accent = kind === "fail" || kind === "ciceridisFail" ? "#c05050" :
-				kind === "easter" ? "#4a7ae0" : "#c9a227";
+				kind === "easter" || kind === "ciceridisEaster" ? "#4a7ae0" : "#c9a227";
 			const grad = ctx.createLinearGradient(0, cy, 0, cy + ch);
 			grad.addColorStop(0, "#2c2c44");
 			grad.addColorStop(1, "#1d1d30");
@@ -426,15 +432,24 @@ const UI = {
 
 			// заголовок
 			const pix = (size) => size + 'px "Press Start 2P", monospace';
-			ctx.font = pix(11);
 			ctx.fillStyle = kind === "fail" || kind === "ciceridisFail" ? "#e07070" : "#f0c040";
 			const header = kind === "ciceridisFail"
 				? CONFIG.ciceridis.failHeader.replace("{N}", data.toast)
 				: kind === "ciceridisWin"
 					? CONFIG.ciceridis.winHeader
-					: kind === "win" || kind === "easter"
-						? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
-			ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
+					: kind === "ciceridisEaster"
+						? CONFIG.ciceridis.easterHeader
+						: kind === "win" || kind === "easter"
+							? CONFIG.winHeader : "Замечаний: " + CONFIG.warnings.max;
+			// длинный заголовок пасхалки Чекеридиса переносим на строки,
+			// остальные заголовки — одной строкой
+			if (kind === "ciceridisEaster") {
+				ctx.font = pix(9);
+				this._wrapDraw(ctx, header.toUpperCase(), W / 2, cy + 106, cw - 24, 14);
+			} else {
+				ctx.font = pix(11);
+				ctx.fillText(header.toUpperCase(), W / 2, cy + 118);
+			}
 
 			if (kind === "win") {
 				ctx.font = "800 54px system-ui, sans-serif";

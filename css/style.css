@@ -147,6 +147,12 @@ html, body {
 	box-shadow: 0 0 30px rgba(74, 122, 224, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.4);
 }
 
+/* Пасхалка «REAL UNLUCK» Чекеридиса — синий акцент, как у пасхалки Вовы */
+.final-card-ciceridisEaster {
+	border-color: #4a7ae0;
+	box-shadow: 0 0 30px rgba(74, 122, 224, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
 .final-card-fail .final-header {
 	color: #e07070;
 }

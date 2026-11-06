@@ -87,7 +87,10 @@
 				setTimeout(() => {
 					Game.over = true;
 					if (navigator.vibrate) navigator.vibrate(200);
-					UI.showFinal("ciceridisFail", {
+					// Пасхалка (ТЗ §4.2): свалился в 1-м раунде — 0 выпитых бокалов
+					const kind = Ciceridis.toastNum === 1
+						? "ciceridisEaster" : "ciceridisFail";
+					UI.showFinal(kind, {
 						toast: Ciceridis.toastNum,
 						toastText: Ciceridis.currentToast(),
 					}, restart, goMenu);
