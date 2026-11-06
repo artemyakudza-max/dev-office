@@ -211,9 +211,17 @@
 		UI.showRulesBtn(rulesByButton);
 	}
 
-	// Заглушка «Цицеридис» для прода: сцена вернётся в следующей версии
+	// Старт мини-игры «Цицеридис»: сцена + интерфейс как у Вовы
 	function startCiceridis() {
-		UI.showCiceridisStub(goMenu);
+		restart();
+		Game.mode = "ciceridis";
+		Game.tutorialDone = false; // обучение показываем заново
+		Game.screen = "playing";
+		Ciceridis.reset();
+		UI.setMode("ciceridis"); // HUD Вовы скрыт: счётчик не используется
+		UI.showTutorial(CONFIG.ciceridis.rules);
+		UI.showPauseBtn(pauseByButton);
+		UI.showRulesBtn(rulesByButton);
 	}
 
 	// Правила по кнопке: пауза + окно, «Играть» продолжает забег
