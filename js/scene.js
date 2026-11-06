@@ -213,7 +213,12 @@ const Scene = {
 			ctx.imageSmoothingEnabled = false;
 			const img = bgImg;
 			const vw = x1 - x0, vh = y1 - y0;
-			const s = Math.max(vw / img.width, vh / img.height);
+			// «Цицеридис»: портретный фон бара. На широких экранах (десктоп)
+			// вписываем его по высоте с полями по бокам — иначе cover-fit
+			// показывает только середину картинки, и стойки не видно
+			const s = this.mode === "ciceridis" && vw / vh > img.width / img.height
+				? vh / img.height
+				: Math.max(vw / img.width, vh / img.height);
 			const dw = img.width * s, dh = img.height * s;
 			const dx = x0 + (vw - dw) / 2, dy = y0 + (vh - dh) / 2;
 			ctx.drawImage(img, dx, dy, dw, dh);
