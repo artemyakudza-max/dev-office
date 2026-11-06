@@ -1,17 +1,24 @@
 // Мини-игра «Цицеридис»: Чекеридис на стуле с бокалом.
 // Этап 4 — залезание на стул (1,5 с).
 // Этап 5 — первый тост: текст 5 с + очень медленное качание ±10°
+// Этап 6 — управление: тап/зажатие половин экрана толкает его (ТЗ §3.2)
 const Ciceridis = {
-	phase: "climb",    // climb | toast
+	phase: "climb",    // climb | toast | fall
 	climbT: 0,         // сколько секунд идёт залезание
 	toastT: 0,         // сколько секунд идёт тост
 	toastStartFired: false, // плашку с тостом показал? (ставит main.js)
+
+	// Физика качания (этап 6): угол игрока + самокачание
+	playerAngle: 0,    // угол от толчков игрока, градусы (минус = влево)
+	angVel: 0,         // угловая скорость, градусы/сек
 
 	reset() {
 		this.phase = "climb";
 		this.climbT = 0;
 		this.toastT = 0;
 		this.toastStartFired = false;
+		this.playerAngle = 0;
+		this.angVel = 0;
 	},
 
 	// Прогресс залезания 0..1 — для отрисовки (Scene читает)
@@ -19,11 +26,20 @@ const Ciceridis = {
 		return Math.min(1, this.climbT / CONFIG.ciceridis.climbSec);
 	},
 
-	// Угол качания в градусах для отрисовки: плавная синусоида ±амплитуда
+	// Итоговый угол в градусах для отрисовки: самокачание + толчки игрока
 	swayAngle() {
-		if (this.phase !== "toast") return 0;
+		if (this.phase === "climb") return 0;
 		const c = CONFIG.ciceridis;
-		return Math.sin(this.toastT / c.swayPeriodSec * Math.PI * 2) * c.swayAmpDeg;
+		const self = Math.sin(this.toastT / c.swayPeriodSec * Math.PI * 2) * c.swayAmpDeg;
+		return self + this.playerAngle;
+	},
+
+	// Одиночный тап = мгновенный импульс в сторону тапа (ТЗ §3.2).
+	// Быстрые потапывания складываются сами: каждый тап добавляет скорость —
+	// чем чаще стучишь, тем сильнее суммарный толчок
+	applyTap(side) {
+		const c = CONFIG.ciceridis;
+		this.angVel += side === "left" ? -c.tapImpulseDeg : c.tapImpulseDeg;
 	},
 
 	update(dt) {
@@ -33,7 +49,37 @@ const Ciceridis = {
 				this.phase = "toast";
 				this.toastT = 0;
 			}
-		} else if (this.phase === "toast") {
+			return;
+		}
+		if (this.phase === "fall") return; // упал — физика стоит (этап 7: карточка)
+
+		const c = CONFIG.ciceridis;
+
+		// Тапы: потребляю флаги ввода (их ставит Input при pointerdown)
+		if (Input.tapLeft) { this.applyTap("left"); Input.tapLeft = false; }
+		if (Input.tapRight) { this.applyTap("right"); Input.tapRight = false; }
+
+		// Зажатие половины = непрерывная сила (меняется ускорение, не скорость).
+		// Обе половины сразу — силы взаимно гасятся (ТЗ §3.2)
+		let hold = 0;
+		if (Input.rightHeld) hold += 1;
+		if (Input.leftHeld) hold -= 1;
+		this.angVel += hold * c.holdAccelDeg * dt;
+
+		// Гашение: без удержания качание плавно затухает (демпфирование)
+		this.angVel *= Math.exp(-c.dampingRate * dt);
+
+		// Интегрирование угла через delta time — скорость не зависит от FPS
+		this.playerAngle += this.angVel * dt;
+
+		// Падение: наклон превысил порог — свалился (этап 7 покажет карточку).
+		// В первом раунде сам он не падает (амплитуда 10° << порога),
+		// но игрок может столкнуть его сам — так задумано (ТЗ §3.1.4)
+		if (Math.abs(this.playerAngle) >= c.fallAngleDeg) {
+			this.phase = "fall";
+		}
+
+		if (this.phase === "toast") {
 			this.toastT += dt;
 		}
 	},

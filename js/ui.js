@@ -89,7 +89,7 @@ const UI = {
 	// Пауза: оверлей возврата. Возврат — касание самого оверлея
 	showPause(onResume) {
 		this.pauseEl = this._overlay();
-		const who = this.mode === "ciceridis" ? "Чекеридис" : "Вова";
+		const who = CONFIG.characters[this.mode].namePause;
 		this.pauseEl.innerHTML = `
 			<p style="font-size: 20px; margin: 0;">Все ждут только тебя, ${who}.</p>
 			<p style="margin: 8px 0 0;">Коснись, чтобы вернуться</p>
@@ -150,9 +150,9 @@ const UI = {
 						<!-- Футер фиксированной высоты: имя и название игры на одном уровне во всех карточках -->
 						<div style="flex-shrink: 0; height: 52px;">
 							<p style="color: #f0c040; font-size: 10px; line-height: 12px; margin: 9px 0 0;
-								font-family: var(--pixel-font);">ВОВАН</p>
+								font-family: var(--pixel-font);">${CONFIG.characters.vova.name}</p>
 							<p style="color: #8a8a9a; font-size: 10px; line-height: 13px; margin: 4px 0 0;
-								font-family: var(--body-font);">Успеть за 60 секунд</p>
+								font-family: var(--body-font);">${CONFIG.characters.vova.gameTitle}</p>
 						</div>
 					</div>
 					<!-- Карточка Чекеридиса (мини-игра «Цицеридис») — стиль карточки Вовы -->
@@ -168,9 +168,9 @@ const UI = {
 							font-size: 22px; font-family: var(--pixel-font);">?</span>
 						<div style="flex-shrink: 0; height: 52px;">
 							<p style="color: #f0c040; font-size: 10px; line-height: 12px; margin: 9px 0 0;
-								font-family: var(--pixel-font);">ЧЕКЕРИДИС</p>
+								font-family: var(--pixel-font);">${CONFIG.characters.ciceridis.name}</p>
 							<p style="color: #8a8a9a; font-size: 10px; line-height: 13px; margin: 4px 0 0;
-								font-family: var(--body-font);">Цицеридис</p>
+								font-family: var(--body-font);">${CONFIG.characters.ciceridis.gameTitle}</p>
 						</div>
 					</div>
 					<div style="width: 112px; background: #1a1a26; border: 3px dashed #3a3a4a;
