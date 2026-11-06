@@ -577,23 +577,40 @@ const Scene = {
 		ctx.fillStyle = "#26262a";
 		ctx.fillRect(bx + 10, by - 88, 3, 3);  // глаза
 		ctx.fillRect(bx + 18, by - 88, 3, 3);
-		// Рука с бокалом (справа)
-		ctx.fillStyle = P.jacket;
-		ctx.fillRect(bx + 26, by - 68, 8, 20);
-		ctx.fillStyle = P.skin;
-		ctx.fillRect(bx + 28, by - 50, 6, 6);
+		// Руки: обычная поза — рука с бокалом справа.
+		// «Трудовая» поза (наклон 45–60°) — руки в стороны, балансирует
+		const tilt = Ciceridis.isTiltPose();
+		let glassX = bx + 26; // x бокала (в трудовой позе — на вытянутой руке)
+		if (tilt) {
+			ctx.fillStyle = P.jacket;
+			ctx.fillRect(bx - 12, by - 66, 14, 8); // левая рука в сторону
+			ctx.fillRect(bx + 26, by - 66, 12, 8); // правая рука в сторону
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx - 16, by - 67, 5, 6);
+			ctx.fillRect(bx + 36, by - 67, 5, 6);
+			glassX = bx + 38;
+			// капли пота — поза читается как «держится из последних сил»
+			ctx.fillStyle = "#9adcf0";
+			ctx.fillRect(bx + 26, by - 94, 3, 4);
+			ctx.fillRect(bx - 2, by - 92, 3, 4);
+		} else {
+			ctx.fillStyle = P.jacket;
+			ctx.fillRect(bx + 26, by - 68, 8, 20);
+			ctx.fillStyle = P.skin;
+			ctx.fillRect(bx + 28, by - 50, 6, 6);
+		}
 		// Бокал: пиво с пенкой; при выпивании поднимается ко рту и опустошается
 		const glassUp = drinkP * 34; // подъём бокала ко рту
 		const beerLeft = Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast"
 			|| Ciceridis.phase === "win"
 			? 0 : 7; // после выпивания бокал пустой
 		ctx.fillStyle = P.glass;
-		ctx.fillRect(bx + 26, by - 66 - glassUp, 10, 16);
+		ctx.fillRect(glassX, by - 66 - glassUp, 10, 16);
 		if (beerLeft > 0) {
 			ctx.fillStyle = P.beer;
-			ctx.fillRect(bx + 27, by - 58 - glassUp, 8, beerLeft);
+			ctx.fillRect(glassX + 1, by - 58 - glassUp, 8, beerLeft);
 			ctx.fillStyle = P.foam;
-			ctx.fillRect(bx + 27, by - 66 - glassUp, 8, 4);
+			ctx.fillRect(glassX + 1, by - 66 - glassUp, 8, 4);
 		}
 		// Радость (этап 8): руки вверх с пустым бокалом
 		if (Ciceridis.phase === "joy" || Ciceridis.phase === "nextToast"

@@ -103,6 +103,15 @@ const Ciceridis = {
 		return self + this.playerAngle;
 	},
 
+	// «Трудовая» поза: наклон между tiltPoseFromDeg и порогом падения —
+	// под неё автор нарисует отдельный спрайт
+	isTiltPose() {
+		if (this.phase !== "toast") return false;
+		const c = CONFIG.ciceridis;
+		const a = Math.abs(this.swayAngle());
+		return a >= c.tiltPoseFromDeg && a < c.tiltPoseToDeg;
+	},
+
 	// Одиночный тап = мгновенный импульс в сторону тапа (ТЗ §3.2).
 	// Быстрые потапывания складываются сами: каждый тап добавляет скорость —
 	// чем чаще стучишь, тем сильнее суммарный толчок
