@@ -225,7 +225,24 @@ const Scene = {
 			// «Пьяное зрение»: фон размывается вместе со спрайтом (только Цицеридис)
 			const blur = this.mode === "ciceridis" ? this.ciceridisBlurPx() : 0;
 			if (blur > 0.1) ctx.filter = `blur(${blur.toFixed(1)}px)`;
+			// «Пьяный фон»: крен комнаты вокруг точки опоры Чекеридиса.
+			// Чисто визуал: персонаж и UI неподвижны — игрок читает наклон
+			// тела, а не «лживый горизонт» комнаты
+			const rollDeg = this.mode === "ciceridis" ? (Ciceridis.bgRollDeg || 0) : 0;
+			if (rollDeg) {
+				const feet = this.ciceridisFeet();
+				const bc = CONFIG.ciceridis;
+				// фон увеличивается, чтобы при крене не пустовали углы экрана
+				const k = 1 + Math.min(bc.bgSwayMaxOverscan - 1,
+					bc.bgSwayOverscanPerDeg * (Ciceridis.bgRollAmp || 0));
+				ctx.save();
+				ctx.translate(feet.x, feet.y);
+				ctx.rotate(rollDeg * Math.PI / 180);
+				ctx.scale(k, k);
+				ctx.translate(-feet.x, -feet.y);
+			}
 			ctx.drawImage(img, dx, dy, dw, dh);
+			if (rollDeg) ctx.restore();
 			ctx.filter = "none";
 			this.bgRect = { dx, dy, dw, dh };
 			const ax0 = Math.max(dx, x0), ay0 = Math.max(dy, y0);

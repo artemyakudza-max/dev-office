@@ -27,6 +27,10 @@ const Ciceridis = {
 	playerAngle: 0,    // физический угол наклона, градусы (минус = влево)
 	angVel: 0,         // угловая скорость, градусы/сек
 	driftDir: 1,       // сторона начального наклона раунда: 1 вправо, -1 влево
+	// «Пьяный фон» (крен комнаты, чисто визуал — читает Scene)
+	bgSwayT: 0,        // время крена фона, сек (течёт непрерывно с начала забега)
+	bgRollAmp: 0,      // сглаженная амплитуда крена фона, град
+	bgRollDeg: 0,      // текущий крен фона, град
 	gustT: 0,          // секунд с последнего случайного толчка
 	nextGustSec: 0,    // через сколько секунд следующий толчок
 	ghostT: 0,         // секунд с начала текущего двойника (0 = нет двойника)
@@ -55,12 +59,39 @@ const Ciceridis = {
 		this.nextGhostSec = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
+		this.bgSwayT = 0;  // крен фона начинается с нуля
+		this.bgRollAmp = 0;
+		this.bgRollDeg = 0;
 		this.plan = this._buildPlan();
 	},
 
 	// Прогресс падения 0..1 — для анимации в Scene
 	fallProgress() {
 		return Math.min(1, this.fallT / CONFIG.ciceridis.fallSec);
+	},
+
+	// «Пьяный фон» (помехи ТЗ §5): крен комнаты вокруг точки опоры, град.
+	// Чисто визуал: физику Чекеридиса не трогает, ноги остаются на стойке.
+	// Амплитуда растёт с раундом, период падает; амплитуда сглаживается,
+	// чтобы между раундами не было скачков. С bgSwayHarm2FromRound добавлена
+	// вторая гармоника — движение менее предсказуемое
+	_updateBgSway(dt) {
+		const c = CONFIG.ciceridis;
+		const n = Math.max(0, this.toastNum - c.bgSwayFromRound);
+		const target = this.toastNum >= c.bgSwayFromRound
+			? c.bgSwayAmp0Deg + c.bgSwayAmpStepDeg * n : 0;
+		this.bgRollAmp += (target - this.bgRollAmp)
+			* Math.min(1, c.bgSwaySmoothRate * dt); // догоняет цель без скачков
+		if (this.bgRollAmp < 0.01) { this.bgRollDeg = 0; return; }
+		const period = Math.max(2, c.bgSwayPeriod0Sec + c.bgSwayPeriodStepSec * n);
+		// нормируем сумму гармоник, чтобы пик крена = амплитуде раунда
+		let roll = Math.sin(2 * Math.PI * this.bgSwayT / period);
+		if (this.toastNum >= c.bgSwayHarm2FromRound) {
+			roll += c.bgSwayHarm2AmpMul
+				* Math.sin(2 * Math.PI * this.bgSwayT / (period / c.bgSwayHarm2PeriodDiv) + 1.3);
+			roll /= 1 + c.bgSwayHarm2AmpMul;
+		}
+		this.bgRollDeg = this.bgRollAmp * roll;
 	},
 
 	// План тостов на забег (ТЗ §6): раунды 1–3 — из early, 4–6 — из mid,
@@ -229,6 +260,10 @@ const Ciceridis = {
 	},
 
 	update(dt) {
+		// «Пьяный фон»: время крена течёт непрерывно (и в падении — комната
+		// не замирает скачком), на физику не влияет
+		this.bgSwayT += dt;
+		this._updateBgSway(dt);
 		if (this.phase === "fall") { // падение: крутится анимация, физика стоит
 			this.fallT += dt;
 			return;
