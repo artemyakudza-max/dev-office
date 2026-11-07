@@ -24,8 +24,9 @@ const Ciceridis = {
 	lastCrowd: "",     // последняя фраза — чтобы не повторять подряд
 
 	// Физика качания (этап 6): угол игрока + самокачание
-	playerAngle: 0,    // угол от толчков игрока, градусы (минус = влево)
+	playerAngle: 0,    // угол от толчков игрока и самонаклона, градусы (минус = влево)
 	angVel: 0,         // угловая скорость, градусы/сек
+	driftDir: 1,       // сторона самонаклона раунда: 1 вправо, -1 влево
 
 	reset() {
 		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
@@ -43,6 +44,7 @@ const Ciceridis = {
 		this.lastCrowd = "";
 		this.playerAngle = 0;
 		this.angVel = 0;
+		this.driftDir = Math.random() < 0.5 ? -1 : 1;
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.plan = this._buildPlan();
@@ -95,23 +97,27 @@ const Ciceridis = {
 		return this._diff(CONFIG.ciceridis.swayPeriodSec, CONFIG.ciceridis.swayPeriodEnd);
 	},
 
+	// Скорость самонаклона раунда, град/сек: с selfFallFromRound Чекеридис сам
+	// заваливается, если игрок не ловит равновесие (ТЗ §5)
+	driftSpeed() {
+		const c = CONFIG.ciceridis;
+		if (this.toastNum < c.selfFallFromRound) return 0;
+		const t = Math.min(1, (this.toastNum - c.selfFallFromRound) /
+			(c.totalRounds - c.selfFallFromRound));
+		return c.selfFallSpeedStart + (c.selfFallSpeedEnd - c.selfFallSpeedStart) * t;
+	},
+
 	// Длительность речи текущего раунда (больше = медленнее говорит)
 	speechDuration() {
 		return this._diff(CONFIG.ciceridis.speechSec, CONFIG.ciceridis.speechSecEnd);
 	},
 
-	// Итоговый угол в градусах для отрисовки: самокачание + толчки игрока.
-	// Качается только во время тоста; между раундами стоит ровно
+	// Итоговый угол в градусах для отрисовки: дрожь + наклон игрока (в него
+	// накоплен и самонаклон). Качается только во время тоста; между раундами ровно
 	swayAngle() {
 		// в падении угол заморожен: toastT и playerAngle не меняются
 		if (this.phase !== "toast" && this.phase !== "fall") return 0;
-		const c = CONFIG.ciceridis;
-		// Раунды без самопадения: самокачание упирается в cap — стоит с наклоном,
-		// свалить может только тап/зажим игрока
-		const amp = c.noSelfFallRounds.includes(this.toastNum)
-			? Math.min(this.swayAmp(), c.selfFallCapDeg)
-			: this.swayAmp();
-		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * amp;
+		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * this.swayAmp();
 		return self + this.playerAngle;
 	},
 
@@ -184,11 +190,17 @@ const Ciceridis = {
 		// Гашение: без удержания качание плавно затухает (демпфирование)
 		this.angVel *= Math.exp(-c.dampingRate * dt);
 
+		// Самонаклон (ТЗ §5): с раунда 2 сам заваливается — игрок ловит равновесие.
+		// Ускорение = скорость × гашение: гашение выводит наклон на selfFallSpeed,
+		// время падения без игрока = fallAngleDeg / selfFallSpeed
+		if (this.phase === "toast") {
+			this.angVel += this.driftDir * this.driftSpeed() * c.dampingRate * dt;
+		}
+
 		// Интегрирование угла через delta time — скорость не зависит от FPS
 		this.playerAngle += this.angVel * dt;
 
-		// Падение: ОБЩИЙ наклон (самокачание + игрок) превысил порог — свалился.
-		// В поздних раундах самокачание само превышает порог (ТЗ §5)
+		// Падение: ОБЩИЙ наклон (дрожь + игрок + самонаклон) превысил порог — свалился
 		const totalAngle = this.swayAngle();
 		if (Math.abs(totalAngle) >= c.fallAngleDeg) {
 			this.phase = "fall";
@@ -235,6 +247,7 @@ const Ciceridis = {
 				this.toastT = 0;
 				this.toastNum += 1;
 				this.toastStartFired = false; // новый тост — новая плашка
+				this.driftDir = Math.random() < 0.5 ? -1 : 1; // новый раунд — новая сторона наклона
 			}
 		} else if (this.phase === "win") {
 			// победа: карточку покажет main.js
