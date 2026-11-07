@@ -24,9 +24,11 @@ const Ciceridis = {
 	lastCrowd: "",     // последняя фраза — чтобы не повторять подряд
 
 	// Физика качания (этап 6): угол игрока + самокачание
-	playerAngle: 0,    // угол от толчков игрока и самонаклона, градусы (минус = влево)
+	playerAngle: 0,    // физический угол наклона, градусы (минус = влево)
 	angVel: 0,         // угловая скорость, градусы/сек
-	driftDir: 1,       // сторона самонаклона раунда: 1 вправо, -1 влево
+	driftDir: 1,       // сторона начального наклона раунда: 1 вправо, -1 влево
+	gustT: 0,          // секунд с последнего случайного толчка
+	nextGustSec: 0,    // через сколько секунд следующий толчок
 
 	reset() {
 		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
@@ -42,9 +44,11 @@ const Ciceridis = {
 		this.crowdT = 0;
 		this.crowdPending = null;
 		this.lastCrowd = "";
-		this.playerAngle = 0;
+		this.playerAngle = 0; // раунд 1 без самопадения — стоит ровно
 		this.angVel = 0;
 		this.driftDir = Math.random() < 0.5 ? -1 : 1;
+		this.gustT = 0;
+		this.nextGustSec = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.plan = this._buildPlan();
@@ -97,14 +101,49 @@ const Ciceridis = {
 		return this._diff(CONFIG.ciceridis.swayPeriodSec, CONFIG.ciceridis.swayPeriodEnd);
 	},
 
-	// Скорость самонаклона раунда, град/сек: с selfFallFromRound Чекеридис сам
-	// заваливается, если игрок не ловит равновесие (ТЗ §5)
-	driftSpeed() {
+	// Доля пути по раундам самопадения: 0 в раунде selfFallFromRound, 1 в 10-м
+	_selfFallT() {
+		const c = CONFIG.ciceridis;
+		return Math.max(0, Math.min(1,
+			(this.toastNum - c.selfFallFromRound) / (c.totalRounds - c.selfFallFromRound)));
+	},
+
+	// Нестабильность равновесия раунда, 1/сек²: наклон сам усиливается — чем
+	// сильнее завалился, тем быстрее падает (как стоять на одной ноге).
+	// Сложность растёт РАВНОМЕРНО по λ (скорость экспоненциального роста наклона):
+	// в раунде 2 падение без вмешательства за selfFallSecStart, в 10-м — за selfFallSecEnd
+	tiltAccel() {
 		const c = CONFIG.ciceridis;
 		if (this.toastNum < c.selfFallFromRound) return 0;
-		const t = Math.min(1, (this.toastNum - c.selfFallFromRound) /
-			(c.totalRounds - c.selfFallFromRound));
-		return c.selfFallSpeedStart + (c.selfFallSpeedEnd - c.selfFallSpeedStart) * t;
+		const ratio = Math.log(c.fallAngleDeg / c.startLeanDeg);
+		const lamStart = ratio / c.selfFallSecStart;
+		const lamEnd = ratio / c.selfFallSecEnd;
+		const lam = lamStart + (lamEnd - lamStart) * this._selfFallT();
+		// λ² + λ·damping — компенсация гашения, чтобы рост был именно λ
+		return lam * lam + lam * c.dampingRate;
+	},
+
+	// Длительность тоста раунда: 1–3 — toastSec, 4–6 — toastSec46, 7–10 — toastSec710
+	toastDuration() {
+		const c = CONFIG.ciceridis;
+		if (this.toastNum <= 3) return c.toastSec;
+		if (this.toastNum <= 6) return c.toastSec46;
+		return c.toastSec710;
+	},
+
+	// Случайные толчки: сила растёт по раундам самопадения, сторона случайная —
+	// не дают спасать одним заученным ритмом тапов
+	gustImpulse() {
+		const c = CONFIG.ciceridis;
+		return c.gustImpulseStart + (c.gustImpulseEnd - c.gustImpulseStart) * this._selfFallT();
+	},
+
+	// Интервал до следующего толчка, сек (разброс ±30% вокруг среднего)
+	gustInterval() {
+		const c = CONFIG.ciceridis;
+		const avg = c.gustEverySecStart +
+			(c.gustEverySecEnd - c.gustEverySecStart) * this._selfFallT();
+		return avg * (0.7 + Math.random() * 0.6);
 	},
 
 	// Длительность речи текущего раунда (больше = медленнее говорит)
@@ -190,11 +229,16 @@ const Ciceridis = {
 		// Гашение: без удержания качание плавно затухает (демпфирование)
 		this.angVel *= Math.exp(-c.dampingRate * dt);
 
-		// Самонаклон (ТЗ §5): с раунда 2 сам заваливается — игрок ловит равновесие.
-		// Ускорение = скорость × гашение: гашение выводит наклон на selfFallSpeed,
-		// время падения без игрока = fallAngleDeg / selfFallSpeed
 		if (this.phase === "toast") {
-			this.angVel += this.driftDir * this.driftSpeed() * c.dampingRate * dt;
+			// Нестабильность (ТЗ §5): наклон сам усиливается — игрок ловит равновесие
+			this.angVel += this.tiltAccel() * this.playerAngle * dt;
+			// Случайные толчки в случайные стороны
+			this.gustT += dt;
+			if (this.gustT >= this.nextGustSec) {
+				this.gustT = 0;
+				this.nextGustSec = this.gustInterval();
+				this.angVel += (Math.random() < 0.5 ? -1 : 1) * this.gustImpulse();
+			}
 		}
 
 		// Интегрирование угла через delta time — скорость не зависит от FPS
@@ -211,7 +255,7 @@ const Ciceridis = {
 		// Цикл раундов (ТЗ §3.1.6): тост → выпил → радость → «Ещё тост!» → тост
 		if (this.phase === "toast") {
 			this.toastT += dt;
-			if (this.toastT >= c.toastSec) {
+			if (this.toastT >= this.toastDuration()) {
 				this.phase = "drink";
 				this.drinkT = 0;
 				this.drinkStartFired = false; // плашка «буль-буль-буль» — заново каждый раунд
@@ -247,7 +291,13 @@ const Ciceridis = {
 				this.toastT = 0;
 				this.toastNum += 1;
 				this.toastStartFired = false; // новый тост — новая плашка
-				this.driftDir = Math.random() < 0.5 ? -1 : 1; // новый раунд — новая сторона наклона
+				// Новый раунд: случайная сторона начального наклона + расписание толчков
+				this.driftDir = Math.random() < 0.5 ? -1 : 1;
+				this.playerAngle = this.toastNum >= c.selfFallFromRound
+					? this.driftDir * c.startLeanDeg : 0;
+				this.angVel = 0;
+				this.gustT = 0;
+				this.nextGustSec = this.gustInterval();
 			}
 		} else if (this.phase === "win") {
 			// победа: карточку покажет main.js

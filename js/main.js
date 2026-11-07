@@ -72,7 +72,7 @@
 				Ciceridis.toastStartFired = true;
 				const hp = Scene.bubbleAnchorCiceridis();
 				UI.bubbleWords(Ciceridis.currentToast(), hp.x, hp.y, "center",
-					CONFIG.ciceridis.toastSec, Ciceridis.speechDuration());
+					Ciceridis.toastDuration(), Ciceridis.speechDuration());
 			}
 			// Цикл между раундами (ТЗ §3.1.6): плашки «буль-буль-буль» и «Ещё тост!»
 			if (Ciceridis.phase === "drink" && !Ciceridis.drinkStartFired) {
