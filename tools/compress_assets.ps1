@@ -14,6 +14,10 @@ $pairs = @(
     @("assets\characters\chekeridis_final_lose_4_6.jpg", 400),
     @("assets\characters\chekeridis_final_lose_7_9.jpg", 400),
     @("assets\characters\chekeridis_final_realunluck.jpg", 400),
+    # финальные портреты Вовы: так же 400px JPEG, прозрачность -> тёмно-серый
+    @("assets\characters\win.jpg", 400),
+    @("assets\characters\loose.jpg", 400),
+    @("assets\characters\zero.jpg", 400),
     @("assets\sprites\bg_office.png", 720),
     @("assets\sprites\bg_ciceridis.png", 720),
     @("assets\sprites\vova_poses.png", 768),
@@ -36,6 +40,10 @@ foreach ($p in $pairs) {
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
     $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
+    if ($path.EndsWith('.jpg')) {
+        # JPEG не хранит прозрачность: заливаем тёмно-серым (40,40,40)
+        $g.Clear([System.Drawing.Color]::FromArgb(255, 40, 40, 40))
+    }
     $g.DrawImage($img, 0, 0, $w, $h)
     $g.Dispose()
     $img.Dispose()

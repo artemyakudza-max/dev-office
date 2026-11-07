@@ -1,6 +1,6 @@
 // Все настраиваемые числа и тексты игры — только здесь (правило ТЗ §7)
 const CONFIG = {
-version: "v0.9.88",        // отладочный номер версии — виден на экране, bump с каждым шагом
+version: "v0.9.89",        // отладочный номер версии — виден на экране, bump с каждым шагом
 	round: {
 		durationSec: 60,          // длина забега
 		maxDurationSec: 70,       // жёсткий потолок (требование автора)
@@ -324,9 +324,9 @@ version: "v0.9.88",        // отладочный номер версии — �
 	failText: "Выгнали с совещания на {N} секунде. И, возможно, даже лишили премии.",
 	// Портреты финальных экранов (ТЗ §9): победа / поражение / пасхалка «0%»
 	finalPortraits: {
-		win: "assets/characters/win.png",
-		fail: "assets/characters/loose.png",
-		easter: "assets/characters/zero.png",
+		win: "assets/characters/win.jpg",
+		fail: "assets/characters/loose.jpg",
+		easter: "assets/characters/zero.jpg",
 		// Чекеридис: портрет поражения зависит от числа тостов —
 		// чем дольше продержался, тем сильнее напился (ассеты автора)
 		ciceridisFail13: "assets/characters/chekeridis_final_lose_1_3.jpg",
