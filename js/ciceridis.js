@@ -38,7 +38,6 @@ const Ciceridis = {
 	ghostT: 0,         // секунд с начала текущего двойника (0 = нет двойника)
 	nextGhostSec: 0,   // через сколько секунд следующий двойник
 	ghostChainLeft: 0, // сколько появлений осталось в цепочке (0 = цепочки нет)
-	ghostGapT: 0,      // таймер паузы между появлениями цепочки
 
 	reset() {
 		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
@@ -62,7 +61,6 @@ const Ciceridis = {
 		this.ghostT = 0;
 		this.nextGhostSec = 0;
 		this.ghostChainLeft = 0;
-		this.ghostGapT = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.bgPhase1 = 0; // крен фона начинается с нуля
@@ -334,16 +332,13 @@ const Ciceridis = {
 				if (this.ghostT > 0) {
 					this.ghostT += dt;
 					if (this.ghostT >= this.ghostDuration()) {
-						// появление кончилось: в цепочке — пауза и следующее
+						// появление кончилось: в цепочке сразу следующее, без паузы
 						this.ghostT = 0;
 						if (this.ghostChainLeft > 0) {
 							this.ghostChainLeft -= 1;
-							this.ghostGapT = c.ghostChainGapSec;
+							this.ghostT = 0.0001;
 						}
 					}
-				} else if (this.ghostGapT > 0) {
-					this.ghostGapT -= dt; // пауза между появлениями цепочки
-					if (this.ghostGapT <= 0) this.ghostT = 0.0001; // следующее появление
 				} else {
 					this.nextGhostSec -= dt;
 					if (this.nextGhostSec <= 0) {
@@ -414,7 +409,6 @@ const Ciceridis = {
 				this.nextGustSec = this.gustInterval();
 				this.ghostT = 0;
 				this.ghostChainLeft = 0;
-				this.ghostGapT = 0;
 				this.nextGhostSec = this.ghostInterval();
 			}
 		} else if (this.phase === "win") {
