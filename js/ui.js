@@ -229,6 +229,18 @@ const UI = {
 		return CONFIG.ranks[CONFIG.ranks.length - 1].title;
 	},
 
+	// Портрет финала: у поражения Чекеридиса зависит от числа тостов —
+	// чем дольше продержался, тем сильнее напился
+	finalPortraitSrc(kind, data) {
+		if (kind === "ciceridisFail") {
+			const t = (data && data.toast) || 1;
+			if (t <= 3) return CONFIG.finalPortraits.ciceridisFail13;
+			if (t <= 6) return CONFIG.finalPortraits.ciceridisFail46;
+			return CONFIG.finalPortraits.ciceridisFail79;
+		}
+		return CONFIG.finalPortraits[kind];
+	},
+
 	// Финальный экран: один шаблон-карточка, три исхода (ТЗ §9)
 	// kind: "win" | "fail" | "easter"
 	// Портрет-«вспышка исхода» сверху карточки + цветовой акцент рамки
@@ -238,7 +250,7 @@ const UI = {
 		let shareText = "";
 		const portrait = `
 			<img class="final-portrait final-portrait-${kind}"
-				src="${CONFIG.finalPortraits[kind]}" alt="">
+				src="${this.finalPortraitSrc(kind, data)}" alt="">
 		`;
 
 		if (kind === "win") {
@@ -366,7 +378,7 @@ const UI = {
 				const im = new Image();
 				im.onload = () => resolve(im);
 				im.onerror = () => reject(new Error("portrait"));
-				im.src = CONFIG.finalPortraits[kind];
+				im.src = this.finalPortraitSrc(kind, data);
 			});
 
 			// макет финального экрана 360×640 с ×2 масштабом — чётко на ретине

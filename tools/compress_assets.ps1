@@ -7,6 +7,13 @@ $pairs = @(
     @("assets\characters\vova.png", 512),
     @("assets\characters\vova_character_select.png", 512),
     @("assets\characters\chekeridis_character_select.png", 512),
+    # финальные портреты Чекеридиса: 400px — прозрачность требует PNG,
+    # так держим вес ~200-300 КБ (на экране портрет ~132px)
+    @("assets\characters\chekeridis_final_win.png", 400),
+    @("assets\characters\chekeridis_final_lose_1_3.png", 400),
+    @("assets\characters\chekeridis_final_lose_4_6.png", 400),
+    @("assets\characters\chekeridis_final_lose_7_9.png", 400),
+    @("assets\characters\chekeridis_final_realunluck.png", 400),
     @("assets\sprites\bg_office.png", 720),
     @("assets\sprites\bg_ciceridis.png", 720),
     @("assets\sprites\vova_poses.png", 768),

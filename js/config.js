@@ -1,6 +1,6 @@
 // Все настраиваемые числа и тексты игры — только здесь (правило ТЗ §7)
 const CONFIG = {
-version: "v0.9.85",        // отладочный номер версии — виден на экране, bump с каждым шагом
+version: "v0.9.86",        // отладочный номер версии — виден на экране, bump с каждым шагом
 	round: {
 		durationSec: 60,          // длина забега
 		maxDurationSec: 70,       // жёсткий потолок (требование автора)
@@ -327,13 +327,13 @@ version: "v0.9.85",        // отладочный номер версии — �
 		win: "assets/characters/win.png",
 		fail: "assets/characters/loose.png",
 		easter: "assets/characters/zero.png",
-		// Временно: портрета поражения Чекеридиса нет — используем портрет Вовы.
-		// Свой портрет добавим, когда автор нарисует
-		ciceridisFail: "assets/characters/loose.png",
-		// Временно: портрета победы Чекеридиса нет — используем портрет Вовы.
-		ciceridisWin: "assets/characters/win.png",
-		// Временно: портрета пасхалки Чекеридиса нет — используем портрет поражения
-		ciceridisEaster: "assets/characters/loose.png",
+		// Чекеридис: портрет поражения зависит от числа тостов —
+		// чем дольше продержался, тем сильнее напился (ассеты автора)
+		ciceridisFail13: "assets/characters/chekeridis_final_lose_1_3.png",
+		ciceridisFail46: "assets/characters/chekeridis_final_lose_4_6.png",
+		ciceridisFail79: "assets/characters/chekeridis_final_lose_7_9.png",
+		ciceridisWin: "assets/characters/chekeridis_final_win.png",
+		ciceridisEaster: "assets/characters/chekeridis_final_realunluck.png",
 	},
 	winHeader: "Совещание окончено",
 	winStat: "рабочего времени Вова занимался своими делами",
