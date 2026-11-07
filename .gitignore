@@ -8,3 +8,4 @@ Thumbs.db
 .DS_Store
 tools/preview_flip.png
 tmp/
+tmp_*

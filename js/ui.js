@@ -492,7 +492,7 @@ const UI = {
 			const lines = bodyText ? this._wrapLines(ctx, bodyText, cw - 50) : [];
 			// высота карточки растёт под длинный текст — ничего не наезжает
 			const ch = kind === "win" ? 390
-				: kind === "ciceridisWin" ? 330
+				: kind === "ciceridisWin" ? 420
 				: Math.max(250, 158 + lines.length * 27 + 64);
 
 			// фон
@@ -576,16 +576,22 @@ const UI = {
 				ctx.fillStyle = "#b0b0c0";
 				ctx.fillText("Замечаний: " + data.warnings, W / 2, cy + 322);
 			} else if (kind === "ciceridisWin") {
-				// звание + число пройденных тостов на шеринг-картинке
+				// как на экране финала: «Ваш ранг» + звание + число тостов.
+				// Отступы считаем от числа строк звания — длинный ранг не наезжает
+				const rankText = "«" + CONFIG.ciceridis.winRank + "»";
+				ctx.font = pix(9);
+				ctx.fillStyle = "#9a9ab0";
+				ctx.fillText(CONFIG.rankLabel.toUpperCase(), W / 2, cy + 166);
 				ctx.font = "700 24px system-ui, sans-serif";
 				ctx.fillStyle = "#f0c040";
-				this._wrapDraw(ctx, "«" + CONFIG.ciceridis.winRank + "»",
-					W / 2, cy + 170, cw - 30, 30);
-				ctx.fillStyle = "rgba(201, 162, 39, 0.4)";
-				ctx.fillRect(cx + 40, cy + 215, cw - 80, 1);
+				let ry = cy + 198;
+				for (const ln of this._wrapLines(ctx, rankText, cw - 30)) {
+					ctx.fillText(ln, W / 2, ry);
+					ry += 30;
+				}
 				ctx.font = "14px system-ui, sans-serif";
 				ctx.fillStyle = "#b0b0c0";
-				ctx.fillText("Тостов: " + data.toast, W / 2, cy + 245);
+				ctx.fillText("Тостов: " + data.toast, W / 2, ry + 10);
 			} else {
 				ctx.font = "19px system-ui, sans-serif";
 				ctx.fillStyle = "#fff";
@@ -596,14 +602,17 @@ const UI = {
 				}
 			}
 
-			// логотип игры внизу карточки (ссылка и так идёт текстом рядом)
-			this._drawLogo(ctx, W / 2, cy + ch - 26);
+			// логотип игры внизу карточки; у победы Чекеридиса выше —
+			// чтобы не прилипал к нижней рамке-меандру
+			this._drawLogo(ctx, W / 2, cy + ch - (kind === "ciceridisWin" ? 34 : 26));
 
 			const blob = await new Promise((resolve, reject) =>
 				c.toBlob((b) => b ? resolve(b) : reject(new Error("toBlob")), "image/png"));
 			this.shareFile = new File([blob], "vova-result.png", { type: "image/png" });
 		} catch (e) {
-			this.shareFile = null; // без картинки — шарим текстом
+			// без картинки — шарим текстом; причину пишем в консоль, иначе тишина
+			console.warn("Шеринг-карточка не построена:", e);
+			this.shareFile = null;
 		} finally {
 			unlock();
 		}
