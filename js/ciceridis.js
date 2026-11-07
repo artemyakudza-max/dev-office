@@ -150,22 +150,13 @@ const Ciceridis = {
 		return avg * (0.7 + Math.random() * 0.6);
 	},
 
-	// Интервал до следующего фейкового рывка, сек (разброс ±30%)
-	fakeInterval() {
-		const c = CONFIG.ciceridis;
-		const t = Math.max(0, Math.min(1,
-			(this.toastNum - c.fakeFromRound) / (c.totalRounds - c.fakeFromRound)));
-		const avg = c.fakeEverySecStart + (c.fakeEverySecEnd - c.fakeEverySecStart) * t;
-		return avg * (0.7 + Math.random() * 0.6);
-	},
-
 	// Длительность речи текущего раунда (больше = медленнее говорит)
 	speechDuration() {
 		return this._diff(CONFIG.ciceridis.speechSec, CONFIG.ciceridis.speechSecEnd);
 	},
 
-	// Физический угол (без фейка): дрожь + наклон игрока (в него накоплен
-	// самонаклон). По нему считается падение — фейк свалить не может
+	// Физический угол: дрожь + наклон игрока (в него накоплен самонаклон).
+	// По нему считается и отрисовка, и падение
 	physicsAngle() {
 		// в падении угол заморожен: toastT и playerAngle не меняются
 		if (this.phase !== "toast" && this.phase !== "fall") return 0;
@@ -190,9 +181,9 @@ const Ciceridis = {
 		return avg * (0.7 + Math.random() * 0.6);
 	},
 
-	// Итоговый угол для отрисовки: физика + фейковый рывок
+	// Итоговый угол для отрисовки и падения
 	swayAngle() {
-		return this.physicsAngle() + this.fakeOffset();
+		return this.physicsAngle();
 	},
 
 	// «Трудовая» поза: наклон между tiltPoseFromDeg и порогом падения —
@@ -274,17 +265,6 @@ const Ciceridis = {
 				this.nextGustSec = this.gustInterval();
 				this.angVel += (Math.random() < 0.5 ? -1 : 1) * this.gustImpulse();
 			}
-			// Фейковые рывки (раунды 4+): только визуал, физику не трогают
-			if (this.toastNum >= c.fakeFromRound) {
-				this.fakeT += dt;
-				if (this.fakeT >= this.nextFakeSec) {
-					this.fakeT = 0;
-					this.nextFakeSec = this.fakeInterval();
-					this.fakeAmp = c.fakeAmpDegMin +
-						Math.random() * (c.fakeAmpDegMax - c.fakeAmpDegMin);
-					this.fakeDir = Math.random() < 0.5 ? -1 : 1;
-				}
-			}
 			// Двойник (раунды blurFromRound+): таймер эффекта, физику не трогает
 			if (this.toastNum >= c.blurFromRound) {
 				if (this.ghostT > 0) {
@@ -303,8 +283,7 @@ const Ciceridis = {
 		// Интегрирование угла через delta time — скорость не зависит от FPS
 		this.playerAngle += this.angVel * dt;
 
-		// Падение: физический угол (дрожь + игрок + самонаклон) превысил порог —
-		// свалился. Фейковый рывок в порог не входит — он только визуальный
+		// Падение: угол (дрожь + игрок + самонаклон) превысил порог — свалился
 		const totalAngle = this.physicsAngle();
 		if (Math.abs(totalAngle) >= c.fallAngleDeg) {
 			this.phase = "fall";
