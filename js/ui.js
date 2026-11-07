@@ -324,6 +324,18 @@ const UI = {
 			el.remove();
 			onMenu();
 		});
+		// Триумфальная рамка победы Чекеридиса: венок + меандр (те же SVG, что на шеринге)
+		if (kind === "ciceridisWin") {
+			const card = el.querySelector(".final-card");
+			const wreath = document.createElement("div");
+			wreath.className = "win-wreath";
+			wreath.innerHTML = this.buildWreathSvg(176);
+			const frame = document.createElement("div");
+			frame.className = "win-frame";
+			frame.innerHTML = this.buildWinFrameSvg(card.clientWidth, card.clientHeight);
+			card.prepend(wreath);
+			card.prepend(frame);
+		}
 		// PNG-картинку для шеринга готовим в фоне, пока игрок читает результат
 		this._prepareShareCard(kind, data);
 	},
@@ -359,6 +371,83 @@ const UI = {
 				this.toast("Не удалось скопировать");
 			}
 		}
+	},
+
+	// ── Триумфальная рамка победы Чекеридиса (греко-римский стиль) ──
+	// Меандр («греческий ключ») по краям карточки + лавровый венок вокруг
+	// портрета. Одни и те же SVG-строки вставляются в DOM и рисуются на
+	// шеринг-картинке — рамки совпадают пик-в-пик.
+
+	// Рамка с меандром по краям, размер w×h. Ячейка на сетке 12px:
+	// непрерывная линия с рельсом вдоль края и крюками наружу, в углах — ромбы
+	buildWinFrameSvg(w, h) {
+		const u = 12, gold = "#c9a227", bright = "#e8c860";
+		// полосы не доходят до углов (там ромбы)
+		const nH = Math.max(1, Math.floor((w - 34) / u));
+		const nV = Math.max(1, Math.floor((h - 34) / u));
+		const xH = ((w - nH * u) / 2).toFixed(1);
+		const yV = ((h - nV * u) / 2).toFixed(1);
+		const rep = (start, unit, n) => start + unit.repeat(n);
+		const top = rep("M0 9", " h3 v-6 h6 v3 h-3 v3 h6", nH);
+		const bottom = rep("M0 3", " h3 v6 h6 v-3 h-3 v-3 h6", nH);
+		const left = rep("M9 0", " v3 h-6 v6 h3 v-3 h3 v6", nV);
+		const right = rep("M3 0", " v3 h6 v6 h-3 v-3 h-3 v6", nV);
+		const diamond = (cx, cy) =>
+			`M${cx} ${cy - 5} L${cx + 5} ${cy} L${cx} ${cy + 5} L${cx - 5} ${cy} Z`;
+		return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+			`<g fill="none" stroke="${bright}" stroke-width="2">` +
+			`<path transform="translate(${xH} 7)" d="${top}"/>` +
+			`<path transform="translate(${xH} ${h - 19})" d="${bottom}"/>` +
+			`<path transform="translate(7 ${yV})" d="${left}"/>` +
+			`<path transform="translate(${w - 19} ${yV})" d="${right}"/>` +
+			`</g><g fill="${gold}">` +
+			`<path d="${diamond(9, 9)}"/><path d="${diamond(w - 9, 9)}"/>` +
+			`<path d="${diamond(9, h - 9)}"/><path d="${diamond(w - 9, h - 9)}"/>` +
+			`</g></svg>`;
+	},
+
+	// Лавровый венок: две зеркальные ветви от скрещенного низа, почти
+	// сомкнутые сверху; листья крупнее у основания (классический «award wreath»)
+	buildWreathSvg(size) {
+		const c = size / 2;
+		const R = size * 0.385;
+		const rad = (d) => d * Math.PI / 180;
+		const pt = (a, r) => [c + r * Math.cos(rad(a)), c + r * Math.sin(rad(a))];
+		const leaf = (len) => {
+			const w = (len * 0.32).toFixed(1);
+			const k1 = (-len * 0.25).toFixed(1), k2 = (-len * 0.72).toFixed(1);
+			return `M0 0 C ${w} ${k1} ${w} ${k2} 0 ${-len} C ${-w} ${k2} ${-w} ${k1} 0 0 Z`;
+		};
+		const a0 = 85, a1 = 245; // дуга ветви: от низа почти до верха
+		let leaves = "";
+		for (let a = a0 + 15; a <= a1 - 5; a += 14) {
+			const t = (a - a0) / (a1 - a0);
+			const d = leaf(16 - 7 * t); // листья мельче к верху
+			for (const s of [-1, 1]) { // s=1 — наружный лист, s=-1 — внутренний
+				const [bx, by] = pt(a, R + s * 2);
+				const rot = (a + 180 - s * 30).toFixed(1);
+				leaves += `<path d="${d}" transform="translate(${bx.toFixed(1)} ${by.toFixed(1)}) rotate(${rot})" fill="url(#wg)"/>`;
+			}
+		}
+		const [x0, y0] = pt(a0, R);
+		const [x1, y1] = pt(a1, R);
+		const stem = `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" ` +
+			`fill="none" stroke="url(#wg)" stroke-width="2.5" stroke-linecap="round"/>`;
+		return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+			`<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">` +
+			`<stop offset="0" stop-color="#f6d878"/><stop offset="0.55" stop-color="#d9a92e"/><stop offset="1" stop-color="#9a6d10"/>` +
+			`</linearGradient></defs><g>${stem}${leaves}</g>` +
+			`<g transform="translate(${size} 0) scale(-1 1)">${stem}${leaves}</g></svg>`;
+	},
+
+	// SVG-строка → картинка для canvas (data URI не «пачкает» canvas)
+	_svgImage(svg) {
+		return new Promise((resolve, reject) => {
+			const im = new Image();
+			im.onload = () => resolve(im);
+			im.onerror = () => reject(new Error("svg"));
+			im.src = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+		});
 	},
 
 	// Подготовка PNG-картинки финального экрана для шеринга.
@@ -422,6 +511,14 @@ const UI = {
 			ctx.strokeStyle = accent;
 			ctx.lineWidth = 2;
 			ctx.stroke();
+
+			// триумфальная рамка + венок — те же SVG, что на экране победы
+			if (kind === "ciceridisWin") {
+				const frameImg = await this._svgImage(this.buildWinFrameSvg(cw, ch));
+				ctx.drawImage(frameImg, cx, cy, cw, ch);
+				const wreathImg = await this._svgImage(this.buildWreathSvg(176));
+				ctx.drawImage(wreathImg, W / 2 - 88, cy - 54, 176, 176);
+			}
 
 			// портрет 132×132, наполовину выходит за верх карточки;
 			// картинка вписана «обрезкой», как object-fit: cover

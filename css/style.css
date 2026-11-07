@@ -202,6 +202,38 @@ html, body {
 	border-color: #c05050;
 }
 
+/* Триумфальная рамка победы Чекеридиса: меандр + лавровый венок (SVG-оверлеи) */
+.final-card-ciceridisWin {
+	position: relative;
+}
+
+.win-frame {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.win-frame svg,
+.win-wreath svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.win-wreath {
+	position: absolute;
+	top: -80px;
+	left: 50%;
+	width: 176px;
+	height: 176px;
+	margin-left: -88px;
+	pointer-events: none;
+}
+
+.final-card-ciceridisWin .final-portrait {
+	position: relative;
+}
+
 @keyframes finalPop {
 	0%   { opacity: 0; transform: scale(0.5) translateY(14px); }
 	100% { opacity: 1; transform: scale(1) translateY(0); }
