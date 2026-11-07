@@ -164,12 +164,24 @@ const Ciceridis = {
 		return self + this.playerAngle;
 	},
 
+	// Длительность текущего двойника: с раунда doubleGhostFromRound — двойной
+	// (2 появления подряд, на doubleGhostSecMult дольше одинарного)
+	ghostDuration() {
+		const c = CONFIG.ciceridis;
+		return this.toastNum >= c.doubleGhostFromRound
+			? c.ghostSec * c.doubleGhostSecMult
+			: c.ghostSec;
+	},
+
 	// Двойник (раунды blurFromRound+): 0..1 — сила расхождения призраков,
-	// 0 = призраков нет. Синус: расходятся и плавно сходятся обратно
+	// 0 = призраков нет. Синус: расходятся и плавно сходятся обратно.
+	// Двойной двойник = два полных цикла «разошлись-сошлись» за одну длительность
 	ghostPower() {
 		const c = CONFIG.ciceridis;
-		if (this.ghostT <= 0 || this.ghostT >= c.ghostSec) return 0;
-		return Math.sin(this.ghostT / c.ghostSec * Math.PI);
+		const dur = this.ghostDuration();
+		if (this.ghostT <= 0 || this.ghostT >= dur) return 0;
+		const cycle = this.toastNum >= c.doubleGhostFromRound ? dur / 2 : dur;
+		return Math.sin(this.ghostT / cycle * Math.PI);
 	},
 
 	// Интервал до следующего двойника, сек (разброс ±30%)
@@ -269,7 +281,7 @@ const Ciceridis = {
 			if (this.toastNum >= c.blurFromRound) {
 				if (this.ghostT > 0) {
 					this.ghostT += dt;
-					if (this.ghostT >= c.ghostSec) this.ghostT = 0; // эффект кончился
+					if (this.ghostT >= this.ghostDuration()) this.ghostT = 0; // эффект кончился
 				} else {
 					this.nextGhostSec -= dt;
 					if (this.nextGhostSec <= 0) {
