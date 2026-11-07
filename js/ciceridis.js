@@ -28,7 +28,9 @@ const Ciceridis = {
 	angVel: 0,         // угловая скорость, градусы/сек
 	driftDir: 1,       // сторона начального наклона раунда: 1 вправо, -1 влево
 	// «Пьяный фон» (крен комнаты, чисто визуал — читает Scene)
-	bgSwayT: 0,        // время крена фона, сек (течёт непрерывно с начала забега)
+	bgPhase1: 0,       // фаза основной гармоники крена, рад (интегрируется)
+	bgPhase2: 1.3,     // фаза второй гармоники, рад (сдвиг, чтобы пики не совпадали)
+	bgHarm2Mix: 0,     // плавное включение второй гармоники, 0..1
 	bgRollAmp: 0,      // сглаженная амплитуда крена фона, град
 	bgRollDeg: 0,      // текущий крен фона, град
 	gustT: 0,          // секунд с последнего случайного толчка
@@ -59,7 +61,9 @@ const Ciceridis = {
 		this.nextGhostSec = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
-		this.bgSwayT = 0;  // крен фона начинается с нуля
+		this.bgPhase1 = 0; // крен фона начинается с нуля
+		this.bgPhase2 = 1.3;
+		this.bgHarm2Mix = 0;
 		this.bgRollAmp = 0;
 		this.bgRollDeg = 0;
 		this.plan = this._buildPlan();
@@ -82,15 +86,21 @@ const Ciceridis = {
 			? c.bgSwayAmp0Deg + c.bgSwayAmpStepDeg * n : 0;
 		this.bgRollAmp += (target - this.bgRollAmp)
 			* Math.min(1, c.bgSwaySmoothRate * dt); // догоняет цель без скачков
-		if (this.bgRollAmp < 0.01) { this.bgRollDeg = 0; return; }
-		const period = Math.max(2, c.bgSwayPeriod0Sec + c.bgSwayPeriodStepSec * n);
-		// нормируем сумму гармоник, чтобы пик крена = амплитуде раунда
-		let roll = Math.sin(2 * Math.PI * this.bgSwayT / period);
-		if (this.toastNum >= c.bgSwayHarm2FromRound) {
-			roll += c.bgSwayHarm2AmpMul
-				* Math.sin(2 * Math.PI * this.bgSwayT / (period / c.bgSwayHarm2PeriodDiv) + 1.3);
-			roll /= 1 + c.bgSwayHarm2AmpMul;
+		// Фазы интегрируются сами, а не считаются от абсолютного времени:
+		// смена периода и амплитуды между раундами не даёт скачков угла
+		if (this.bgRollAmp >= 0.01) {
+			const period = Math.max(2, c.bgSwayPeriod0Sec + c.bgSwayPeriodStepSec * n);
+			this.bgPhase1 += 2 * Math.PI * dt / period;
+			this.bgPhase2 += 2 * Math.PI * dt / (period / c.bgSwayHarm2PeriodDiv);
 		}
+		// вторая гармоника включается плавно (иначе на своём раунде дёргает)
+		const mixTarget = this.toastNum >= c.bgSwayHarm2FromRound ? 1 : 0;
+		this.bgHarm2Mix += (mixTarget - this.bgHarm2Mix)
+			* Math.min(1, c.bgSwaySmoothRate * dt);
+		// нормируем сумму гармоник, чтобы пик крена = амплитуде раунда
+		let roll = Math.sin(this.bgPhase1)
+			+ c.bgSwayHarm2AmpMul * this.bgHarm2Mix * Math.sin(this.bgPhase2);
+		roll /= 1 + c.bgSwayHarm2AmpMul * this.bgHarm2Mix;
 		this.bgRollDeg = this.bgRollAmp * roll;
 	},
 
@@ -260,9 +270,8 @@ const Ciceridis = {
 	},
 
 	update(dt) {
-		// «Пьяный фон»: время крена течёт непрерывно (и в падении — комната
-		// не замирает скачком), на физику не влияет
-		this.bgSwayT += dt;
+		// «Пьяный фон»: фазы крена интегрируются непрерывно (и в падении —
+		// комната не замирает скачком), на физику не влияет
 		this._updateBgSway(dt);
 		if (this.phase === "fall") { // падение: крутится анимация, физика стоит
 			this.fallT += dt;
