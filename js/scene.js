@@ -632,11 +632,12 @@ const Scene = {
 
 	// Спрайт Чекеридиса на столе: кадр по фазе + качание/падение.
 	// Кадры листа: 0 тост, 1 балансирует, 2 пьёт, 3 радость/победа, 4 падение
-	// Сила размытия: 0 до blurFromRound, дальше +1 px за раунд до blurMaxPx
+	// Сила размытия: 0 до blurFromRound, дальше +1 px каждые blurStepRounds раунда
 	ciceridisBlurPx() {
 		const c = CONFIG.ciceridis;
 		if (Ciceridis.toastNum < c.blurFromRound) return 0;
-		const blur = c.blurStartPx + (Ciceridis.toastNum - c.blurFromRound);
+		const blur = c.blurStartPx +
+			Math.floor((Ciceridis.toastNum - c.blurFromRound) / c.blurStepRounds);
 		return Math.min(blur, c.blurMaxPx);
 	},
 
