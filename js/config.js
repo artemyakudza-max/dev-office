@@ -1,6 +1,6 @@
 // Все настраиваемые числа и тексты игры — только здесь (правило ТЗ §7)
 const CONFIG = {
-version: "v0.9.86",        // отладочный номер версии — виден на экране, bump с каждым шагом
+version: "v0.9.87",        // отладочный номер версии — виден на экране, bump с каждым шагом
 	round: {
 		durationSec: 60,          // длина забега
 		maxDurationSec: 70,       // жёсткий потолок (требование автора)
@@ -329,11 +329,11 @@ version: "v0.9.86",        // отладочный номер версии — �
 		easter: "assets/characters/zero.png",
 		// Чекеридис: портрет поражения зависит от числа тостов —
 		// чем дольше продержался, тем сильнее напился (ассеты автора)
-		ciceridisFail13: "assets/characters/chekeridis_final_lose_1_3.png",
-		ciceridisFail46: "assets/characters/chekeridis_final_lose_4_6.png",
-		ciceridisFail79: "assets/characters/chekeridis_final_lose_7_9.png",
-		ciceridisWin: "assets/characters/chekeridis_final_win.png",
-		ciceridisEaster: "assets/characters/chekeridis_final_realunluck.png",
+		ciceridisFail13: "assets/characters/chekeridis_final_lose_1_3.jpg",
+		ciceridisFail46: "assets/characters/chekeridis_final_lose_4_6.jpg",
+		ciceridisFail79: "assets/characters/chekeridis_final_lose_7_9.jpg",
+		ciceridisWin: "assets/characters/chekeridis_final_win.jpg",
+		ciceridisEaster: "assets/characters/chekeridis_final_realunluck.jpg",
 	},
 	winHeader: "Совещание окончено",
 	winStat: "рабочего времени Вова занимался своими делами",
