@@ -671,6 +671,24 @@ const Scene = {
 			mirror = Ciceridis.fallDir < 0; // спрайт нарисован падающим вправо
 		}
 		ctx.imageSmoothingEnabled = false;
+		// Двойник: призраки расходятся в стороны и сходятся (чисто визуал)
+		const gp = Ciceridis.ghostPower();
+		if (gp > 0.01) {
+			const shift = w * CONFIG.ciceridis.ghostShiftFrac * gp;
+			ctx.save();
+			ctx.globalAlpha = CONFIG.ciceridis.ghostAlpha * gp;
+			for (const side of [-1, 1]) {
+				ctx.save();
+				ctx.translate(feet.x + side * shift, fy);
+				ctx.rotate(ang);
+				if (mirror) ctx.scale(-1, 1);
+				ctx.drawImage(img, fi * cfg.frame.w, 0, cfg.frame.w, cfg.frame.h,
+					-w / 2, -h, w, h);
+				ctx.restore();
+			}
+			ctx.restore();
+			ctx.globalAlpha = 1;
+		}
 		ctx.save();
 		ctx.translate(feet.x, fy); // точка опоры — стопы
 		ctx.rotate(ang);

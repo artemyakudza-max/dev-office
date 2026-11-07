@@ -33,6 +33,8 @@ const Ciceridis = {
 	nextFakeSec: 0,    // через сколько секунд следующий рывок
 	fakeAmp: 0,        // амплитуда текущего рывка, град
 	fakeDir: 1,        // сторона текущего рывка: 1 вправо, -1 влево
+	ghostT: 0,         // секунд с начала текущего двойника (0 = нет двойника)
+	nextGhostSec: 0,   // через сколько секунд следующий двойник
 
 	reset() {
 		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
@@ -57,6 +59,8 @@ const Ciceridis = {
 		this.nextFakeSec = 0;
 		this.fakeAmp = 0;
 		this.fakeDir = 1;
+		this.ghostT = 0;
+		this.nextGhostSec = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.plan = this._buildPlan();
@@ -186,6 +190,23 @@ const Ciceridis = {
 		return Math.sin(p * Math.PI) * this.fakeAmp * this.fakeDir;
 	},
 
+	// Двойник (раунды blurFromRound+): 0..1 — сила расхождения призраков,
+	// 0 = призраков нет. Синус: расходятся и плавно сходятся обратно
+	ghostPower() {
+		const c = CONFIG.ciceridis;
+		if (this.ghostT <= 0 || this.ghostT >= c.ghostSec) return 0;
+		return Math.sin(this.ghostT / c.ghostSec * Math.PI);
+	},
+
+	// Интервал до следующего двойника, сек (разброс ±30%)
+	ghostInterval() {
+		const c = CONFIG.ciceridis;
+		const t = Math.max(0, Math.min(1,
+			(this.toastNum - c.blurFromRound) / (c.totalRounds - c.blurFromRound)));
+		const avg = c.ghostEverySecStart + (c.ghostEverySecEnd - c.ghostEverySecStart) * t;
+		return avg * (0.7 + Math.random() * 0.6);
+	},
+
 	// Итоговый угол для отрисовки: физика + фейковый рывок
 	swayAngle() {
 		return this.physicsAngle() + this.fakeOffset();
@@ -281,6 +302,19 @@ const Ciceridis = {
 					this.fakeDir = Math.random() < 0.5 ? -1 : 1;
 				}
 			}
+			// Двойник (раунды blurFromRound+): таймер эффекта, физику не трогает
+			if (this.toastNum >= c.blurFromRound) {
+				if (this.ghostT > 0) {
+					this.ghostT += dt;
+					if (this.ghostT >= c.ghostSec) this.ghostT = 0; // эффект кончился
+				} else {
+					this.nextGhostSec -= dt;
+					if (this.nextGhostSec <= 0) {
+						this.ghostT = 0.0001; // старт двойника
+						this.nextGhostSec = this.ghostInterval();
+					}
+				}
+			}
 		}
 
 		// Интегрирование угла через delta time — скорость не зависит от FPS
@@ -341,6 +375,8 @@ const Ciceridis = {
 				this.angVel = 0;
 				this.gustT = 0;
 				this.nextGustSec = this.gustInterval();
+				this.ghostT = 0;
+				this.nextGhostSec = this.ghostInterval();
 			}
 		} else if (this.phase === "win") {
 			// победа: карточку покажет main.js
