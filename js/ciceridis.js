@@ -3,13 +3,15 @@
 // Этап 5 — первый тост: текст 5 с + очень медленное качание ±10°
 // Этап 6 — управление: тап/зажатие половин экрана толкает его (ТЗ §3.2)
 const Ciceridis = {
-	phase: "toast",    // toast | drink | joy | nextToast | fall | win
+	phase: "intro",    // intro | toast | drink | joy | nextToast | fall | win
+	introT: 0,         // сколько секунд идёт стартовая пауза (стоит ровно)
 	toastT: 0,         // сколько секунд идёт тост
 	drinkT: 0,         // сколько секунд идёт «выпивает бокал»
 	joyT: 0,           // сколько секунд идёт радость
 	nextT: 0,          // сколько секунд висит «Ещё тост!»
 	fallT: 0,          // сколько секунд длится падение (анимация)
 	fallDir: 1,        // в какую сторону упал: 1 вправо, -1 влево
+	introFired: false,      // стартовую плашку показал? (ставит main.js)
 	toastStartFired: false, // плашку с тостом показал? (ставит main.js)
 	drinkStartFired: false, // плашку «буль-буль-буль» показал? (ставит main.js)
 	nextToastFired: false,  // плашку «Ещё тост!» показал? (ставит main.js)
@@ -21,7 +23,9 @@ const Ciceridis = {
 	angVel: 0,         // угловая скорость, градусы/сек
 
 	reset() {
-		this.phase = "toast"; // стоит на стойке сразу, без залезания
+		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
+		this.introT = 0;
+		this.introFired = false;
 		this.toastT = 0;
 		this.toastStartFired = false;
 		this.drinkStartFired = false;
@@ -133,6 +137,17 @@ const Ciceridis = {
 		}
 
 		const c = CONFIG.ciceridis;
+
+		// Стартовая пауза: стоит ровно на столе, качания и ввода нет
+		if (this.phase === "intro") {
+			this.introT += dt;
+			this.discardTaps();
+			if (this.introT >= c.introSec) {
+				this.phase = "toast";
+				this.toastT = 0;
+			}
+			return;
+		}
 
 		// Первые inputDelaySec тоста ввод игнорируется (решение автора:
 		// реакция на игрока начинается с задержкой после нейтральных сцен)

@@ -59,6 +59,13 @@
 		// Мини-игра «Цицеридис»: свой игровой цикл
 		if (Game.mode === "ciceridis") {
 			Ciceridis.update(dt);
+			// Стартовая плашка: «Друзья! Позвольте сказать тост!» во время паузы
+			if (Ciceridis.phase === "intro" && !Ciceridis.introFired) {
+				Ciceridis.introFired = true;
+				const hp = Scene.bubbleAnchorCiceridis();
+				UI.bubble(CONFIG.ciceridis.introText, hp.x, hp.y, "center",
+					CONFIG.ciceridis.introSec);
+			}
 			// Тост при старте раунда: текст по словам за speechSec,
 			// плашка висит toastSec (раунд длится дольше речи)
 			if (Ciceridis.phase === "toast" && !Ciceridis.toastStartFired) {
