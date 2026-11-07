@@ -20,7 +20,6 @@ $pairs = @(
     @("assets\characters\vova_character_select.jpg", 400),
     @("assets\characters\chekeridis_character_select.jpg", 400),
     @("assets\sprites\bg_office.png", 720),
-    @("assets\sprites\bg_ciceridis.png", 720),
     @("assets\sprites\vova_poses.png", 768),
     @("assets\sprites\boss_states.png", 1024),
     @("assets\sprites\chekeridis_states.png", 1020)
