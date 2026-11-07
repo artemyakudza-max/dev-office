@@ -3,10 +3,10 @@
 # a barrier for near-black outline pixels (maxC < 15) so the fill cannot
 # leak through character outlines into the body.
 # Hot loop (flood fill + bbox) is compiled C# — fast even for 4M+ pixels.
-# Input:  design/assets/characters/*.png (frames in a row, opaque bg)
+# Input:  design/assets/<Персонаж>/*.png (frames in a row, opaque bg)
 # Output: assets/sprites/*.png (transparent bg, frames aligned to bottom)
 param(
-    [string]$InPath = "design\assets\characters\vova_poses.png",
+    [string]$InPath = "design\assets\Vovan\vova_poses.png",
     [string]$OutPath = "assets\sprites\vova_poses.png",
     [int]$Frames = 3,
     [int]$Tol = 8,

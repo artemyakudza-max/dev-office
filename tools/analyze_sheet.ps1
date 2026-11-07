@@ -1,6 +1,6 @@
 # Analyze sprite sheet: bbox of opaque pixels per frame (fast, LockBits)
 param(
-    [string]$Path = "design\assets\characters\vova_poses.png",
+    [string]$Path = "design\assets\Vovan\vova_poses.png",
     [int]$Frames = 3
 )
 Add-Type -AssemblyName System.Drawing

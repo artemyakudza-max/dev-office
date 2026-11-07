@@ -1,6 +1,6 @@
 # Диагностика спрайт-листа босса: размер, цвета фона по краям, bbox кадров
 Add-Type -AssemblyName System.Drawing
-$img = [System.Drawing.Bitmap]::FromFile((Resolve-Path "design\assets\characters\boss_states.png").Path)
+$img = [System.Drawing.Bitmap]::FromFile((Resolve-Path "design\assets\Vovan\boss_states.png").Path)
 $W = $img.Width; $H = $img.Height
 Write-Host ("size: {0}x{1}" -f $W, $H)
 

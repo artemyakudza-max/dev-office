@@ -1,5 +1,5 @@
 # Sample background color: median of edge pixels + histogram of edge colors
-param([string]$Path = "design\assets\characters\boss_states.png")
+param([string]$Path = "design\assets\Vovan\boss_states.png")
 Add-Type -AssemblyName System.Drawing
 $img = [System.Drawing.Bitmap]::new((Resolve-Path $Path).Path)
 $W = $img.Width; $H = $img.Height

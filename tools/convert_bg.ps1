@@ -2,9 +2,9 @@
 # Даунскейл до макс. ширины (NearestNeighbor сохраняет пиксель-арт), JPEG q80.
 # Фоны не требуют прозрачности, JPEG весит в разы меньше (правило AGENTS.md).
 # Запуск: powershell -NoProfile -ExecutionPolicy Bypass -File tools\convert_bg.ps1
-#         -InPath design\assets\characters\bg_ciceridis.png -OutPath assets\sprites\bg_ciceridis.jpg
+#         -InPath design\assets\Chekeridis\bg_ciceridis.png -OutPath assets\sprites\bg_ciceridis.jpg
 param(
-	[string]$InPath = "design\assets\characters\bg_ciceridis.png",
+	[string]$InPath = "design\assets\Chekeridis\bg_ciceridis.png",
 	[string]$OutPath = "assets\sprites\bg_ciceridis.jpg",
 	[int]$MaxWidth = 720,
 	[int]$Quality = 80

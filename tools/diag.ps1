@@ -1,6 +1,6 @@
 # Diagnostic 2: pixel-level scanlines across character boundaries
 Add-Type -AssemblyName System.Drawing
-$img = [System.Drawing.Bitmap]::new((Resolve-Path "design\assets\characters\vova_poses.png").Path)
+$img = [System.Drawing.Bitmap]::new((Resolve-Path "design\assets\Vovan\vova_poses.png").Path)
 $W = $img.Width; $H = $img.Height
 
 function ScanRow($img, $y, $x0, $x1, $label) {
