@@ -29,6 +29,10 @@ const Ciceridis = {
 	driftDir: 1,       // сторона начального наклона раунда: 1 вправо, -1 влево
 	gustT: 0,          // секунд с последнего случайного толчка
 	nextGustSec: 0,    // через сколько секунд следующий толчок
+	fakeT: 0,          // секунд с последнего фейкового рывка
+	nextFakeSec: 0,    // через сколько секунд следующий рывок
+	fakeAmp: 0,        // амплитуда текущего рывка, град
+	fakeDir: 1,        // сторона текущего рывка: 1 вправо, -1 влево
 
 	reset() {
 		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
@@ -49,6 +53,10 @@ const Ciceridis = {
 		this.driftDir = Math.random() < 0.5 ? -1 : 1;
 		this.gustT = 0;
 		this.nextGustSec = 0;
+		this.fakeT = 0;
+		this.nextFakeSec = 0;
+		this.fakeAmp = 0;
+		this.fakeDir = 1;
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.plan = this._buildPlan();
@@ -146,18 +154,41 @@ const Ciceridis = {
 		return avg * (0.7 + Math.random() * 0.6);
 	},
 
+	// Интервал до следующего фейкового рывка, сек (разброс ±30%)
+	fakeInterval() {
+		const c = CONFIG.ciceridis;
+		const t = Math.max(0, Math.min(1,
+			(this.toastNum - c.fakeFromRound) / (c.totalRounds - c.fakeFromRound)));
+		const avg = c.fakeEverySecStart + (c.fakeEverySecEnd - c.fakeEverySecStart) * t;
+		return avg * (0.7 + Math.random() * 0.6);
+	},
+
 	// Длительность речи текущего раунда (больше = медленнее говорит)
 	speechDuration() {
 		return this._diff(CONFIG.ciceridis.speechSec, CONFIG.ciceridis.speechSecEnd);
 	},
 
-	// Итоговый угол в градусах для отрисовки: дрожь + наклон игрока (в него
-	// накоплен и самонаклон). Качается только во время тоста; между раундами ровно
-	swayAngle() {
+	// Физический угол (без фейка): дрожь + наклон игрока (в него накоплен
+	// самонаклон). По нему считается падение — фейк свалить не может
+	physicsAngle() {
 		// в падении угол заморожен: toastT и playerAngle не меняются
 		if (this.phase !== "toast" && this.phase !== "fall") return 0;
 		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * this.swayAmp();
 		return self + this.playerAngle;
+	},
+
+	// Фейковый рывок (раунды 4+): быстрый визуальный крен туда-обратно,
+	// физику не трогает — провоцирует нажать не в ту сторону
+	fakeOffset() {
+		const c = CONFIG.ciceridis;
+		if (this.fakeT <= 0 || this.fakeT >= c.fakeSec) return 0;
+		const p = this.fakeT / c.fakeSec; // 0..1 за время рывка
+		return Math.sin(p * Math.PI) * this.fakeAmp * this.fakeDir;
+	},
+
+	// Итоговый угол для отрисовки: физика + фейковый рывок
+	swayAngle() {
+		return this.physicsAngle() + this.fakeOffset();
 	},
 
 	// «Трудовая» поза: наклон между tiltPoseFromDeg и порогом падения —
@@ -239,13 +270,25 @@ const Ciceridis = {
 				this.nextGustSec = this.gustInterval();
 				this.angVel += (Math.random() < 0.5 ? -1 : 1) * this.gustImpulse();
 			}
+			// Фейковые рывки (раунды 4+): только визуал, физику не трогают
+			if (this.toastNum >= c.fakeFromRound) {
+				this.fakeT += dt;
+				if (this.fakeT >= this.nextFakeSec) {
+					this.fakeT = 0;
+					this.nextFakeSec = this.fakeInterval();
+					this.fakeAmp = c.fakeAmpDegMin +
+						Math.random() * (c.fakeAmpDegMax - c.fakeAmpDegMin);
+					this.fakeDir = Math.random() < 0.5 ? -1 : 1;
+				}
+			}
 		}
 
 		// Интегрирование угла через delta time — скорость не зависит от FPS
 		this.playerAngle += this.angVel * dt;
 
-		// Падение: ОБЩИЙ наклон (дрожь + игрок + самонаклон) превысил порог — свалился
-		const totalAngle = this.swayAngle();
+		// Падение: физический угол (дрожь + игрок + самонаклон) превысил порог —
+		// свалился. Фейковый рывок в порог не входит — он только визуальный
+		const totalAngle = this.physicsAngle();
 		if (Math.abs(totalAngle) >= c.fallAngleDeg) {
 			this.phase = "fall";
 			this.fallT = 0;

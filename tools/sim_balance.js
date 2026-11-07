@@ -44,10 +44,11 @@ function playRound(n, strategy) {
 }
 
 // Бот-«средний игрок»: реакция с задержкой 0.25 с (видит угол из прошлого),
-// не чаще ~3.5 тапов/сек, мёртвая зона 8°
+// не чаще ~3.5 тапов/сек, мёртвая зона 8°. Видит ВИДИМЫЙ угол (с фейком),
+// как игрок — фейк провоцирует его нажать не в ту сторону
 const bot = (angle) => {
 	bot.hist = bot.hist || [];
-	bot.hist.push(angle);
+	bot.hist.push(Ciceridis.swayAngle());
 	if (bot.hist.length > 15) bot.hist.shift(); // 15 кадров = 0.25 с задержки
 	bot.cool = (bot.cool || 0) - DT;
 	if (bot.cool > 0) return;
@@ -59,7 +60,7 @@ const bot = (angle) => {
 // Бот-«новичок»: реакция 0.4 с, ~2.5 тапов/сек, мёртвая зона 12°
 const noob = (angle) => {
 	noob.hist = noob.hist || [];
-	noob.hist.push(angle);
+	noob.hist.push(Ciceridis.swayAngle());
 	if (noob.hist.length > 24) noob.hist.shift(); // 24 кадра = 0.4 с задержки
 	noob.cool = (noob.cool || 0) - DT;
 	if (noob.cool > 0) return;
@@ -71,7 +72,7 @@ const noob = (angle) => {
 // Бот-«профи»: реакция 0.12 с, ~5.5 тапов/сек, мёртвая зона 5°
 const pro = (angle) => {
 	pro.hist = pro.hist || [];
-	pro.hist.push(angle);
+	pro.hist.push(Ciceridis.swayAngle());
 	if (pro.hist.length > 7) pro.hist.shift(); // 7 кадров = 0.12 с задержки
 	pro.cool = (pro.cool || 0) - DT;
 	if (pro.cool > 0) return;
