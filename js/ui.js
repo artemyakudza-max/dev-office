@@ -1,6 +1,7 @@
 // UI: DOM-слой поверх canvas — HUD, вспышка замечания, пауза, финальные экраны
 const UI = {
 	root: null,
+	crowdRects: [], // занятые места выкриков толпы (пока они на экране)
 	timerBar: null,
 	percentLabel: null,
 
@@ -717,17 +718,45 @@ const UI = {
 			const p1 = Scene.toScreen(b.dx + b.dw, b.dy + b.dh);
 			area = { x: p0.x, y: p0.y, w: p1.x - p0.x, h: p1.y - p0.y };
 		}
-		const m = 10;
+		const m = 10, gap = 6;
 		el.style.maxWidth = Math.max(80, area.w - 2 * m) + "px"; // длинная фраза переносится
 		const w = el.offsetWidth, h = el.offsetHeight;
-		// CSS держит плашку центром на (left, top) — случайный центр внутри фона
-		const cx = area.x + m + w / 2 + Math.random() * Math.max(0, area.w - w - 2 * m);
-		const cy = area.y + m + h / 2 + Math.random() * Math.max(0, area.h - h - 2 * m);
-		el.style.left = cx + "px";
-		el.style.top = cy + "px";
+		// Занятые зоны: плашки Чекеридиса (с запасом сверху — они всплывают)
+		// и ещё не растаявшие выкрики толпы
+		const now = Date.now();
+		this.crowdRects = this.crowdRects.filter((r) => r.until > now);
+		const busy = [];
+		this.root.querySelectorAll(".bubble:not(.crowd)").forEach((other) => {
+			const r = other.getBoundingClientRect();
+			busy.push({ x: r.left, y: r.top - r.height, w: r.width, h: r.height * 2 });
+		});
+		this.crowdRects.forEach((r) => busy.push(r));
+		// Ищем случайное место без пересечений (до 30 попыток),
+		// иначе — место с наименьшим числом пересечений
+		const loX = area.x + m + w / 2, hiX = area.x + area.w - m - w / 2;
+		const loY = area.y + m + h / 2, hiY = area.y + area.h - m - h / 2;
+		let best = { x: loX, y: loY }, bestHits = Infinity;
+		for (let i = 0; i < 30; i++) {
+			const cx = loX + (hiX > loX ? Math.random() * (hiX - loX) : 0);
+			const cy = loY + (hiY > loY ? Math.random() * (hiY - loY) : 0);
+			const r = { x: cx - w / 2 - gap, y: cy - h / 2 - gap, w: w + 2 * gap, h: h + 2 * gap };
+			const hits = busy.filter((o) => r.x < o.x + o.w && r.x + r.w > o.x
+				&& r.y < o.y + o.h && r.y + r.h > o.y).length;
+			if (hits < bestHits) {
+				bestHits = hits;
+				best = { x: cx, y: cy };
+			}
+			if (hits === 0) break; // свободное место найдено
+		}
+		el.style.left = best.x + "px";
+		el.style.top = best.y + "px";
 		el.style.visibility = "visible";
 		const seconds = CONFIG.ciceridis.crowdPhraseSec;
 		el.style.animationDuration = seconds + "s";
+		// Запоминаем место выкрика, пока он не растает
+		this.crowdRects.push({
+			x: best.x - w / 2, y: best.y - h / 2, w, h, until: now + seconds * 1000,
+		});
 		setTimeout(() => el.remove(), seconds * 1000);
 	},
 
