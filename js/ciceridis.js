@@ -37,6 +37,8 @@ const Ciceridis = {
 	nextGustSec: 0,    // через сколько секунд следующий толчок
 	ghostT: 0,         // секунд с начала текущего двойника (0 = нет двойника)
 	nextGhostSec: 0,   // через сколько секунд следующий двойник
+	ghostChainLeft: 0, // сколько появлений осталось в цепочке (0 = цепочки нет)
+	ghostGapT: 0,      // таймер паузы между появлениями цепочки
 
 	reset() {
 		this.phase = "intro"; // стартовая пауза: стоит ровно, потом первый тост
@@ -59,6 +61,8 @@ const Ciceridis = {
 		this.nextGustSec = 0;
 		this.ghostT = 0;
 		this.nextGhostSec = 0;
+		this.ghostChainLeft = 0;
+		this.ghostGapT = 0;
 		this.fallT = 0;
 		this.fallDir = 1;
 		this.bgPhase1 = 0; // крен фона начинается с нуля
@@ -205,24 +209,26 @@ const Ciceridis = {
 		return self + this.playerAngle;
 	},
 
-	// Длительность текущего двойника: с раунда doubleGhostFromRound — двойной
-	// (2 появления подряд, на doubleGhostSecMult дольше одинарного)
-	ghostDuration() {
+	// Сколько появлений в цепочке для текущего раунда: 6-7 — два подряд,
+	// 8+ — три подряд, раньше — одно
+	ghostChainCount() {
 		const c = CONFIG.ciceridis;
-		return this.toastNum >= c.doubleGhostFromRound
-			? c.ghostSec * c.doubleGhostSecMult
-			: c.ghostSec;
+		if (this.toastNum >= c.ghostChainFromRound3) return 3;
+		if (this.toastNum >= c.ghostChainFromRound2) return 2;
+		return 1;
+	},
+
+	// Длительность одного появления двойника, сек
+	ghostDuration() {
+		return CONFIG.ciceridis.ghostSec;
 	},
 
 	// Двойник (раунды blurFromRound+): 0..1 — сила расхождения призраков,
-	// 0 = призраков нет. Синус: расходятся и плавно сходятся обратно.
-	// Двойной двойник = два полных цикла «разошлись-сошлись» за одну длительность
+	// 0 = призраков нет. Синус: расходятся и плавно сходятся обратно
 	ghostPower() {
-		const c = CONFIG.ciceridis;
 		const dur = this.ghostDuration();
 		if (this.ghostT <= 0 || this.ghostT >= dur) return 0;
-		const cycle = this.toastNum >= c.doubleGhostFromRound ? dur / 2 : dur;
-		return Math.sin(this.ghostT / cycle * Math.PI);
+		return Math.sin(this.ghostT / dur * Math.PI);
 	},
 
 	// Интервал до следующего двойника, сек (разброс ±30%)
@@ -321,15 +327,28 @@ const Ciceridis = {
 				this.nextGustSec = this.gustInterval();
 				this.angVel += (Math.random() < 0.5 ? -1 : 1) * this.gustImpulse();
 			}
-			// Двойник (раунды blurFromRound+): таймер эффекта, физику не трогает
+			// Двойник (раунды blurFromRound+): таймер эффекта, физику не трогает.
+			// С 6-го раунда одиночный двойник срабатывает 2 раза подряд,
+			// с 8-го — 3 раза подряд (пауза между появлениями ghostChainGapSec)
 			if (this.toastNum >= c.blurFromRound) {
 				if (this.ghostT > 0) {
 					this.ghostT += dt;
-					if (this.ghostT >= this.ghostDuration()) this.ghostT = 0; // эффект кончился
+					if (this.ghostT >= this.ghostDuration()) {
+						// появление кончилось: в цепочке — пауза и следующее
+						this.ghostT = 0;
+						if (this.ghostChainLeft > 0) {
+							this.ghostChainLeft -= 1;
+							this.ghostGapT = c.ghostChainGapSec;
+						}
+					}
+				} else if (this.ghostGapT > 0) {
+					this.ghostGapT -= dt; // пауза между появлениями цепочки
+					if (this.ghostGapT <= 0) this.ghostT = 0.0001; // следующее появление
 				} else {
 					this.nextGhostSec -= dt;
 					if (this.nextGhostSec <= 0) {
 						this.ghostT = 0.0001; // старт двойника
+						this.ghostChainLeft = this.ghostChainCount() - 1;
 						this.nextGhostSec = this.ghostInterval();
 					}
 				}
@@ -394,6 +413,8 @@ const Ciceridis = {
 				this.gustT = 0;
 				this.nextGustSec = this.gustInterval();
 				this.ghostT = 0;
+				this.ghostChainLeft = 0;
+				this.ghostGapT = 0;
 				this.nextGhostSec = this.ghostInterval();
 			}
 		} else if (this.phase === "win") {
