@@ -153,7 +153,18 @@ html, body {
 	box-shadow: 0 0 30px rgba(74, 122, 224, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.4);
 }
 
+/* Поражение Чекеридиса (2–10 тост) — красный акцент, как у провала Вовы
+   и как на шеринг-картинке «Поделиться» */
+.final-card-ciceridisFail {
+	border-color: #c05050;
+	box-shadow: 0 0 30px rgba(192, 80, 80, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
 .final-card-fail .final-header {
+	color: #e07070;
+}
+
+.final-card-ciceridisFail .final-header {
 	color: #e07070;
 }
 
@@ -184,6 +195,11 @@ html, body {
 /* Пасхалка «REAL UNLUCK» Чекеридиса — синяя рамка портрета, как у карточки */
 .final-portrait-ciceridisEaster {
 	border-color: #4a7ae0;
+}
+
+/* Поражение Чекеридиса — красная рамка портрета, как на шеринг-картинке */
+.final-portrait-ciceridisFail {
+	border-color: #c05050;
 }
 
 @keyframes finalPop {

@@ -96,7 +96,12 @@ const Ciceridis = {
 		// в падении угол заморожен: toastT и playerAngle не меняются
 		if (this.phase !== "toast" && this.phase !== "fall") return 0;
 		const c = CONFIG.ciceridis;
-		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * this.swayAmp();
+		// Раунды без самопадения: самокачание упирается в cap — стоит с наклоном,
+		// свалить может только тап/зажим игрока
+		const amp = c.noSelfFallRounds.includes(this.toastNum)
+			? Math.min(this.swayAmp(), c.selfFallCapDeg)
+			: this.swayAmp();
+		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * amp;
 		return self + this.playerAngle;
 	},
 
