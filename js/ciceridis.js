@@ -29,10 +29,6 @@ const Ciceridis = {
 	driftDir: 1,       // сторона начального наклона раунда: 1 вправо, -1 влево
 	gustT: 0,          // секунд с последнего случайного толчка
 	nextGustSec: 0,    // через сколько секунд следующий толчок
-	fakeT: 0,          // секунд с последнего фейкового рывка
-	nextFakeSec: 0,    // через сколько секунд следующий рывок
-	fakeAmp: 0,        // амплитуда текущего рывка, град
-	fakeDir: 1,        // сторона текущего рывка: 1 вправо, -1 влево
 	ghostT: 0,         // секунд с начала текущего двойника (0 = нет двойника)
 	nextGhostSec: 0,   // через сколько секунд следующий двойник
 
@@ -55,10 +51,6 @@ const Ciceridis = {
 		this.driftDir = Math.random() < 0.5 ? -1 : 1;
 		this.gustT = 0;
 		this.nextGustSec = 0;
-		this.fakeT = 0;
-		this.nextFakeSec = 0;
-		this.fakeAmp = 0;
-		this.fakeDir = 1;
 		this.ghostT = 0;
 		this.nextGhostSec = 0;
 		this.fallT = 0;
@@ -179,15 +171,6 @@ const Ciceridis = {
 		if (this.phase !== "toast" && this.phase !== "fall") return 0;
 		const self = Math.sin(this.toastT / this.swayPeriod() * Math.PI * 2) * this.swayAmp();
 		return self + this.playerAngle;
-	},
-
-	// Фейковый рывок (раунды 4+): быстрый визуальный крен туда-обратно,
-	// физику не трогает — провоцирует нажать не в ту сторону
-	fakeOffset() {
-		const c = CONFIG.ciceridis;
-		if (this.fakeT <= 0 || this.fakeT >= c.fakeSec) return 0;
-		const p = this.fakeT / c.fakeSec; // 0..1 за время рывка
-		return Math.sin(p * Math.PI) * this.fakeAmp * this.fakeDir;
 	},
 
 	// Двойник (раунды blurFromRound+): 0..1 — сила расхождения призраков,
