@@ -144,7 +144,7 @@ const UI = {
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
 						padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;">
-						<img src="assets/characters/vova_character_select.png" alt="Вова"
+						<img src="assets/characters/vova_character_select.jpg" alt="Вова"
 							style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
 								image-rendering: pixelated; display: block;">
 						<!-- Футер фиксированной высоты: имя и название игры на одном уровне во всех карточках -->
@@ -160,7 +160,7 @@ const UI = {
 						background: linear-gradient(180deg, #2c2c44, #1d1d30);
 						padding: 7px;
 						display: flex; flex-direction: column; box-sizing: border-box;">
-						<img id="chekeridis-img" src="assets/characters/chekeridis_character_select.png"
+						<img id="chekeridis-img" src="assets/characters/chekeridis_character_select.jpg"
 							alt="Чекеридис" style="flex: 1; min-height: 0; width: 100%; object-fit: cover;
 								image-rendering: pixelated; display: block;">
 						<span id="chekeridis-fallback" style="flex: 1; min-height: 0; display: none;

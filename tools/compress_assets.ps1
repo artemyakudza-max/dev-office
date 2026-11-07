@@ -5,8 +5,6 @@ Add-Type -AssemblyName System.Drawing
 # file -> max width (sprite sheets keep extra detail)
 $pairs = @(
     @("assets\characters\vova.png", 512),
-    @("assets\characters\vova_character_select.png", 512),
-    @("assets\characters\chekeridis_character_select.png", 512),
     # финальные портреты Чекеридиса: 400px JPEG (~70), прозрачность залита
     # тёмно-серым (40,40,40), вес ~25 КБ (на экране портрет ~132px)
     @("assets\characters\chekeridis_final_win.jpg", 400),
@@ -18,6 +16,9 @@ $pairs = @(
     @("assets\characters\win.jpg", 400),
     @("assets\characters\loose.jpg", 400),
     @("assets\characters\zero.jpg", 400),
+    # портреты карточек выбора: так же JPEG с тёмно-серой заливкой
+    @("assets\characters\vova_character_select.jpg", 400),
+    @("assets\characters\chekeridis_character_select.jpg", 400),
     @("assets\sprites\bg_office.png", 720),
     @("assets\sprites\bg_ciceridis.png", 720),
     @("assets\sprites\vova_poses.png", 768),
