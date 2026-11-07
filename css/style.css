@@ -125,6 +125,24 @@ html, body {
 	animation: bubbleFloat 1.8s ease-out forwards; /* длительность правится в config.js → ui.bubbleSec */
 }
 
+/* Выкрики толпы (Цицеридис): мельче плашки, всплывают в случайных местах */
+@keyframes crowdPop {
+	0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+	15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+	25%  { transform: translate(-50%, -50%) scale(1); }
+	80%  { opacity: 1; }
+	100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+.bubble.crowd {
+	max-width: calc(100vw - 20px); /* длинная фраза переносится, за экран не выезжает */
+	background: #2c2c44;
+	border-color: #fff;
+	color: #ffd966;
+	font-size: 11px;
+	animation: crowdPop 1.6s ease-out forwards; /* длительность правится в config.js → ciceridis.crowdPhraseSec */
+}
+
 /* Финальная карточка результата — в духе игровых экранов */
 .final-card {
 	max-width: 300px;

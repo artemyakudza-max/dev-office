@@ -17,6 +17,10 @@ const Ciceridis = {
 	nextToastFired: false,  // плашку «Ещё тост!» показал? (ставит main.js)
 	toastNum: 1,       // номер текущего тоста (для карточки поражения)
 	plan: [],          // тексты тостов этого забега, план[0] — тост 1-го раунда
+	crowdLeft: 0,      // сколько выкриков толпы осталось в этой паре сцен
+	crowdT: 0,         // секунд до следующего выкрика толпы
+	crowdPending: null, // фраза для показа — покажет main.js через UI.crowdShout
+	lastCrowd: "",     // последняя фраза — чтобы не повторять подряд
 
 	// Физика качания (этап 6): угол игрока + самокачание
 	playerAngle: 0,    // угол от толчков игрока, градусы (минус = влево)
@@ -31,6 +35,10 @@ const Ciceridis = {
 		this.drinkStartFired = false;
 		this.nextToastFired = false;
 		this.toastNum = 1;
+		this.crowdLeft = 0;
+		this.crowdT = 0;
+		this.crowdPending = null;
+		this.lastCrowd = "";
 		this.playerAngle = 0;
 		this.angVel = 0;
 		this.fallT = 0;
@@ -195,6 +203,9 @@ const Ciceridis = {
 				this.drinkStartFired = false; // плашка «буль-буль-буль» — заново каждый раунд
 				this.playerAngle = 0; // между раундами стоит ровно
 				this.angVel = 0;
+				// Новая пара сцен «буль-буль» + «Ещё тост!» — новый лимит выкриков
+				this.crowdLeft = c.crowdMaxPerRound;
+				this.crowdT = this.crowdDelay();
 			}
 		} else if (this.phase === "drink") {
 			this.drinkT += dt;
@@ -227,5 +238,40 @@ const Ciceridis = {
 		} else if (this.phase === "win") {
 			// победа: карточку покажет main.js
 		}
+
+		// Выкрики толпы: только в сценах «буль-буль-буль» и «Ещё тост!»
+		if (this.phase === "drink" || this.phase === "nextToast") {
+			this.crowdT -= dt;
+			if (this.crowdT <= 0 && this.crowdLeft > 0) {
+				const phrase = this.crowdPhrase();
+				if (phrase) {
+					this.crowdLeft--;
+					this.crowdT = this.crowdDelay();
+					this.crowdPending = phrase; // покажет main.js
+				}
+			}
+		}
+	},
+
+	// Пауза до следующего выкрика толпы, сек — случайная между min и max
+	crowdDelay() {
+		const c = CONFIG.ciceridis;
+		return c.crowdMinDelaySec
+			+ Math.random() * (c.crowdMaxDelaySec - c.crowdMinDelaySec);
+	},
+
+	// Случайная фраза толпы для текущего раунда (1-й раунд — тишина)
+	crowdPhrase() {
+		if (this.toastNum < 2) return null;
+		const p = CONFIG.ciceridis.crowdPhrases;
+		const pool = this.toastNum <= 3 ? p.rounds23
+			: this.toastNum <= 6 ? p.rounds46 : p.rounds710;
+		if (!pool || !pool.length) return null;
+		let phrase = pool[Math.floor(Math.random() * pool.length)];
+		if (phrase === this.lastCrowd && pool.length > 1) { // без повторов подряд
+			phrase = pool[(pool.indexOf(phrase) + 1) % pool.length];
+		}
+		this.lastCrowd = phrase;
+		return phrase;
 	},
 };

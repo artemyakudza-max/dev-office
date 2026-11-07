@@ -700,6 +700,26 @@ const UI = {
 		setTimeout(() => el.remove(), seconds * 1000);
 	},
 
+	// Выкрик толпы: фраза в случайном месте экрана. Позиция считается
+	// по измеренным размерам плашки — за края экрана не выезжает
+	crowdShout(text) {
+		const el = document.createElement("div");
+		el.className = "bubble crowd";
+		el.textContent = text;
+		el.style.visibility = "hidden";
+		this.root.appendChild(el);
+		const w = el.offsetWidth, h = el.offsetHeight, m = 10;
+		// CSS держит плашку центром на (left, top) — случайный центр в пределах экрана
+		const cx = m + w / 2 + Math.random() * Math.max(0, window.innerWidth - w - 2 * m);
+		const cy = m + h / 2 + Math.random() * Math.max(0, window.innerHeight - h - 2 * m);
+		el.style.left = cx + "px";
+		el.style.top = cy + "px";
+		el.style.visibility = "visible";
+		const seconds = CONFIG.ciceridis.crowdPhraseSec;
+		el.style.animationDuration = seconds + "s";
+		setTimeout(() => el.remove(), seconds * 1000);
+	},
+
 	// Плашка с текстом по словам (тост Чекеридиса): слова появляются
 	// постепенно за speechSec секунд — как будто он говорит. Плашка висит
 	// seconds секунд (CSS-анимация растворяет её в конце). Стиль тот же,

@@ -87,6 +87,11 @@
 				UI.bubble(CONFIG.ciceridis.nextToastText, hp.x, hp.y, "center",
 					CONFIG.ciceridis.nextToastSec);
 			}
+			// Выкрик толпы: случайная фраза в случайном месте экрана
+			if (Ciceridis.crowdPending) {
+				UI.crowdShout(Ciceridis.crowdPending);
+				Ciceridis.crowdPending = null;
+			}
 			// Падение: сначала проигрывается анимация fallSec (Game.over не ставим —
 			// иначе цикл остановится и анимация замрёт), затем карточка поражения
 			if (Ciceridis.phase === "fall" && !Game.ciceridisFallShown) {
