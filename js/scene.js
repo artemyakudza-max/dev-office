@@ -628,6 +628,15 @@ const Scene = {
 
 	// Спрайт Чекеридиса на столе: кадр по фазе + качание/падение.
 	// Кадры листа: 0 тост, 1 балансирует, 2 пьёт, 3 радость/победа, 4 падение
+	// Сила размытия спрайта: 0 до blurFromRound, растёт до blurMaxPx в 10-м
+	ciceridisBlurPx() {
+		const c = CONFIG.ciceridis;
+		if (Ciceridis.toastNum < c.blurFromRound) return 0;
+		const t = Math.max(0, Math.min(1,
+			(Ciceridis.toastNum - c.blurFromRound) / (c.totalRounds - c.blurFromRound)));
+		return c.blurMaxPx * t;
+	},
+
 	drawCiceridisSprite(ctx) {
 		const cfg = CONFIG.sprites.ciceridis;
 		const img = this.sprites.ciceridis;
@@ -643,6 +652,9 @@ const Scene = {
 		else if (Ciceridis.phase === "joy" || Ciceridis.phase === "win") fi = 3;
 		else if (Ciceridis.phase === "fall") fi = 4;
 		else if (Ciceridis.isTiltPose()) fi = 1;
+		// «Пьяное зрение»: размытие растёт с blurFromRound (эффект, не физика)
+		const blur = this.ciceridisBlurPx();
+		if (blur > 0.1) ctx.filter = `blur(${blur.toFixed(1)}px)`;
 		// Наклон: в тосте — качание. В падении спрайт уже завален на ~45°,
 		// доворачиваем чуть-чуть в сторону падения; влево — зеркалим
 		let ang = 0;
@@ -661,6 +673,7 @@ const Scene = {
 		if (mirror) ctx.scale(-1, 1);
 		ctx.drawImage(img, fi * cfg.frame.w, 0, cfg.frame.w, cfg.frame.h, -w / 2, -h, w, h);
 		ctx.restore();
+		ctx.filter = "none"; // сброс — иначе размытие уйдёт на следующие отрисовки
 	},
 
 	// Где стоят ноги Чекеридиса: на столе фона (standFx/standFy — доли
