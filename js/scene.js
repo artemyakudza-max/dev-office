@@ -222,7 +222,11 @@ const Scene = {
 				: Math.max(vw / img.width, vh / img.height);
 			const dw = img.width * s, dh = img.height * s;
 			const dx = x0 + (vw - dw) / 2, dy = y0 + (vh - dh) / 2;
+			// «Пьяное зрение»: фон размывается вместе со спрайтом (только Цицеридис)
+			const blur = this.mode === "ciceridis" ? this.ciceridisBlurPx() : 0;
+			if (blur > 0.1) ctx.filter = `blur(${blur.toFixed(1)}px)`;
 			ctx.drawImage(img, dx, dy, dw, dh);
+			ctx.filter = "none";
 			this.bgRect = { dx, dy, dw, dh };
 			const ax0 = Math.max(dx, x0), ay0 = Math.max(dy, y0);
 			const ax1 = Math.min(dx + dw, x1), ay1 = Math.min(dy + dh, y1);
