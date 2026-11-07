@@ -700,18 +700,29 @@ const UI = {
 		setTimeout(() => el.remove(), seconds * 1000);
 	},
 
-	// Выкрик толпы: фраза в случайном месте экрана. Позиция считается
-	// по измеренным размерам плашки — за края экрана не выезжает
+	// Выкрик толпы: фраза в случайном месте В ПРЕДЕЛАХ ФОНА (на десктопе
+	// фон уже окна — выкрики не вылетают на тёмные поля). Позиция считается
+	// по измеренным размерам плашки — за края области не выезжает
 	crowdShout(text) {
 		const el = document.createElement("div");
 		el.className = "bubble crowd";
 		el.textContent = text;
 		el.style.visibility = "hidden";
 		this.root.appendChild(el);
-		const w = el.offsetWidth, h = el.offsetHeight, m = 10;
-		// CSS держит плашку центром на (left, top) — случайный центр в пределах экрана
-		const cx = m + w / 2 + Math.random() * Math.max(0, window.innerWidth - w - 2 * m);
-		const cy = m + h / 2 + Math.random() * Math.max(0, window.innerHeight - h - 2 * m);
+		// Область фона на экране; если фон не загрузился — весь экран
+		const b = Scene.bgRect;
+		let area = { x: 0, y: 0, w: window.innerWidth, h: window.innerHeight };
+		if (b) {
+			const p0 = Scene.toScreen(b.dx, b.dy);
+			const p1 = Scene.toScreen(b.dx + b.dw, b.dy + b.dh);
+			area = { x: p0.x, y: p0.y, w: p1.x - p0.x, h: p1.y - p0.y };
+		}
+		const m = 10;
+		el.style.maxWidth = Math.max(80, area.w - 2 * m) + "px"; // длинная фраза переносится
+		const w = el.offsetWidth, h = el.offsetHeight;
+		// CSS держит плашку центром на (left, top) — случайный центр внутри фона
+		const cx = area.x + m + w / 2 + Math.random() * Math.max(0, area.w - w - 2 * m);
+		const cy = area.y + m + h / 2 + Math.random() * Math.max(0, area.h - h - 2 * m);
 		el.style.left = cx + "px";
 		el.style.top = cy + "px";
 		el.style.visibility = "visible";

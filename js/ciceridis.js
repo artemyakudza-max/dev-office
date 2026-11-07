@@ -17,8 +17,9 @@ const Ciceridis = {
 	nextToastFired: false,  // плашку «Ещё тост!» показал? (ставит main.js)
 	toastNum: 1,       // номер текущего тоста (для карточки поражения)
 	plan: [],          // тексты тостов этого забега, план[0] — тост 1-го раунда
-	crowdLeft: 0,      // сколько выкриков толпы осталось в этой паре сцен
-	crowdT: 0,         // секунд до следующего выкрика толпы
+	crowdTimes: [],    // моменты выкриков от начала «буль-буль», сек
+	crowdIdx: 0,       // индекс следующего выкрика в crowdTimes
+	crowdT: 0,         // секунд с начала пары сцен (сверяется с crowdTimes)
 	crowdPending: null, // фраза для показа — покажет main.js через UI.crowdShout
 	lastCrowd: "",     // последняя фраза — чтобы не повторять подряд
 
@@ -35,7 +36,8 @@ const Ciceridis = {
 		this.drinkStartFired = false;
 		this.nextToastFired = false;
 		this.toastNum = 1;
-		this.crowdLeft = 0;
+		this.crowdTimes = [];
+		this.crowdIdx = 0;
 		this.crowdT = 0;
 		this.crowdPending = null;
 		this.lastCrowd = "";
@@ -203,9 +205,8 @@ const Ciceridis = {
 				this.drinkStartFired = false; // плашка «буль-буль-буль» — заново каждый раунд
 				this.playerAngle = 0; // между раундами стоит ровно
 				this.angVel = 0;
-				// Новая пара сцен «буль-буль» + «Ещё тост!» — новый лимит выкриков
-				this.crowdLeft = c.crowdMaxPerRound;
-				this.crowdT = this.crowdDelay();
+				// Новая пара сцен «буль-буль» + «Ещё тост!» — новое расписание
+				this._startCrowd();
 			}
 		} else if (this.phase === "drink") {
 			this.drinkT += dt;
@@ -241,31 +242,42 @@ const Ciceridis = {
 
 		// Выкрики толпы: только в сценах «буль-буль-буль» и «Ещё тост!»
 		if (this.phase === "drink" || this.phase === "nextToast") {
-			this.crowdT -= dt;
-			if (this.crowdT <= 0 && this.crowdLeft > 0) {
+			this.crowdT += dt;
+			if (this.crowdIdx < this.crowdTimes.length
+				&& this.crowdT >= this.crowdTimes[this.crowdIdx]) {
 				const phrase = this.crowdPhrase();
 				if (phrase) {
-					this.crowdLeft--;
-					this.crowdT = this.crowdDelay();
 					this.crowdPending = phrase; // покажет main.js
+					this.crowdIdx++;
 				}
 			}
 		}
 	},
 
-	// Пауза до следующего выкрика толпы, сек — случайная между min и max
-	crowdDelay() {
+	// Расписание выкриков на пару сцен: первая фраза — сразу с начала
+	// «буль-буль», последняя — за crowdEndGapSec до конца «Ещё тост!»,
+	// остальные — случайно между ними
+	_startCrowd() {
 		const c = CONFIG.ciceridis;
-		return c.crowdMinDelaySec
-			+ Math.random() * (c.crowdMaxDelaySec - c.crowdMinDelaySec);
+		const end = Math.max(0, c.drinkSec + c.nextToastSec - c.crowdEndGapSec);
+		this.crowdTimes = [0];
+		for (let i = 2; i < c.crowdMaxPerRound; i++) {
+			this.crowdTimes.push(end * (0.35 + Math.random() * 0.3)); // середина окна
+		}
+		if (c.crowdMaxPerRound >= 2) {
+			this.crowdTimes.push(end);
+		}
+		this.crowdIdx = 0;
+		this.crowdT = 0;
 	},
 
-	// Случайная фраза толпы для текущего раунда (1-й раунд — тишина)
+	// Случайная фраза толпы. Пара сцен после тоста N открывает раунд N+1 —
+	// пул берём по нему (первое «буль-буль» после 1-го тоста — это раунд 2)
 	crowdPhrase() {
-		if (this.toastNum < 2) return null;
-		const p = CONFIG.ciceridis.crowdPhrases;
-		const pool = this.toastNum <= 3 ? p.rounds23
-			: this.toastNum <= 6 ? p.rounds46 : p.rounds710;
+		const c = CONFIG.ciceridis;
+		const n = Math.min(this.toastNum + 1, c.totalRounds);
+		const p = c.crowdPhrases;
+		const pool = n <= 3 ? p.rounds23 : n <= 6 ? p.rounds46 : p.rounds710;
 		if (!pool || !pool.length) return null;
 		let phrase = pool[Math.floor(Math.random() * pool.length)];
 		if (phrase === this.lastCrowd && pool.length > 1) { // без повторов подряд

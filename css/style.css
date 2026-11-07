@@ -135,7 +135,6 @@ html, body {
 }
 
 .bubble.crowd {
-	max-width: calc(100vw - 20px); /* длинная фраза переносится, за экран не выезжает */
 	background: #2c2c44;
 	border-color: #fff;
 	color: #ffd966;
